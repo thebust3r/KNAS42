@@ -354,7 +354,7 @@ function show(key,html){var v=$("view");
 function setTitle(txt){var el=$("topTitle");if(el.textContent===txt)return;el.textContent=txt;el.classList.remove("swap");void el.offsetWidth;el.classList.add("swap")}
 function render(){var list=screens();
   if(!D){show("msg-load",'<div class="msg panel">LOADING SCORES...</div>');return}
-  if(!D.configured){show("msg-teams",'<div class="msg panel">PICK YOUR TEAMS<small>Want live scores? Add your teams on the setup page (Sports). It's optional.</small></div>');return}
+  if(!D.configured){show("msg-teams",'<div class="msg panel">PICK YOUR TEAMS<small>Want live scores? Add your teams on the setup page (Sports). This is optional.</small></div>');return}
   if(!list.length){var e=(D.teams[0]||{}).error;show("msg-espn",'<div class="msg panel">CAN\'T REACH ESPN<small>'+esc(e||"Will keep trying.")+'</small></div>');return}
   var t=list[rot%list.length],live=t.live&&t.live.state==="in";
   setTitle(live?(t.label+" · Live"):(t.label));
