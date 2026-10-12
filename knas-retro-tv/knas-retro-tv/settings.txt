@@ -1,0 +1,176 @@
+# ============================================================
+#  KNAS settings
+#  EVERYTHING HERE IS OPTIONAL. KNAS works with this file exactly as it comes.
+#  Easiest: open http://YOUR_SERVER_IP:8642/setup in a browser to change things.
+#  Or change a value here, save the file, and KNAS restarts itself within a few seconds.
+#  Lines starting with # are notes and are ignored.
+# ============================================================
+
+# ---- 1. Where you are (optional: left blank, KNAS guesses your town from your internet connection) ----
+# Your town, like "Springfield, MO" or "Leeds, United Kingdom". Used for the weather and the maps.
+CITY_NAME=
+# Optional: exact location instead of looking up the town (decimal degrees, e.g. 37.2090 and -93.2923)
+LATITUDE=
+LONGITUDE=
+# us = °F, mph, inches     metric = °C, km/h, mm     blank = automatic (°F in the US, °C elsewhere)
+UNITS=
+# Your time zone, so the clock on recorded channels is right. Examples: America/New_York,
+# America/Chicago, America/Denver, America/Los_Angeles, Europe/London
+# (full list: en.wikipedia.org/wiki/List_of_tz_database_time_zones). The setup page fills this in for you.
+TZ=
+
+# ---- 2. ErsatzTV (optional: your own channels in the KNAS cable box at /tv) ----
+# The address you open ErsatzTV at, e.g. http://192.168.1.50:8409   (blank = just the KNAS channels)
+ERSATZTV_URL=
+# Where ErsatzTV runs, so KNAS knows how break clips get to it: nas (this same machine), windows, or other
+# (Mac/Linux). Blank = guess from the address above.
+ERSATZTV_HOST=
+
+# ---- Screen (optional) ----
+# auto = fill any TV shape (widescreen gets a wider layout, nothing stretched)
+# 4:3  = classic 4:3 with black bars on the sides (good for CRTs)
+# TV shows and movies always keep their own shape either way.
+SCREEN=auto
+
+# ---- Station look (optional) ----
+STATION_NAME=KNAS 42
+# on = weather pages, sports teams and break segments play in a random order each time
+SHUFFLE=on
+PAGE_SECONDS=10
+CRAWL_MESSAGE=Stay tuned for your local forecast
+# Channel numbers in the cable box (0 hides one)
+KNAS_CHANNEL=42
+SPORTS_CHANNEL=43
+
+# ---- News headlines (optional; separate several with commas; blank = page skipped) ----
+# Each one can be a news website (yourlocalpaper.com), words to search (Springfield Missouri) or an RSS feed.
+LOCAL_NEWS_FEEDS=
+US_NEWS_FEEDS=https://feeds.npr.org/1001/rss.xml
+# Only show headlines from the last this many hours (older stories are skipped)
+NEWS_MAX_HOURS=6
+
+# ---- Weather maps (optional) ----
+# Towns labeled on the radar maps. Blank = the biggest nearby towns are found automatically.
+# Or list your own:  Name, latitude, longitude; Name, latitude, longitude
+MAP_CITIES=
+# Map style under the radar (no key needed): osm, dark, light, terrain, relief, satellite, streets, topo
+MAP_STYLE=osm
+# Optional CARTO key, only used with MAP_STYLE=carto
+MAP_KEY=
+
+# ---- Sports channel radio (optional) ----
+# A station's direct stream address that plays on the sports channel all the time. Blank = no radio.
+SPORTS_RADIO=
+SPORTS_RADIO_NAME=
+RADIO_KEEP_MINUTES=30
+
+# ---- Uptime Kuma status page (optional) ----
+# e.g. KUMA_URL=http://192.168.1.50:3001 and KUMA_SLUG=the slug of a status page you made in Kuma
+KUMA_URL=
+KUMA_SLUG=
+
+# ---- "Now playing" / top artists page (optional) ----
+# Any self-hosted listening tracker with a JSON API. Blank = page skipped.
+SPOTIFY_URL=
+SPOTIFY_NOWPLAYING_PATH=/api/now
+SPOTIFY_TOP_PATH=/api/top/artists?range=7d&limit=7
+SPOTIFY_TOP_LABEL=This Week
+
+# ---- Recorder (turns pages into live video for ErsatzTV) (optional) ----
+# port=page pairs. 8644 = break screen (for break clips; it only runs while clips are being made).
+# To also stream the weather channel into ErsatzTV, add: 8643=/?cast=1  (it runs all the time and uses a lot of CPU)
+CAST_CHANNELS=8644=/break?cast=1
+MUSIC_VOLUME=0.8
+VIDEO_BITRATE=1500k
+
+# ---- Facts & trivia (setup page: Facts & trivia) (optional) ----
+# Your own lists are facts.txt and trivia.txt (on/off below).
+FACTS_LIST=on
+# Facts about your town and state from Wikipedia: on or off
+FACTS_LOCAL=off
+# More facts, separated by semicolons: topics in plain words (Space; Dinosaurs), Wikipedia pages,
+# Google Sheet or .txt links (one fact per line), RSS feeds or any web page with a list of facts
+FACTS_SOURCES=
+TRIVIA_LIST=on
+# Open Trivia Database topics, comma separated: general, tv, movies, music, videogames, sports, science,
+# history, geography, animals, cartoons, comics, books, cars, computers, boardgames, mythology, celebrities
+TRIVIA_TOPICS=
+# Google Sheet or .txt links, one question per line: question | right answer | wrong | wrong | wrong
+TRIVIA_SOURCES=
+
+# ---- Break screen and break clips (filler between episodes) (optional) ----
+BREAK_VIDEO_MAX=90
+# Make break clips for ErsatzTV filler: on, or off if you use your own filler clips
+BREAK_CLIPS_ON=on
+# Clips recorded into the break-clips folder: length x how many
+BREAK_CLIPS=30s x2, 1m x3, 2m x2, 5m x2
+BREAK_CLIPS_HOURS=3
+
+# ---- Cable box (optional) ----
+# How loud the static is between channels: 0 (silent) to 100. 50 is half of the old level.
+STATIC_VOLUME=50
+
+# ---- Look & feel (easiest on the setup page: Colors, Names & logos) (optional) ----
+# Color theme: classic, midnight, sunset, ocean, forest, cherry, amber, terminal, mono, pastel
+THEME=classic
+# Your own colors (#rrggbb). Blank = use the theme's color.
+COLOR_SKY_TOP=
+COLOR_SKY_MIDDLE=
+COLOR_SKY_BOTTOM=
+COLOR_PANEL=
+COLOR_EDGE=
+COLOR_ACCENT=
+COLOR_TEXT=
+COLOR_TICKER=
+COLOR_LOGO=
+COLOR_LOGO_BAND=
+# CRT scan lines: on, strong, off
+SCANLINES=on
+# Names shown on screen
+CABLE_NAME=KNAS Cable
+SPORTS_NAME=KNAS Sports
+GUIDE_NAME=TV Guide
+BREAK_LINE1=Stay Tuned
+BREAK_LINE2=We'll be right back
+# Logos are uploaded on the setup page (they're saved in data/logos).
+
+# ---- Sound (setup page: Sound) (optional) ----
+# Volume leveler keeps every channel about the same loudness: on / off
+LEVEL_AUDIO=on
+# light, medium or strong (night mode)
+LEVEL_STRENGTH=medium
+# Louder or softer after leveling, in dB (-12 to 12)
+LEVEL_TARGET=0
+# Limiter: nothing gets louder than LEVEL_CEILING dB (-12 to 0)
+LEVEL_LIMITER=on
+LEVEL_CEILING=-1
+# Fade the sound in after changing channel (milliseconds, 0 = off)
+LEVEL_FADE_MS=700
+# Volume of each kind of sound, in % (100 = normal)
+VOL_TV=100
+VOL_MUSIC=70
+VOL_RADIO=100
+
+# ---- TV guide style (setup page: Guide style) (optional) ----
+# knas (90s), satellite (2000s satellite), cable (2000s digital cable), chrome (Y2K silver)
+GUIDE_STYLE=knas
+
+# ---- Fonts (setup page: Fonts) (optional) ----
+# Clean: classic, smooth, modern, easyread, rounded   Bold: headline, scoreboard, jersey, friendly
+# Retro: y2k, neon, teletext, computer   Fun: bubbly, comic, marker, newspaper, fancy
+FONT=classic
+# bold (as designed) or lighter (every word a little thinner)
+FONT_WEIGHT=bold
+# classic (hard 90s drop shadow), soft (blurred glow) or thin
+TEXT_SHADOW=classic
+
+# ---- Holidays (setup page: Holidays) (optional) ----
+# auto (by the date), off, or one of: halloween, thanksgiving, christmas, newyear, valentines, stpatricks, easter, july4, winter
+SEASON=auto
+# full, light or off
+SEASON_EFFECTS=full
+# Animation when changing channel, holiday greeting in the ticker, holiday colors, winter snow in Jan/Feb
+SEASON_TUNE=on
+SEASON_GREETING=on
+SEASON_COLORS=on
+SEASON_WINTER=on

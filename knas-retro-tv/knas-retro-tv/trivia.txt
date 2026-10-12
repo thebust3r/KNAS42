@@ -1,0 +1,51 @@
+# KNAS Break trivia
+# One question per line:   question | right answer | wrong answer | wrong answer | wrong answer
+# The answers get shuffled on screen. Lines starting with # are ignored.
+# Add your own! Changes show up within 10 minutes.
+
+# --- TV & movies ---
+What was the name of the coffee shop in Friends? | Central Perk | The Daily Grind | Java Joe's | Monk's Cafe
+In Seinfeld, what is Kramer's first name? | Cosmo | Kenny | Carl | Kevin
+Which movie was the first feature film made entirely with computer animation? | Toy Story | A Bug's Life | Shrek | Antz
+What city do the Tanners live in on Full House? | San Francisco | Seattle | Chicago | Denver
+What's the name of the school in Saved by the Bell? | Bayside High | Ridgemont High | Rydell High | West Beverly High
+In Home Improvement, what is the name of Tim's TV show? | Tool Time | Fix It Up | Handy Man | Power Tools
+In The Fresh Prince of Bel-Air, what city is Will originally from? | Philadelphia | Detroit | Baltimore | Newark
+What does the "M" stand for in the TV show M*A*S*H? | Mobile | Medical | Military | Marine
+In Rugrats, what is the name of Tommy's dog? | Spike | Rex | Buster | Max
+In Back to the Future, what speed does the DeLorean need to reach? | 88 mph | 55 mph | 100 mph | 121 mph
+The Teenage Mutant Ninja Turtles are named after famous what? | Renaissance artists | Roman emperors | Greek gods | U.S. presidents
+In Family Matters, what's Steve Urkel's famous catchphrase? | Did I do that? | Cowabunga! | How rude! | Whatchu talkin' 'bout?
+Which show is set in the fictional town of Springfield? | The Simpsons | Boy Meets World | Full House | Step by Step
+
+# --- Video games ---
+What's the name of Mario's brother? | Luigi | Wario | Toad | Yoshi
+In Pokémon Red and Blue, which Pokémon is #001 in the Pokédex? | Bulbasaur | Pikachu | Charmander | Mew
+What console was Halo: Combat Evolved first released on? | Xbox | PlayStation 2 | GameCube | PC
+What does Pac-Man eat to be able to chase ghosts? | Power pellets | Cherries | Mushrooms | Stars
+Which company made the Game Boy? | Nintendo | Sega | Sony | Atari
+In The Legend of Zelda, what's the name of the hero? | Link | Zelda | Ganon | Navi
+
+
+# --- Science & nature ---
+What planet is known as the Red Planet? | Mars | Venus | Jupiter | Mercury
+How many hearts does an octopus have? | Three | One | Two | Four
+What gas do plants take in from the air? | Carbon dioxide | Oxygen | Nitrogen | Helium
+About how long does sunlight take to reach Earth? | 8 minutes | 8 seconds | 1 hour | 1 day
+Which bird is the only one that can fly backwards? | Hummingbird | Sparrow | Eagle | Owl
+What's frozen water called when it falls as little balls in a thunderstorm? | Hail | Sleet | Snow | Frost
+What type of animal is a Komodo dragon? | Lizard | Snake | Crocodile | Dinosaur
+
+# --- Music ---
+Which band sang "Smells Like Teen Spirit"? | Nirvana | Pearl Jam | Soundgarden | Green Day
+Which song spent 14 weeks at #1 in 1996? | Macarena | Wannabe | MMMBop | Gangsta's Paradise
+Who released the album "Thriller"? | Michael Jackson | Prince | Madonna | Whitney Houston
+How many members were in the Spice Girls? | Five | Four | Six | Three
+What instrument has 88 keys? | Piano | Organ | Accordion | Xylophone
+
+# --- Sports ---
+How many points is a touchdown worth? | 6 | 7 | 3 | 5
+How many players does a basketball team have on the court? | 5 | 6 | 7 | 4
+How many holes are on a standard golf course? | 18 | 9 | 12 | 21
+What sport is played at Wimbledon? | Tennis | Golf | Cricket | Polo
+How long is a regulation college football field between goal lines? | 100 yards | 120 yards | 90 yards | 110 yards

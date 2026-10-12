@@ -1,0 +1,9 @@
+music/*
+!music/.keep
+break-videos/*
+!break-videos/.keep
+break-clips/
+updates/
+data/
+__pycache__/
+*.pyc

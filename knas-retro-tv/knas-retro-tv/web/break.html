@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>KNAS Break</title>
+<style>
+:root{--gold:#ffd23a;--gold2:#ffb000;--ice:#a9c4ff;--navy:#0a1552;--edge:#9cb8ff;--red:#e3261b;--green:#2fbf4a}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#000;overflow:hidden}
+body{font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;color:#fff}
+#stage{position:absolute;left:50%;top:50%;width:640px;height:480px;transform-origin:center;overflow:hidden;
+  background:linear-gradient(180deg,#120a44 0%,#2a1272 40%,#5a1a7a 72%,#b0305a 100%)}
+#stage:before{content:"";position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none;z-index:50;background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 2px,transparent 2px 4px)}
+.sh{text-shadow:2px 2px 0 #000,0 0 2px #000}
+.panel{border-radius:7px;background:linear-gradient(180deg,#2c55c8,#1d3a9e 50%,#112673);box-shadow:inset 0 0 0 3px var(--edge),inset 0 0 0 5px var(--navy),4px 5px 0 rgba(0,0,0,.55)}
+header{position:absolute;left:0;right:0;top:0;height:88px;display:flex;align-items:center;padding:0 22px;gap:14px}
+.logo{width:66px;height:66px;border-radius:10px;flex:none;position:relative;overflow:hidden;background:linear-gradient(160deg,#ff8a3a,#e3261b 55%,#7a0d07);box-shadow:inset 0 0 0 3px #ffd9c2,inset 0 0 0 5px #5a0a05,3px 3px 0 #000}
+.logo .num{position:absolute;top:4px;left:0;right:0;text-align:center;font-weight:800;font-style:italic;font-size:30px;line-height:34px;text-shadow:2px 2px 0 #400}
+.logo .call{position:absolute;bottom:6px;left:6px;right:6px;height:16px;background:#1d3db8;border-radius:2px;font-weight:800;font-size:14px;line-height:16px;text-align:center;letter-spacing:1px;box-shadow:0 2px 0 #0b1a66}
+.title{flex:1;line-height:1}
+.title .t1{font-size:27px;font-weight:700;font-style:italic}
+.title .t2{font-size:38px;font-weight:800;font-style:italic;color:var(--gold);letter-spacing:.5px;white-space:nowrap}
+.clock{text-align:right;line-height:1.05}.clock .tm{font-size:30px;font-weight:700}.clock .dt{font-size:22px;font-weight:700;color:var(--gold);letter-spacing:1px}
+#view{position:absolute;left:22px;right:22px;top:92px;bottom:56px}
+#view.enter{animation:vIn .6s cubic-bezier(.2,.8,.25,1) both;will-change:transform,opacity}
+@keyframes vIn{from{opacity:0;transform:translate3d(46px,0,0)}to{opacity:1;transform:none}}
+footer{position:absolute;left:0;right:0;bottom:0;height:44px;overflow:hidden;background:linear-gradient(180deg,#14267a,#070f3e);box-shadow:inset 0 3px 0 var(--gold2),inset 0 5px 0 #6b3d00}
+.crawl{position:absolute;top:7px;left:0;white-space:nowrap;font-size:27px;font-weight:700;animation:crawl 30s linear infinite}
+@keyframes crawl{from{transform:translateX(var(--sw,640px))}to{transform:translateX(-100%)}}
+.crawl b{color:var(--gold)}
+@keyframes blink{50%{opacity:.35}}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+
+/* intro */
+.intro{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.intro .big{font-size:76px;font-weight:800;font-style:italic;line-height:.9;color:var(--gold);text-shadow:4px 4px 0 #000;animation:pop .7s both}
+.intro .big small{display:block;font-size:40px;color:#fff}
+.intro .stay{margin-top:14px;font-size:30px;font-weight:800;letter-spacing:6px;animation:blink 1.2s ease-in-out infinite}
+.intro .next{margin-top:14px;font-size:24px;font-weight:700;color:var(--ice)}
+.intro .next b{color:#fff}
+.stars i{position:absolute;width:6px;height:6px;background:var(--gold);transform:rotate(45deg);animation:twinkle 1.6s ease-in-out infinite}
+@keyframes twinkle{50%{opacity:.15}}
+
+/* trivia */
+.q{position:absolute;left:0;right:0;top:0;height:118px;padding:12px 18px;display:flex;align-items:center;font-size:31px;font-weight:800;line-height:1.1}
+.q .badge{flex:none;width:58px;height:58px;margin-right:14px;border-radius:50%;background:var(--gold);color:#221600;text-shadow:none;font-size:40px;display:flex;align-items:center;justify-content:center;box-shadow:3px 3px 0 #000}
+.ans{position:absolute;left:0;right:0;top:128px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ans div{height:64px;border-radius:7px;display:flex;align-items:center;gap:10px;padding:0 12px;font-size:26px;font-weight:800;line-height:1.05;
+  background:linear-gradient(180deg,#2c55c8,#112673);box-shadow:inset 0 0 0 3px var(--edge),4px 4px 0 rgba(0,0,0,.5);transition:filter .3s,opacity .3s}
+.ans div b{flex:none;width:36px;height:36px;border-radius:5px;background:var(--gold);color:#221600;text-shadow:none;display:flex;align-items:center;justify-content:center;font-size:24px}
+.ans div span{overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.ans .right{background:linear-gradient(180deg,#3ad15a,#1a8a30);box-shadow:inset 0 0 0 3px #b8ffc6,4px 4px 0 rgba(0,0,0,.5);animation:pop .4s both}
+.ans .wrong{opacity:.35;filter:grayscale(1)}
+.timer{position:absolute;left:0;right:0;bottom:0;height:34px;display:flex;align-items:center;gap:10px}
+.timer .bar{flex:1;height:16px;border-radius:3px;background:#061049;box-shadow:inset 0 0 0 2px var(--edge);overflow:hidden}
+.timer .bar i{display:block;height:100%;width:100%;background:linear-gradient(180deg,#ffd23a,#ff8a1a);transform-origin:left}
+.timer .n{width:50px;text-align:center;font-size:30px;font-weight:800;color:var(--gold)}
+.timer .msg{font-size:24px;font-weight:800;color:var(--gold)}
+
+/* text cards */
+.card{position:absolute;top:0;right:0;bottom:0;left:0;padding:22px 26px;display:flex;flex-direction:column;justify-content:center}
+.card .txt{font-size:36px;font-weight:800;line-height:1.15;animation:pop .6s both}
+.card .src{margin-top:16px;font-size:20px;font-weight:700;color:var(--ice);letter-spacing:1px}
+.qmark{position:absolute;right:16px;top:-8px;font-size:150px;font-weight:800;font-style:italic;color:rgba(255,210,58,.16);line-height:1}
+
+/* coming up */
+.cu{position:absolute;top:10px;right:14px;bottom:10px;left:14px;display:flex;flex-direction:column;gap:6px}
+.cu .row{display:flex;align-items:center;gap:10px;height:52px;padding:0 10px;border-bottom:2px dotted rgba(169,196,255,.3);animation:pop .4s both}
+.cu .t{flex:none;width:112px;font-size:26px;font-weight:800;color:var(--gold);white-space:nowrap}
+.cu .ch{flex:none;min-width:48px;height:40px;border-radius:5px;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;font-style:italic;box-shadow:2px 2px 0 #000;padding:0 6px}
+.cu .nm{flex:1;min-width:0;line-height:1}
+.cu .nm b{display:block;font-size:28px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cu .nm small{font-size:19px;font-weight:700;color:var(--ice);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+
+/* on this day */
+.otd{position:absolute;top:10px;right:16px;bottom:10px;left:16px;display:flex;flex-direction:column;justify-content:center;gap:12px}
+.otd .ev{display:flex;gap:12px;align-items:flex-start;animation:pop .5s both}
+.otd .yr{flex:none;width:84px;height:40px;border-radius:5px;background:var(--gold);color:#221600;text-shadow:none;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;box-shadow:2px 2px 0 #000}
+.otd .tx{font-size:24px;font-weight:700;line-height:1.12;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
+
+/* video box */
+.vbox{position:absolute;left:50%;top:6px;width:430px;height:278px;margin-left:-215px;border-radius:6px;background:#000;overflow:hidden;
+  box-shadow:0 0 0 4px var(--gold),0 0 0 7px #000,6px 7px 0 7px rgba(0,0,0,.5)}
+.vbox video{width:100%;height:100%;object-fit:contain;background:#000}
+.vlabel{position:absolute;left:0;right:0;bottom:0;text-align:center;font-size:26px;font-weight:800;letter-spacing:4px;color:var(--gold);animation:blink 1.4s ease-in-out infinite}
+.vtag{position:absolute;left:12px;top:12px;font-size:15px;font-weight:800;letter-spacing:2px;background:var(--red);padding:1px 7px;border-radius:2px;z-index:2;box-shadow:2px 2px 0 #000}
+#hint{position:absolute;right:14px;bottom:50px;z-index:30;font-size:16px;font-weight:800;color:var(--gold);background:rgba(0,0,30,.75);padding:1px 8px;border-radius:3px;display:none;animation:blink 1.2s ease-in-out infinite}
+
+/* ---- TV-box mode (lite): no glow blurs, no sweeping shines, fewer layers ---- */
+.lite *{will-change:auto!important}
+.lite .crawl{will-change:transform!important}
+.lite .sh{text-shadow:2px 2px 0 #000!important}
+.lite #panel:after,.lite .panel:after,.lite .logo:after{display:none!important;animation:none!important}
+.lite .stars i{animation:none}
+
+/* phones: lock the page in place (no pinch zoom, no pull-to-refresh, no bouncing) */
+html,body{position:fixed;top:0;right:0;bottom:0;left:0;width:100%;height:100%;overscroll-behavior:none;-webkit-text-size-adjust:100%;text-size-adjust:100%;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+#safe{position:fixed;top:0;right:0;bottom:0;left:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+</style>
+</head>
+<body><div id="safe"></div>
+<div id="stage">
+  <header class="sh">
+    <div class="logo"><div class="num">TV</div><div class="call">KNAS</div></div>
+    <div class="title"><div class="t1" id="t1">We'll Be</div><div class="t2" id="t2">Right Back</div></div>
+    <div class="clock"><div class="tm" id="tm"></div><div class="dt" id="dt"></div></div>
+  </header>
+  <div id="view" class="sh"></div>
+  <div id="hint" class="sh">♪ PRESS ANY BUTTON FOR MUSIC</div>
+  <footer><div class="crawl sh" id="crawl"></div></footer>
+</div>
+<audio id="music" preload="none"></audio>
+<script>
+(function(){
+"use strict";
+var Q=new URLSearchParams(location.search),$=function(i){return document.getElementById(i)},CAST=Q.has("cast");
+
+/* TV-box mode: on Android TV boxes (like the Onn) the fancy extras are turned off so it stays smooth.
+   Force it with ?lite=1, or turn it off with ?lite=0 */
+var LITE=Q.get("lite")?Q.get("lite")!=="0":/Android|CrKey|AFT|BRAVIA|SMART-TV|Tizen|Web0S/i.test(navigator.userAgent);
+if(LITE)document.documentElement.classList.add("lite");
+var D={trivia:[],facts:[],onthisday:[],comingup:[],videos:[],config:{}},seq=[],si=0,gen=0,CLIP=false,cueId=null,timer=0,TQ=[],FQ=[],VQ=[],OQ=[];
+var DAYS=["SUN","MON","TUE","WED","THU","FRI","SAT"],MON=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+/* ---------- screen fit ----------
+   SCREEN=auto (default): fills any screen shape. Wide screens get a wider layout, tall screens (phones held
+   upright) a taller one. Nothing is stretched, and TV shows always keep their own shape.
+   SCREEN=4:3 (or ?screen=4:3): classic 4:3 with black bars.   ?stretch=1: stretch 4:3 to fill. */
+var SCREEN=Q.get("screen")||"",STAGE_W=640,STAGE_H=480;
+function fit(){var s=$("stage"),z=parseFloat(Q.get("zoom")||"1"),vv=window.visualViewport,sf=document.getElementById("safe"),cs=sf?getComputedStyle(sf):null,pl=cs?parseFloat(cs.paddingLeft)||0:0,pr=cs?parseFloat(cs.paddingRight)||0:0,pt=cs?parseFloat(cs.paddingTop)||0:0,pb=cs?parseFloat(cs.paddingBottom)||0:0,W=(vv&&vv.width||innerWidth)-pl-pr,H=(vv&&vv.height||innerHeight)-pt-pb,mode=Q.has("stretch")?"stretch":(SCREEN||"auto"),a=W/Math.max(1,H);
+  STAGE_W=640;STAGE_H=480;
+  if(mode==="auto"){if(a>=4/3)STAGE_W=Math.round(Math.min(1100,480*a));else STAGE_H=Math.round(Math.min(1500,640/a))}
+  document.documentElement.classList.toggle("tall",STAGE_H>560)
+  s.style.width=STAGE_W+"px";s.style.height=STAGE_H+"px";
+  document.documentElement.style.setProperty("--sw",STAGE_W+"px");document.documentElement.style.setProperty("--sh",STAGE_H+"px");
+  s.style.marginLeft=((pl-pr)/2)+"px";s.style.marginTop=((pt-pb)/2)+"px";
+  s.style.transform=mode==="stretch"?"translate(-50%,-50%) scale("+(W/640*z)+","+(H/480*z)+")":"translate(-50%,-50%) scale("+(Math.min(W/STAGE_W,H/STAGE_H)*z)+")";
+  if(window.onFit)window.onFit()}
+/* phones: no pinch or double-tap zoom, and a tap goes full screen where the phone allows it */
+document.addEventListener("gesturestart",function(e){e.preventDefault()});
+document.addEventListener("touchmove",function(e){if(e.touches.length>1||e.scale&&e.scale!==1)e.preventDefault()},{passive:false});
+var lastTouch=0;document.addEventListener("touchend",function(e){var t=Date.now();if(t-lastTouch<350&&!document.getElementById("guide"))e.preventDefault();lastTouch=t},{passive:false});
+if(window.self===window.top&&("ontouchstart" in window))document.addEventListener("touchend",function fs(){var d=document.documentElement;try{if(!document.fullscreenElement&&d.requestFullscreen)d.requestFullscreen({navigationUI:"hide"}).catch(function(){})}catch(e){}},{once:true});
+if(window.visualViewport)visualViewport.addEventListener("resize",function(){fit()});
+addEventListener("resize",fit);addEventListener("orientationchange",function(){setTimeout(fit,300)});fit();
+if(!Q.get("screen"))fetch("api/version",{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.screen&&j.screen!==SCREEN){SCREEN=j.screen;fit()}}).catch(function(){});
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function hm(d,secs){var h=d.getHours(),m=d.getMinutes();return (h%12||12)+":"+(m<10?"0":"")+m+(secs?":"+(d.getSeconds()<10?"0":"")+d.getSeconds():"")+(h<12?" AM":" PM")}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.random()*(i+1)|0,t=a[i];a[i]=a[j];a[j]=t}return a}
+function take(q,src){if(!q.length)Array.prototype.push.apply(q,shuffle(src));return q.shift()}
+setInterval(function(){var d=new Date();$("tm").textContent=CLIP?"KNAS":hm(d,true);$("dt").textContent=DAYS[d.getDay()]+" "+MON[d.getMonth()]+" "+d.getDate()},1000);
+
+/* ---------- segments ---------- */
+function show(t1,t2,html){$("t1").textContent=t1;$("t2").textContent=t2;var v=$("view");v.querySelectorAll("video").forEach(function(x){x.onended=x.onerror=null;x.pause();x.removeAttribute("src")});v.classList.remove("enter");v.innerHTML=html;void v.offsetWidth;v.classList.add("enter");return v}
+function segIntro(done){var n=D.comingup[0],stars="";for(var i=0;i<14;i++)stars+='<i style="left:'+(Math.random()*580|0)+'px;top:'+(Math.random()*300|0)+'px;animation-delay:'+(-Math.random()*1.6).toFixed(2)+'s"></i>';
+  var b2=KNAS.name("break2","We'll be right back"),tc=b2.split(" ").map(function(w){return w.charAt(0).toUpperCase()+w.slice(1)});show(tc.slice(0,2).join(" "),tc.slice(2).join(" ")||" ",'<div class="panel" style="position:absolute;top:0;right:0;bottom:0;left:0"><div class="stars">'+stars+'</div><div class="intro"><div class="big"><small>'+esc(KNAS.name("cable","KNAS Cable").toUpperCase())+'</small>'+esc(KNAS.name("break1","Stay Tuned").toUpperCase())+'</div>'+
+    '<div class="stay">'+esc(b2.toUpperCase())+'</div>'+(n?'<div class="next">COMING UP AT '+esc(hm(new Date(n.time*1000)))+': <b>'+esc(n.title)+'</b> on '+esc(n.name)+'</div>':'')+'</div></div>');
+  timer=setTimeout(done,7000)}
+function segTrivia(done){if(!D.trivia.length)return done();var t=take(TQ,D.trivia),opts=shuffle([t.a].concat(t.wrong)).slice(0,4),L="ABCD",secs=10;
+  var v=show("Trivia","Time",'<div class="q panel"><div class="badge">?</div><div>'+esc(t.q)+'</div></div><div class="ans">'+
+    opts.map(function(o,i){return '<div data-ok="'+(o===t.a?1:0)+'"><b>'+L[i]+'</b><span>'+esc(o)+'</span></div>'}).join("")+
+    '</div><div class="timer"><span class="n">'+secs+'</span><div class="bar"><i></i></div></div>');
+  var bar=v.querySelector(".bar i"),n=v.querySelector(".n"),left=secs;
+  bar.style.transition="transform "+secs+"s linear";requestAnimationFrame(function(){requestAnimationFrame(function(){bar.style.transform="scaleX(0)"})});
+  var iv=setInterval(function(){left--;n.textContent=Math.max(0,left);if(left<=0){clearInterval(iv);reveal()}},1000);
+  function reveal(){v.querySelectorAll(".ans div").forEach(function(d){d.classList.add(d.dataset.ok==="1"?"right":"wrong")});
+    v.querySelector(".timer").innerHTML='<span class="msg">ANSWER: '+esc(t.a).toUpperCase()+'</span>';timer=setTimeout(done,5500)}
+  timer=iv}
+function segFact(done){if(!D.facts.length)return done();var f=take(FQ,D.facts);
+  show("Did You","Know?",'<div class="panel" style="position:absolute;top:0;right:0;bottom:0;left:0"><div class="qmark">?</div><div class="card"><div class="txt">'+esc(f)+'</div></div></div>');timer=setTimeout(done,10000)}
+function segComing(done){var l=D.comingup||[];if(!l.length)return done();
+  show("Coming","Up Next",'<div class="panel" style="position:absolute;top:0;right:0;bottom:0;left:0"><div class="cu">'+l.slice(0,5).map(function(c,i){
+    return '<div class="row" style="animation-delay:'+(i*.15)+'s"><span class="t">'+esc(hm(new Date(c.time*1000)))+'</span><span class="ch">'+esc(c.number)+'</span><span class="nm"><b>'+esc(c.title)+'</b><small>'+esc([c.name,c.ep,c.sub].filter(Boolean).join("  ·  "))+'</small></span></div>'}).join("")+'</div></div>');
+  timer=setTimeout(done,10000)}
+function segOTD(done){if(!D.onthisday.length||CLIP)return done();   /* clips skip On This Day: it would be out of date later */var d=new Date(),evs=[];for(var i=0;i<3;i++)evs.push(take(OQ,D.onthisday));
+  evs.sort(function(a,b){return a.year-b.year});
+  show("On This Day",MON[d.getMonth()]+" "+d.getDate(),'<div class="panel" style="position:absolute;top:0;right:0;bottom:0;left:0"><div class="otd">'+evs.map(function(e,i){
+    return '<div class="ev" style="animation-delay:'+(i*.3)+'s"><span class="yr">'+esc(e.year)+'</span><span class="tx">'+esc(e.text)+'</span></div>'}).join("")+'</div></div>');
+  timer=setTimeout(done,13000)}
+function segVideo(done){if(!D.videos.length)return done();var name=take(VQ,D.videos),max=+(D.config.break_video_max||90);
+  var v=show("Video","Break",'<div class="vbox"><span class="vtag">KNAS</span><video playsinline'+(CAST?' muted':'')+'></video></div><div class="vlabel">'+esc(KNAS.name("break2","We'll be right back").toUpperCase())+'</div>');
+  var vid=v.querySelector("video"),finished=false;function end(){if(finished)return;finished=true;clearTimeout(timer);duck(false);done()}
+  vid.src="break-videos/"+encodeURIComponent(name);vid.onended=end;vid.onerror=end;
+  var p=vid.play();if(p&&p.catch)p.catch(function(){vid.muted=true;vid.play().catch(end)});
+  if(!vid.muted)duck(true);timer=setTimeout(end,max*1000)}
+
+/* ---------- running order ---------- */
+var ALL=[segIntro,segTrivia,segFact,segComing,segVideo,segTrivia,segOTD,segFact,segTrivia,segVideo,segComing,segFact],ORDER=ALL;
+var SEGNAME=new Map([[segIntro,"intro"],[segTrivia,"trivia"],[segFact,"facts"],[segComing,"comingup"],[segVideo,"videos"],[segOTD,"onthisday"]]);
+function pickSegments(){var on=D.config&&D.config.segments&&D.config.segments.length?D.config.segments:null;
+  ORDER=on?ALL.filter(function(f){return f===segIntro||on.indexOf(SEGNAME.get(f))>=0}):ALL;if(!ORDER.length)ORDER=[segIntro]}
+function next(){clearTimeout(timer);clearInterval(timer);if(si%ORDER.length===0&&D.config&&D.config.shuffle&&ORDER.length>2)ORDER=[segIntro].concat(shuffle(ORDER.filter(function(x){return x!==segIntro})));var f=ORDER[si%ORDER.length],g=++gen;si++;var done=function(){if(g===gen)next()};try{f(done)}catch(e){console.warn(e);setTimeout(done,1000)}}
+
+/* ---------- crawl ---------- */
+function setCrawl(){var c=$("crawl"),p=["<b>"+esc(KNAS.name("cable","KNAS Cable").toUpperCase())+"</b> &nbsp;"+esc(KNAS.name("break2","We'll be right back"))];if((window.KNAS&&KNAS.season&&KNAS.season.greeting))p.push("<b>"+esc(KNAS.season.greeting)+"</b>");
+  (D.comingup||[]).slice(0,4).forEach(function(x){p.push("<b>"+esc(hm(new Date(x.time*1000)))+"</b> "+esc(x.title)+" on "+esc(x.name))});
+  var segs=D.config&&D.config.segments&&D.config.segments.length?D.config.segments:null;
+  if(!segs||segs.indexOf("news")>=0)shuffle((D.news||[]).slice()).slice(0,3).forEach(function(h){p.push("<b>HEADLINES</b> "+esc(h))});
+  shuffle(D.facts).slice(0,2).forEach(function(f){p.push("<b>DID YOU KNOW?</b> "+esc(f))});
+  c.innerHTML=p.join(" &nbsp;&#9670;&nbsp; ");c.style.animationDuration=((c.offsetWidth+STAGE_W)/85).toFixed(1)+"s"}
+$("crawl").addEventListener("animationiteration",setCrawl);
+
+/* ---------- music (the recorder adds its own music, so not in cast mode) ---------- */
+var tracks=[],ti=0,music=$("music");if(window.KNASAudio&&!CAST)KNASAudio.attach(music,"music");
+function playTrack(){if(!tracks.length)return;music.src="music/"+encodeURIComponent(tracks[ti++%tracks.length]);music.volume=(window.KNASAudio&&KNASAudio.active())?1:.7;
+  var p=music.play();if(p&&p.then)p.then(function(){$("hint").style.display="none"}).catch(function(){$("hint").style.display="block"})}
+function duck(on){if(!music.src)return;music.volume=on?0:((window.KNASAudio&&KNASAudio.active())?1:.7)}
+function unlock(){if(tracks.length&&music.paused){if(music.src)music.play().then(function(){$("hint").style.display="none"}).catch(function(){});else playTrack()}}
+music.addEventListener("ended",playTrack);
+addEventListener("keydown",unlock);addEventListener("click",unlock);addEventListener("message",function(e){if(e.data==="knas-unlock")unlock()});
+if(!CAST)fetch("api/music").then(function(r){return r.json()}).then(function(l){tracks=shuffle(l||[]);playTrack()}).catch(function(){});
+
+/* ---------- data ---------- */
+function load(){return fetch("api/break",{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){D=j;D.config=j.config||{};pickSegments();if(CLIP)D.comingup=[]}).catch(function(){})}
+load().then(function(){setCrawl();next()});setInterval(load,300000);
+/* break clips: the NAS records short clips for ErsatzTV. It asks the page to start over from
+   "We'll Be Right Back", and leaves out the clock and Coming Up (they'd be out of date later). */
+if(CAST)setInterval(function(){fetch("api/break/cue",{cache:"no-store"}).then(function(r){return r.json()}).then(function(c){
+  if(cueId===null){cueId=c.id;if(c.clip){CLIP=true;D.comingup=[];$("dt").style.visibility="hidden"}return}
+  if(c.id===cueId)return;cueId=c.id;var was=CLIP;CLIP=!!c.clip;
+  if(CLIP){D.comingup=[];si=0;setCrawl();next()}else if(was)load().then(setCrawl);$("dt").style.visibility=CLIP?"hidden":""}).catch(function(){})},1000);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+# KNAS 42 "Did You Know?" facts
+# One fact per line. Lines starting with # are ignored.
+# Edit freely; changes show up within 10 minutes, no restart needed.
+
+# --- Weather ---
+Lightning is about five times hotter than the surface of the sun.
+The fastest wind gust ever measured outside a tornado was 253 mph, on Barrow Island, Australia, in 1996.
+The coldest temperature ever recorded on Earth was -128.6°F at Vostok Station, Antarctica, in 1983.
+Count the seconds between lightning and thunder, then divide by five. That's roughly how many miles away the strike was.
+The largest hailstone on record in the U.S. fell in Vivian, South Dakota, in 2010. It was 8 inches across.
+Fog is just a cloud that's touching the ground.
+Thunderstorm clouds can tower more than 10 miles into the sky.
+An average puffy cumulus cloud holds about a million pounds of water.
+Mount Washington in New Hampshire held the world wind record of 231 mph for 62 years.
+The Weather Channel first went on the air on May 2, 1982.
+On The Weather Channel, local forecasts aired at times ending in 8, known as "Local on the 8s."
+Lightning strikes somewhere on Earth about 44 times every second.
+Rainbows are full circles. The ground usually hides the bottom half.
+The earthy smell after rain on dry ground has a name: petrichor.
+Falling air pressure on a barometer usually means stormy weather is on the way.
+When the dew point climbs above 65°F, the air starts to feel muggy.
+The 1925 Tri-State Tornado traveled about 219 miles across Missouri, Illinois and Indiana.
+Hurricane names get retired when a storm is especially deadly or destructive.
+At any given moment, around 2,000 thunderstorms are happening around the world.
+Hailstones grow in layers as updrafts toss them up and down inside a storm, like rings in a tree.
+Sleet is rain that freezes into ice pellets before it hits the ground. Freezing rain freezes after it lands.
+The eye of a hurricane is often calm, with light winds and sometimes blue sky.
+Tornado Alley isn't an official region. It's a nickname for the central plains where tornadoes are common.
+
+Crater of Diamonds State Park in Murfreesboro is the only diamond site in the world open to the public, and you keep what you find.
+Hot Springs was set aside by Congress in 1832, making it the oldest federally protected area in the country.
+The Buffalo River became America's first National River in 1972.
+
+# --- 90s, TV & games ---
+The original PlayStation launched in North America on September 9, 1995.
+The Nintendo 64 launched in North America on September 29, 1996.
+The Xbox 360 launched in North America on November 22, 2005.
+Toy Story, released in 1995, was the first feature film made entirely with computer animation.
+Titanic was the first movie to earn more than $1 billion worldwide.
+The Seinfeld finale aired on May 14, 1998, and was watched by about 76 million people.
+Pokémon Red and Blue arrived in North America in September 1998.
+The Tamagotchi virtual pet first went on sale in Japan in 1996.
+Furby was the must-have toy of the 1998 holiday season.
+"Macarena" spent 14 weeks at number one on the Billboard Hot 100 in 1996.
+Blockbuster Video peaked at about 9,000 stores in 2004. The last one left is in Bend, Oregon.
+A CRT TV draws its picture with a beam of electrons sweeping across the screen line by line.
+American analog TV used 525 lines, drawn about 30 times every second.
+Color TV in the U.S. runs at 29.97 frames per second instead of 30 so the color signal wouldn't interfere with the sound.
+Full-power analog TV broadcasts in the U.S. ended on June 12, 2009.
+The NES Zapper light gun only works on CRT TVs. It relies on the exact timing of the screen's scan.
+The "You've got mail!" voice on AOL belonged to Elwood Edwards.
+Microsoft paid to use the Rolling Stones' "Start Me Up" to launch Windows 95.
+The Simpsons premiered as a half-hour series on December 17, 1989.
+The first text message ever sent said "Merry Christmas." It was sent on December 3, 1992.
+The DVD format launched in the United States in 1997.
+Google was founded in 1998, in a garage in Menlo Park, California.
+Amazon started out in 1994 as an online bookstore.
+The official website for the 1996 movie Space Jam stayed online, nearly unchanged, for decades.
+Super Mario 64 was one of the first games to give players full 3D movement with an analog stick.
+Before remotes were common, changing the channel meant getting up and turning a dial on the TV.
+VHS tapes in "SP" mode held two hours. "EP" mode squeezed in six hours at lower quality.
+Old TVs had separate VHF and UHF dials. Channels 2 through 13 were VHF.
+
+# --- Science & nature ---
+Sunlight takes about 8 minutes and 20 seconds to reach Earth.
+Jupiter's Great Red Spot is a storm wider than the whole Earth.
+Saturn is less dense than water. In a big enough bathtub, it would float.
+Octopuses have three hearts and blue blood.
+Bananas count as berries, but strawberries don't.
+The Eiffel Tower grows about six inches taller in summer as the metal expands in the heat.
+Sharks have been around longer than trees.
+Wombats make cube-shaped poop.
+Sea otters sometimes hold hands while they sleep so they don't drift apart.
+A group of crows is called a murder.
+Archaeologists have found pots of honey in Egyptian tombs that were thousands of years old and still edible.
+Your body has about as many bacteria cells as human cells.
+Hummingbirds are the only birds that can fly backwards.
+The Great Wall of China isn't visible to the naked eye from space.
+There are more possible ways to shuffle a deck of cards than there are atoms on Earth.

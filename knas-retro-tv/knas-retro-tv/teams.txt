@@ -1,0 +1,21 @@
+# KNAS Sports teams
+# One team per line:   sport | ESPN team id | cheer (optional) | radio stream (optional)
+#   cheer = text that flashes on screen when they score
+#   radio stream = a station's direct stream address; it plays only while that team's game is on
+#   (a station that plays all the time is SPORTS_RADIO in settings.txt)
+#
+# Sports you can use:
+#   college-football, mens-college-basketball, womens-college-basketball,
+#   nfl, nba, wnba, college-baseball, mlb, nhl
+#
+# Finding a team id: look the team up on espn.com. The number after /id/ in the
+# address is the id.  espn.com/nfl/team/_/name/kc/kansas-city-chiefs -> for pro teams use the
+# id shown on the team's ESPN page, e.g. espn.com/college-football/team/_/id/333/alabama -> 333
+#
+# Changes show up within a few minutes. No restart needed.
+# Remove the # in front of a line to turn it on:
+
+# nfl                       | 12  | TOUCHDOWN CHIEFS!
+# college-football          | 333 | ROLL TIDE!
+# mens-college-basketball   | 150 | GO DUKE!
+# nba                       | 13  | GO LAKERS!

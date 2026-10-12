@@ -1,0 +1,31 @@
+# KNAS - a 90s cable TV experience. You don't need to edit this file.
+#
+#   Start:      docker compose up -d --build      (or create a Project in your NAS's Docker app)
+#   Then open:  http://SERVER_IP:8642/tv          (the knas42 log shows the exact address)
+#
+# Nothing else to set up. Optional settings are on http://SERVER_IP:8642/setup (saved in settings.txt). Updates: drop the release zip
+# into the updates folder. Full guide: docs/SETUP-GUIDE.md
+services:
+  knas42:
+    build: .
+    pull_policy: build
+    container_name: knas42
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./:/knas
+
+  # The recorder: turns KNAS pages into video for ErsatzTV (the break clips, and optionally the
+  # weather channel). It sits idle until it's needed. Not using ErsatzTV? It's fine to leave it.
+  knas42-cast:
+    build: ./cast
+    container_name: knas42-cast
+    restart: unless-stopped
+    depends_on:
+      - knas42
+    network_mode: host
+    shm_size: "1gb"
+    # Run the recorder code from your folder, so updates apply without rebuilding this image
+    command: ["sh", "-c", "if [ -f /knas/cast/cast.py ]; then exec python3 -u /knas/cast/cast.py; else exec python3 -u /app/cast.py; fi"]
+    volumes:
+      - ./:/knas:ro

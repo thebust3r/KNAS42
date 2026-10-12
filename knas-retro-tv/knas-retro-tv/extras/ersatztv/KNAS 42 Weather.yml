@@ -1,0 +1,7 @@
+# ErsatzTV Remote Stream for the KNAS 42 weather channel.
+# Put your server's IP address in the url below.
+url: http://YOUR_NAS_IP:8643/live.m3u8
+is_live: true
+# Length of each airing (HH:MM:SS). As filler between shows, ErsatzTV cuts it
+# to fit the gap, so 30 minutes covers any break. Also fine for a 24/7 channel.
+duration: "00:30:00"

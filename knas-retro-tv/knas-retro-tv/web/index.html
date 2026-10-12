@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>KNAS 42 Local</title>
+<style>
+:root{
+  --gold:#ffd23a; --gold2:#ffb000; --white:#ffffff; --ice:#a9c4ff; --red:#ff4a3a; --green:#5cff7a;
+  --panel-top:#2c55c8; --panel-bot:#112673; --panel-edge:#9cb8ff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#000;overflow:hidden}
+body{font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;color:var(--white)}
+#stage{position:absolute;left:50%;top:50%;width:640px;height:480px;transform-origin:center;overflow:hidden;
+  background:linear-gradient(180deg,#0e0a44 0%,#241a72 38%,#5a2f86 66%,#b5512f 88%,#e07a2a 100%)}
+#stage:before{content:"";position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 2px,transparent 2px 4px)}
+.sh{text-shadow:2px 2px 0 #000,0 0 1px #000}
+
+/* header */
+header{position:absolute;left:0;right:0;top:0;height:88px;display:flex;align-items:center;padding:0 22px;gap:14px}
+.logo{width:66px;height:66px;border-radius:10px;flex:none;position:relative;overflow:hidden;
+  background:linear-gradient(160deg,#5d8bff 0%,#1d3db8 55%,#0b1a66 100%);
+  box-shadow:inset 0 0 0 3px #cfe0ff,inset 0 0 0 5px #0b1a66,3px 3px 0 #000}
+.logo .num{position:absolute;top:2px;left:0;right:0;text-align:center;font-weight:800;font-style:italic;font-size:40px;line-height:44px;text-shadow:2px 2px 0 #071040}
+.logo .call{position:absolute;bottom:6px;left:6px;right:6px;height:16px;background:#e3261b;border-radius:2px;
+  font-weight:800;font-size:15px;line-height:16px;text-align:center;letter-spacing:2px;box-shadow:0 2px 0 #6a0d07}
+.title{flex:1;line-height:1}
+.title .t1{font-size:27px;font-weight:700;font-style:italic;color:var(--white)}
+.title .t2{font-size:38px;font-weight:800;font-style:italic;color:var(--gold);letter-spacing:.5px}
+.clock{text-align:right;line-height:1.05}
+.clock .tm{font-size:30px;font-weight:700;letter-spacing:.5px}
+.clock .dt{font-size:22px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px}
+
+/* panel */
+#panel{position:absolute;left:22px;right:22px;top:92px;bottom:56px;border-radius:7px;overflow:hidden;
+  background:linear-gradient(180deg,var(--panel-top) 0%,#1d3a9e 50%,var(--panel-bot) 100%);
+  box-shadow:inset 0 0 0 3px var(--panel-edge),inset 0 0 0 5px #0a1552,inset 0 14px 22px rgba(255,255,255,.08),4px 5px 0 rgba(0,0,0,.55)}
+/* page changes: the old page slides out, the new one glides in (transform/opacity only = smooth on the TV box) */
+.pg{position:absolute;top:0;right:0;bottom:0;left:0}
+.pg.in{animation:pgIn .6s cubic-bezier(.2,.8,.25,1) .1s both;will-change:transform,opacity}
+.pg.out{animation:pgOut .35s cubic-bezier(.5,0,.75,0) both;will-change:transform,opacity}
+@keyframes pgIn{from{opacity:0;transform:translate3d(46px,0,0)}to{opacity:1;transform:none}}
+@keyframes pgOut{to{opacity:0;transform:translate3d(-46px,0,0)}}
+.rise{animation:rise .55s cubic-bezier(.2,.8,.25,1) both}
+@keyframes rise{from{opacity:0;transform:translate3d(0,16px,0)}to{opacity:1;transform:none}}
+#panel:after{content:"";position:absolute;top:0;bottom:0;left:-180px;width:140px;pointer-events:none;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.09) 45%,rgba(255,255,255,.14) 50%,rgba(255,255,255,.09) 55%,transparent);
+  animation:shine 11s ease-in-out 3s infinite;will-change:transform}
+@keyframes shine{0%,72%{transform:translate3d(0,0,0)}100%{transform:translate3d(900px,0,0)}}
+.title.swap .t1{animation:tIn .45s cubic-bezier(.2,.8,.25,1) both}
+.title.swap .t2{animation:tIn .5s cubic-bezier(.2,.8,.25,1) .08s both}
+@keyframes tIn{from{opacity:0;transform:translate3d(0,-12px,0)}to{opacity:1;transform:none}}
+.logo:after{content:"";position:absolute;top:-20px;bottom:-20px;left:-40px;width:26px;transform:rotate(20deg) translate3d(0,0,0);
+  background:rgba(255,255,255,.35);animation:glint 7s ease-in-out 1s infinite;will-change:transform}
+@keyframes glint{0%,80%{transform:rotate(20deg) translate3d(0,0,0)}100%{transform:rotate(20deg) translate3d(140px,0,0)}}
+.pad{position:absolute;top:14px;right:20px;bottom:14px;left:20px}
+
+/* footer crawl */
+footer{position:absolute;left:0;right:0;bottom:0;height:44px;overflow:hidden;
+  background:linear-gradient(180deg,#14267a,#070f3e);box-shadow:inset 0 3px 0 var(--gold2),inset 0 5px 0 #6b3d00}
+.crawl{position:absolute;top:7px;white-space:nowrap;font-size:27px;font-weight:700;left:0;
+  animation:crawl 30s linear infinite;will-change:transform}
+@keyframes crawl{from{transform:translateX(var(--sw,640px))}to{transform:translateX(-100%)}}
+.crawl b{color:var(--gold)}
+.crawl .alert{color:#ff7a6a}
+.musichint{position:absolute;right:10px;bottom:48px;font-size:17px;font-weight:700;color:var(--gold);
+  background:rgba(0,0,30,.7);padding:1px 8px;border-radius:3px;animation:blink 1.2s ease-in-out infinite}
+@keyframes blink{50%{opacity:.4}}
+
+/* icons */
+.ic{display:block;overflow:visible}
+.spin{animation:spin 18s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.drop{animation:fall .9s linear infinite}
+@keyframes fall{0%{transform:translate(2px,-8px);opacity:0}25%{opacity:1}100%{transform:translate(-4px,16px);opacity:0}}
+.flake{animation:snow 2.4s linear infinite}
+@keyframes snow{0%{transform:translate(0,-8px);opacity:0}20%{opacity:1}100%{transform:translate(4px,20px);opacity:0}}
+.flash{animation:flash 2.2s linear infinite}
+@keyframes flash{0%,8%,16%{opacity:1}4%,12%{opacity:.15}30%,100%{opacity:1}}
+.drift{animation:drift 4s ease-in-out infinite alternate}
+@keyframes drift{to{transform:translateX(8px)}}
+
+/* current conditions */
+.cc{display:flex;height:100%;gap:16px}
+.cc-l{width:250px;text-align:center;display:flex;flex-direction:column;align-items:center}
+.cc-l .city{font-size:28px;font-weight:800;color:var(--gold);font-style:italic}
+.cc-l .big{font-size:92px;font-weight:800;line-height:84px;margin-top:2px}
+.cc-l .ic{margin:4px 0}
+.cc-l .cond{font-size:30px;font-weight:700}
+.cc-r{flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px;padding-right:4px}
+.row{display:flex;justify-content:space-between;align-items:baseline;font-size:29px;font-weight:700;
+  border-bottom:2px dotted rgba(169,196,255,.28);padding:1px 0 2px}
+.row span:first-child{color:var(--ice)}
+
+/* local forecast text */
+.lf{position:absolute;top:14px;right:22px;bottom:14px;left:22px;overflow:hidden}
+.lf .scroll{will-change:transform;font-size:31px;font-weight:700;line-height:1.2;text-transform:uppercase;letter-spacing:.3px}
+.lf p{margin-bottom:14px}
+.lf p b{color:var(--gold)}
+
+/* extended */
+.ext{display:flex;justify-content:space-around;align-items:stretch}
+.ext .d{width:170px;text-align:center;display:flex;flex-direction:column;align-items:center;
+  background:rgba(0,0,40,.22);border-radius:6px;box-shadow:inset 0 0 0 2px rgba(156,184,255,.35);padding:8px 4px}
+.ext .day{font-size:34px;font-weight:800;color:var(--gold);font-style:italic}
+.ext .cnd{font-size:24px;font-weight:700;height:50px;line-height:26px;display:flex;align-items:center}
+.ext .hl{display:flex;gap:18px;margin-top:auto}
+.ext .hl div{display:flex;flex-direction:column;align-items:center}
+.ext .hl small{font-size:20px;font-weight:700}
+.ext .hl .lo small{color:var(--ice)} .ext .hl .hi small{color:var(--gold)}
+.ext .hl span{font-size:40px;font-weight:800;line-height:40px}
+
+/* hourly */
+.hr{display:flex;height:100%;justify-content:space-between;padding:0 4px}
+.hr .h{width:88px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.hr .tm{font-size:24px;font-weight:800;color:var(--gold)}
+.hr .bars{height:118px;width:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
+.hr .tv{font-size:30px;font-weight:800}
+.hr .bar{transform-origin:50% 100%;width:34px;border-radius:3px 3px 0 0;background:linear-gradient(180deg,#ffd23a,#ff7a1a);box-shadow:inset 0 0 0 2px rgba(0,0,0,.35)}
+.hr .pp{font-size:22px;font-weight:700;color:#8fd0ff;margin-top:6px;border-top:2px solid rgba(156,184,255,.5);width:100%;padding-top:4px}
+
+/* almanac */
+.alm table{width:100%;border-collapse:collapse;font-size:29px;font-weight:700}
+.alm th{color:var(--gold);font-weight:800;text-align:center;padding-bottom:2px}
+.alm td{text-align:center;padding:1px 0}
+.alm td:first-child{text-align:left;color:var(--ice)}
+.moons{display:flex;justify-content:space-around;margin-top:16px;border-top:2px dotted rgba(169,196,255,.35);padding-top:10px}
+.moons div{text-align:center;font-weight:700}
+.moons .nm{font-size:22px;color:var(--gold)}
+.moons .ic{margin:3px auto}
+.moons .md{font-size:23px}
+
+/* now playing */
+.np{display:flex;height:100%;align-items:center;gap:22px}
+.np .art{width:200px;height:200px;flex:none;border-radius:4px;background:#0a1552 center/cover;
+  box-shadow:inset 0 0 0 3px #cfe0ff,4px 4px 0 #000;display:flex;align-items:center;justify-content:center}
+.np .meta{flex:1;min-width:0}
+.np label{display:block;font-size:20px;font-weight:800;color:var(--gold);letter-spacing:1px;text-transform:uppercase}
+.np .v{font-size:34px;font-weight:800;line-height:1.05;margin-bottom:10px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.np .v.sm{font-size:28px;-webkit-line-clamp:1}
+.eq{display:flex;gap:5px;align-items:flex-end;height:30px;margin-top:4px}
+.eq i{width:11px;height:30px;transform-origin:50% 100%;background:linear-gradient(180deg,#5cff7a,#1fa83a);animation:eq .8s ease-in-out infinite alternate;will-change:transform}
+@keyframes eq{from{transform:scaleY(.13)}to{transform:scaleY(1)}}
+.grow{animation:grow .8s cubic-bezier(.2,.8,.25,1) both}
+@keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+.np .art{animation:artIn .7s cubic-bezier(.2,.8,.25,1) .2s both}
+@keyframes artIn{from{opacity:0;transform:scale(.85) rotate(-3deg)}to{opacity:1;transform:none}}
+
+/* lists */
+.list .li{display:flex;align-items:baseline;gap:12px;font-size:30px;font-weight:700;padding:3px 0;
+  border-bottom:2px dotted rgba(169,196,255,.28)}
+.list .rk{width:34px;color:var(--gold);font-weight:800;text-align:right}
+.list .nm{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list .ct{color:var(--ice)}
+.st{font-size:22px;font-weight:800;padding:0 9px;border-radius:3px;letter-spacing:1px;color:#001a06;background:var(--green);box-shadow:2px 2px 0 #000}
+.st.down{background:var(--red);color:#fff;animation:blink 1s ease-in-out infinite}
+.st.pend{background:var(--gold);color:#221600}
+.sum{position:absolute;left:0;right:0;bottom:0;text-align:center;font-size:28px;font-weight:800;color:var(--gold)}
+.sum.bad{color:#ff7a6a;animation:blink 1s ease-in-out infinite}
+.news{display:flex;flex-direction:column;gap:9px}
+.news .hd{display:flex;gap:12px;align-items:flex-start;font-size:27px;font-weight:700;line-height:1.08;padding-bottom:8px;border-bottom:2px dotted rgba(169,196,255,.28)}
+.news .hd:last-child,.news .hd:nth-last-child(2){border-bottom:0}
+.news .hd i{flex:none;width:12px;height:12px;margin-top:9px;background:var(--gold);box-shadow:2px 2px 0 #000}
+.news .hd span{overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.news .src{position:absolute;right:0;bottom:-6px;font-size:18px;font-weight:700;color:var(--ice);letter-spacing:1px;text-transform:uppercase}
+/* maps */
+.map{position:absolute;top:6px;right:6px;bottom:6px;left:6px;overflow:hidden;border-radius:4px;background:#5d86b8;box-shadow:inset 0 0 0 2px rgba(0,0,0,.4)}
+.map .base img{position:absolute;width:256px;height:256px;filter:saturate(1.15) sepia(.18) contrast(1.06) brightness(.93)}
+.map .rad{position:absolute;top:0;right:0;bottom:0;left:0;opacity:0;transition:opacity .32s linear;will-change:opacity}.map .rad.on{opacity:1}
+.map .kb{position:absolute;top:0;right:0;bottom:0;left:0;transform-origin:50% 50%;animation:kb 20s linear both;will-change:transform}
+@keyframes kb{from{transform:scale(1)}to{transform:scale(1.07)}}
+.map canvas{transition:opacity .45s linear;will-change:opacity}.map canvas.off{opacity:0}
+.map .rad img{position:absolute;width:512px;height:512px;opacity:.88}
+.map canvas{position:absolute;left:0;top:0}
+.map .zoom{position:absolute;left:0;top:0;transform-origin:0 0}
+.map .city{position:absolute;transform:translate(-5px,-6px);white-space:nowrap;font-size:24px;font-weight:800;color:#fff;text-shadow:2px 2px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000}
+.map .city i{display:inline-block;width:10px;height:10px;background:#ffd23a;border:2px solid #000;margin-right:4px;vertical-align:1px}
+.map .city.home i{background:#e3261b}
+.map .stamp{position:absolute;left:8px;bottom:6px;font-size:24px;font-weight:800;color:var(--gold);background:rgba(6,16,73,.85);padding:0 10px;border-radius:3px;box-shadow:2px 2px 0 #000}
+.map .legend{position:absolute;right:8px;bottom:6px;display:flex;align-items:center;gap:3px;font-size:16px;font-weight:800;background:rgba(6,16,73,.85);padding:2px 8px;border-radius:3px;box-shadow:2px 2px 0 #000}
+.map .legend b{display:inline-block;width:18px;height:12px;border:1px solid #000}
+.map .credit{position:absolute;right:8px;top:4px;font-size:12px;font-weight:600;color:#fff;opacity:.85;text-shadow:1px 1px 0 #000}
+.nodata{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:800;text-align:center;color:var(--gold)}
+
+/* ---- TV-box mode (lite): no glow blurs, no sweeping shines, fewer layers ---- */
+.lite *{will-change:auto!important}
+.lite .crawl{will-change:transform!important}
+.lite .sh{text-shadow:2px 2px 0 #000!important}
+.lite #panel:after,.lite .panel:after,.lite .logo:after{display:none!important;animation:none!important}
+.lite .map .kb{animation:none}
+.lite .pg.in{animation-duration:.45s}
+.lite .rise{animation-duration:.4s}
+.lite .map .city{text-shadow:2px 2px 0 #000!important}
+/* tall screens (phone held upright): stack the current conditions */
+.tall .cc{flex-direction:column;gap:6px}
+.tall .cc-l{width:auto}
+.tall .cc-r{justify-content:flex-start;padding:0 6px}
+.tall .ext{flex-wrap:wrap;align-content:space-around}
+
+/* phones: lock the page in place (no pinch zoom, no pull-to-refresh, no bouncing) */
+html,body{position:fixed;top:0;right:0;bottom:0;left:0;width:100%;height:100%;overscroll-behavior:none;-webkit-text-size-adjust:100%;text-size-adjust:100%;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+#safe{position:fixed;top:0;right:0;bottom:0;left:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+</style>
+</head>
+<body><div id="safe"></div>
+<div id="stage">
+  <header>
+    <div class="logo"><div class="num sh" id="lnum">42</div><div class="call" id="lcall">KNAS</div></div>
+    <div class="title sh"><div class="t1" id="t1">Welcome to</div><div class="t2" id="t2">Local Weather</div></div>
+    <div class="clock sh"><div class="tm" id="tm"></div><div class="dt" id="dt"></div></div>
+  </header>
+  <div id="panel"></div>
+  <footer><div class="crawl sh" id="crawl"></div></footer>
+</div>
+<audio id="aud" preload="none"></audio>
+<script>
+(function(){
+"use strict";
+var Q=new URLSearchParams(location.search);
+
+/* TV-box mode: on Android TV boxes (like the Onn) the fancy extras are turned off so it stays smooth.
+   Force it with ?lite=1, or turn it off with ?lite=0 */
+var LITE=Q.get("lite")?Q.get("lite")!=="0":/Android|CrKey|AFT|BRAVIA|SMART-TV|Tizen|Web0S/i.test(navigator.userAgent);
+if(LITE)document.documentElement.classList.add("lite");
+var CFG={shuffle:true,station:"KNAS 42",city:"Springfield",page_seconds:10,crawl:"",spotify_top_label:"This Week"};
+var DATA=null, DEMO=false;
+var $=function(id){return document.getElementById(id)};
+
+/* ---------- scaling for the CRT ---------- */
+/* ---------- screen fit ----------
+   SCREEN=auto (default): fills any screen shape. Wide screens get a wider layout, tall screens (phones held
+   upright) a taller one. Nothing is stretched, and TV shows always keep their own shape.
+   SCREEN=4:3 (or ?screen=4:3): classic 4:3 with black bars.   ?stretch=1: stretch 4:3 to fill. */
+var SCREEN=Q.get("screen")||"",STAGE_W=640,STAGE_H=480;
+function fit(){var s=$("stage"),z=parseFloat(Q.get("zoom")||"1"),vv=window.visualViewport,sf=document.getElementById("safe"),cs=sf?getComputedStyle(sf):null,pl=cs?parseFloat(cs.paddingLeft)||0:0,pr=cs?parseFloat(cs.paddingRight)||0:0,pt=cs?parseFloat(cs.paddingTop)||0:0,pb=cs?parseFloat(cs.paddingBottom)||0:0,W=(vv&&vv.width||innerWidth)-pl-pr,H=(vv&&vv.height||innerHeight)-pt-pb,mode=Q.has("stretch")?"stretch":(SCREEN||"auto"),a=W/Math.max(1,H);
+  STAGE_W=640;STAGE_H=480;
+  if(mode==="auto"){if(a>=4/3)STAGE_W=Math.round(Math.min(1100,480*a));else STAGE_H=Math.round(Math.min(1500,640/a))}
+  document.documentElement.classList.toggle("tall",STAGE_H>560)
+  s.style.width=STAGE_W+"px";s.style.height=STAGE_H+"px";
+  document.documentElement.style.setProperty("--sw",STAGE_W+"px");document.documentElement.style.setProperty("--sh",STAGE_H+"px");
+  s.style.marginLeft=((pl-pr)/2)+"px";s.style.marginTop=((pt-pb)/2)+"px";
+  s.style.transform=mode==="stretch"?"translate(-50%,-50%) scale("+(W/640*z)+","+(H/480*z)+")":"translate(-50%,-50%) scale("+(Math.min(W/STAGE_W,H/STAGE_H)*z)+")";
+  if(window.onFit)window.onFit()}
+/* phones: no pinch or double-tap zoom, and a tap goes full screen where the phone allows it */
+document.addEventListener("gesturestart",function(e){e.preventDefault()});
+document.addEventListener("touchmove",function(e){if(e.touches.length>1||e.scale&&e.scale!==1)e.preventDefault()},{passive:false});
+var lastTouch=0;document.addEventListener("touchend",function(e){var t=Date.now();if(t-lastTouch<350&&!document.getElementById("guide"))e.preventDefault();lastTouch=t},{passive:false});
+if(window.self===window.top&&("ontouchstart" in window))document.addEventListener("touchend",function fs(){var d=document.documentElement;try{if(!document.fullscreenElement&&d.requestFullscreen)d.requestFullscreen({navigationUI:"hide"}).catch(function(){})}catch(e){}},{once:true});
+if(window.visualViewport)visualViewport.addEventListener("resize",function(){fit()});
+addEventListener("resize",fit);addEventListener("orientationchange",function(){setTimeout(fit,300)});fit();
+if(!Q.get("screen"))fetch("api/version",{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.screen&&j.screen!==SCREEN){SCREEN=j.screen;fit()}}).catch(function(){});
+
+/* ---------- helpers ---------- */
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function pt(s){var m=/(\d+)-(\d+)-(\d+)(?:T(\d+):(\d+))?/.exec(s);return new Date(+m[1],m[2]-1,+m[3],+(m[4]||0),+(m[5]||0))}
+var DAYS=["SUN","MON","TUE","WED","THU","FRI","SAT"], DAYF=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+var MON=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+function hm(d,secs){var h=d.getHours(),m=d.getMinutes(),ap=h<12?"AM":"PM";h=h%12||12;
+  return h+":"+(m<10?"0":"")+m+(secs?":"+(d.getSeconds()<10?"0":"")+d.getSeconds():"")+" "+ap}
+function hr(d){var h=d.getHours();return (h%12||12)+(h<12?" AM":" PM")}
+function r(n){return Math.round(n)}
+function compass(deg){return["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"][Math.round(deg/22.5)%16]}
+
+/* ---------- weather codes ---------- */
+var WMO={0:["Sunny","Clear","sun"],1:["Mostly Sunny","Mostly Clear","sun"],2:["Partly Cloudy","Partly Cloudy","partly"],3:["Cloudy","Cloudy","cloud"],
+45:["Fog","Fog","fog"],48:["Freezing Fog","Freezing Fog","fog"],51:["Light Drizzle","Light Drizzle","rain"],53:["Drizzle","Drizzle","rain"],55:["Heavy Drizzle","Heavy Drizzle","rain"],
+56:["Frzg Drizzle","Frzg Drizzle","sleet"],57:["Frzg Drizzle","Frzg Drizzle","sleet"],61:["Light Rain","Light Rain","rain"],63:["Rain","Rain","rain"],65:["Heavy Rain","Heavy Rain","rain"],
+66:["Freezing Rain","Freezing Rain","sleet"],67:["Freezing Rain","Freezing Rain","sleet"],71:["Light Snow","Light Snow","snow"],73:["Snow","Snow","snow"],75:["Heavy Snow","Heavy Snow","snow"],
+77:["Flurries","Flurries","snow"],80:["Showers","Showers","rain"],81:["Showers","Showers","rain"],82:["Heavy Showers","Heavy Showers","rain"],85:["Snow Showers","Snow Showers","snow"],
+86:["Snow Showers","Snow Showers","snow"],95:["T'Storms","T'Storms","storm"],96:["T'Storms","T'Storms","storm"],99:["Severe T'Storms","Severe T'Storms","storm"]};
+function wx(code,night){var w=WMO[code]||["Cloudy","Cloudy","cloud"];return{text:night?w[1]:w[0],icon:w[2]}}
+function precipWord(code){var i=(WMO[code]||[])[2];return i==="snow"?"snow":i==="storm"?"thunderstorms":i==="sleet"?"freezing rain":"rain"}
+
+/* ---------- icons ---------- */
+var CLOUD='<circle cx="38" cy="56" r="17"/><circle cx="57" cy="46" r="21"/><circle cx="75" cy="58" r="14"/><rect x="22" y="56" width="66" height="18" rx="9"/>';
+function cloud(fill,edge,tx,ty,s){return '<g transform="translate('+tx+' '+ty+') scale('+s+')"><g fill="'+edge+'" stroke="'+edge+'" stroke-width="7">'+CLOUD+'</g><g fill="'+fill+'">'+CLOUD+'</g><g fill="#fff" opacity=".45"><circle cx="52" cy="38" r="7"/></g></g>'}
+function sun(cx,cy,rad){var rays="";for(var i=0;i<8;i++){var a=i*Math.PI/4,c=Math.cos(a),s=Math.sin(a);
+  rays+='<line x1="'+(cx+c*(rad+5))+'" y1="'+(cy+s*(rad+5))+'" x2="'+(cx+c*(rad+15))+'" y2="'+(cy+s*(rad+15))+'" stroke="#ffb000" stroke-width="5" stroke-linecap="round"/>'}
+  return '<g class="spin" style="transform-origin:'+cx+'px '+cy+'px">'+rays+'</g><circle cx="'+cx+'" cy="'+cy+'" r="'+rad+'" fill="#ffd84a" stroke="#f08c00" stroke-width="3"/><circle cx="'+(cx-rad*.35)+'" cy="'+(cy-rad*.35)+'" r="'+rad*.3+'" fill="#fff6b8"/>'}
+function moon(cx,cy,rad){return '<path d="M'+cx+' '+(cy-rad)+' A'+rad+' '+rad+' 0 0 0 '+cx+' '+(cy+rad)+' A'+(rad*.55)+' '+rad+' 0 0 1 '+cx+' '+(cy-rad)+'Z" fill="#f4edc4" stroke="#b9a95c" stroke-width="2.5" transform="rotate(-20 '+cx+' '+cy+')"/>'}
+function icon(type,night,size){
+  var b="",i;
+  if(type==="sun") b=night?moon(54,50,28):sun(50,50,22);
+  else if(type==="partly") b=(night?moon(38,36,19):sun(36,36,16))+cloud("#eef2f8","#7c8aa3",12,16,.86);
+  else if(type==="cloud") b=cloud("#b9c3d3","#5f6b80",-14,-14,.95)+cloud("#eef2f8","#7c8aa3",6,6,.9);
+  else if(type==="fog"){b=cloud("#d5dbe5","#7c8aa3",0,-14,1);for(i=0;i<3;i++)b+='<rect class="drift" style="animation-delay:'+(-i*1.3)+'s" x="'+(16+i*6)+'" y="'+(68+i*10)+'" width="'+(64-i*6)+'" height="5" rx="2.5" fill="#cfd6e2" opacity=".9"/>'}
+  else {
+    var dark=type==="storm";
+    b=cloud(dark?"#8e98ab":"#e3e8f0",dark?"#3d4659":"#6b778c",0,-16,1);
+    if(type==="storm") b+='<polygon class="flash" points="54,56 40,80 50,80 43,99 66,71 55,71 63,56" fill="#ffe14a" stroke="#a86b00" stroke-width="2.5" stroke-linejoin="round"/>';
+    var xs=[30,46,62,78];
+    for(i=0;i<4;i++){
+      var x=xs[i],d=(-i*.27).toFixed(2), snowy=type==="snow"||(type==="sleet"&&i%2);
+      if(type==="storm"&&(i===1||i===2))continue;
+      if(snowy) b+='<circle class="flake" style="animation-delay:'+(-i*.6)+'s" cx="'+x+'" cy="72" r="4" fill="#fff" stroke="#9fb3d1" stroke-width="1.5"/>';
+      else b+='<line class="drop" style="animation-delay:'+d+'s" x1="'+x+'" y1="66" x2="'+(x-4)+'" y2="77" stroke="#59adff" stroke-width="4.5" stroke-linecap="round"/>';
+    }
+  }
+  return '<svg class="ic" viewBox="0 0 100 100" width="'+size+'" height="'+size+'">'+b+'</svg>'}
+function moonPhase(kind,size){
+  var lit={new:"",first:'<path d="M50 12 A38 38 0 0 1 50 88Z" fill="#f4edc4"/>',full:'<circle cx="50" cy="50" r="38" fill="#f4edc4"/>',last:'<path d="M50 12 A38 38 0 0 0 50 88Z" fill="#f4edc4"/>'}[kind];
+  return '<svg class="ic" viewBox="0 0 100 100" width="'+size+'" height="'+size+'"><circle cx="50" cy="50" r="38" fill="#1b2347" stroke="#8b96c4" stroke-width="3"/>'+lit+'</svg>'}
+
+/* ---------- weather digest ---------- */
+function W(){
+  var w=DATA&&DATA.weather; if(!w||!w.current||!w.daily) return null;
+  var now=new Date(), H=w.hourly||{time:[]}, hours=[];
+  for(var i=0;i<H.time.length;i++){var t=pt(H.time[i]); if(t.getTime()>=now.getTime()-3600e3) hours.push({t:t,temp:H.temperature_2m[i],code:H.weather_code[i],pp:(H.precipitation_probability||[])[i]||0,day:(H.is_day||[])[i]})}
+  var days=w.daily.time.map(function(s,i){var D=w.daily;return{d:pt(s),code:D.weather_code[i],hi:D.temperature_2m_max[i],lo:D.temperature_2m_min[i],
+    pp:(D.precipitation_probability_max||[])[i]||0,wind:(D.wind_speed_10m_max||[])[i],rise:D.sunrise&&pt(D.sunrise[i]),set:D.sunset&&pt(D.sunset[i])}});
+  return{c:w.current,hours:hours,days:days}
+}
+function nightOf(dayIdx,info){ // 9pm..6am following
+  var d=info.days[dayIdx]; if(!d) return null;
+  var start=new Date(d.d.getFullYear(),d.d.getMonth(),d.d.getDate(),20), end=new Date(start.getTime()+10*3600e3);
+  var hs=info.hours.filter(function(h){return h.t>=start&&h.t<=end}); if(!hs.length) return null;
+  var lo=Math.min.apply(null,hs.map(function(h){return h.temp})), pp=Math.max.apply(null,hs.map(function(h){return h.pp}));
+  var counts={},best=hs[0].code; hs.forEach(function(h){counts[h.code]=(counts[h.code]||0)+1; if(counts[h.code]>counts[best]||(counts[h.code]===counts[best]&&h.code>best))best=h.code});
+  return{lo:lo,pp:pp,code:best}
+}
+
+/* ---------- pages ---------- */
+function pgCurrent(){var info=W(),c=info.c,night=c.is_day===0,x=wx(c.weather_code,night);
+  var vu=(DATA.weather.current_units||{}).visibility,MET=CFG.units==="metric",vis=c.visibility==null?null:vu==="ft"?c.visibility/(MET?3280.84:5280):c.visibility/(MET?1000:1609.34);
+  return {t1:"Current",t2:"Conditions",html:
+  '<div class="pad cc sh"><div class="cc-l"><div class="city">'+esc(CFG.city)+'</div><div class="big">'+r(c.temperature_2m)+'°</div>'+icon(x.icon,night,104)+'<div class="cond">'+x.text+'</div></div>'+
+  '<div class="cc-r">'+
+   '<div class="row"><span>Humidity</span><span>'+r(c.relative_humidity_2m)+'%</span></div>'+
+   (c.dew_point_2m!=null?'<div class="row"><span>Dewpoint</span><span>'+r(c.dew_point_2m)+'°</span></div>':'')+
+   '<div class="row"><span>'+(c.apparent_temperature<c.temperature_2m-1?"Wind Chill":c.apparent_temperature>c.temperature_2m+1?"Heat Index":"Feels Like")+'</span><span>'+r(c.apparent_temperature)+'°</span></div>'+
+   '<div class="row"><span>Wind</span><span>'+(c.wind_speed_10m<1?"Calm":compass(c.wind_direction_10m)+" "+r(c.wind_speed_10m))+'</span></div>'+
+   '<div class="row"><span>Pressure</span><span>'+(MET?Math.round(c.pressure_msl!=null?c.pressure_msl:c.surface_pressure)+' hPa':((c.pressure_msl!=null?c.pressure_msl:c.surface_pressure)*0.02953).toFixed(2)+'"')+'</span></div>'+
+   (vis!=null?'<div class="row"><span>Visibility</span><span>'+(vis>=(MET?15:9.5)?(MET?16:10):vis.toFixed(1)).toString()+(MET?' km':' mi.')+'</span></div>':'')+
+  '</div></div>'}}
+function pgLocal(){var info=W(),now=new Date(),evening=now.getHours()>=17,ps=[];
+  function dayTxt(label,d){var x=wx(d.code,false),s="<b>"+label+"...</b> "+x.text+". High "+(d.hi>=d.lo+1?"near ":"")+r(d.hi)+".";
+    if(d.pp>=20&&d.code>=2) s+=" Chance of "+precipWord(d.code)+" "+(Math.round(d.pp/10)*10)+" percent.";
+    if(d.wind>=(CFG.units==="metric"?25:15)) s+=" Windy, with gusts to "+r(d.wind)+(CFG.units==="metric"?" km/h.":" mph.");return s}
+  function nightTxt(label,i){var n=nightOf(i,info); if(!n) return null; var x=wx(n.code,true),s="<b>"+label+"...</b> "+x.text+". Low around "+r(n.lo)+".";
+    if(n.pp>=20&&n.code>=2) s+=" Chance of "+precipWord(n.code)+" "+(Math.round(n.pp/10)*10)+" percent.";return s}
+  var d=info.days;
+  if(!evening) ps.push(dayTxt("Today",d[0]));
+  ps.push(nightTxt("Tonight",0));
+  if(d[1]) ps.push(dayTxt(DAYF[d[1].d.getDay()],d[1]));
+  ps.push(nightTxt(DAYF[d[1].d.getDay()]+" Night",1));
+  if(evening&&d[2]) ps.push(dayTxt(DAYF[d[2].d.getDay()],d[2]));
+  ps=ps.filter(Boolean);
+  return {t1:"Local",t2:"Forecast",secs:Math.max(CFG.page_seconds,15),html:'<div class="lf sh"><div class="scroll"><p>'+ps.join("</p><p>")+'</p></div></div>',
+    after:function(el,secs){var box=el.querySelector(".lf"),sc=el.querySelector(".scroll"),ov=sc.scrollHeight-box.clientHeight;
+      if(ov>0){sc.style.transition="transform "+(secs-4)+"s linear 2s";requestAnimationFrame(function(){requestAnimationFrame(function(){sc.style.transform="translateY("+(-ov)+"px)"})})}}}}
+function pgExtended(){var info=W(),h="";
+  info.days.slice(1,4).forEach(function(d){var x=wx(d.code,false);
+    h+='<div class="d"><div class="day">'+DAYS[d.d.getDay()]+'</div>'+icon(x.icon,false,86)+'<div class="cnd">'+x.text+'</div><div class="hl"><div class="lo"><small>Lo</small><span>'+r(d.lo)+'</span></div><div class="hi"><small>Hi</small><span>'+r(d.hi)+'</span></div></div></div>'});
+  return {t1:"Extended",t2:"Forecast",html:'<div class="pad ext sh">'+h+'</div>'}}
+function pgHourly(){var info=W(),pick=[];for(var i=1;i<info.hours.length&&pick.length<6;i+=2)pick.push(info.hours[i]);
+  if(pick.length<4) return null;
+  var ts=pick.map(function(p){return p.temp}),mn=Math.min.apply(null,ts)-4,mx=Math.max.apply(null,ts),h="";
+  pick.forEach(function(p){var night=p.day===0,x=wx(p.code,night),bh=14+(p.temp-mn)/(mx-mn||1)*58;
+    h+='<div class="h"><div class="tm">'+hr(p.t)+'</div>'+icon(x.icon,night,66)+'<div class="bars"><div class="tv">'+r(p.temp)+'°</div><div class="bar" style="height:'+bh+'px"></div></div><div class="pp">'+(Math.round(p.pp/10)*10)+'%<br>'+(precipWord(p.code)==="snow"?"snow":"rain")+'</div></div>'});
+  return {t1:"Hourly",t2:"Outlook",html:'<div class="pad hr sh">'+h+'</div>'}}
+function pgAlmanac(){var info=W(),d=info.days;if(!d[0].rise)return null;
+  var SYN=29.530588853,ref=Date.UTC(2000,0,6,18,14),now=Date.now(),age=(((now-ref)/864e5)%SYN+SYN)%SYN;
+  var ph=[["New",0,"new"],["First",SYN/4,"first"],["Full",SYN/2,"full"],["Last",SYN*3/4,"last"]].map(function(p){var dd=(p[1]-age+SYN)%SYN;return{n:p[0],k:p[2],t:new Date(now+dd*864e5)}}).sort(function(a,b){return a.t-b.t});
+  var m="";ph.forEach(function(p){m+='<div><div class="nm">'+p.n+'</div>'+moonPhase(p.k,54)+'<div class="md">'+MON[p.t.getMonth()]+" "+p.t.getDate()+'</div></div>'});
+  return {t1:"Almanac",t2:esc(CFG.city),html:'<div class="pad alm sh"><table><tr><th></th><th>Sunrise</th><th>Sunset</th></tr>'+
+    [0,1].map(function(i){return '<tr><td>'+DAYF[d[i].d.getDay()]+'</td><td>'+hm(d[i].rise).toLowerCase()+'</td><td>'+hm(d[i].set).toLowerCase()+'</td></tr>'}).join("")+
+    '</table><div class="moons">'+m+'</div></div>'}}
+
+/* ---------- spotify (flexible field names) ---------- */
+function first(o,keys){for(var i=0;i<keys.length;i++){var k=keys[i].split("."),v=o;for(var j=0;j<k.length&&v!=null;j++)v=v[k[j]];if(v!=null&&v!=="")return v}return null}
+function names(v){if(v==null)return null;if(typeof v==="string")return v;if(Array.isArray(v))return v.map(function(a){return typeof a==="string"?a:a.name}).filter(Boolean).join(", ");return v.name||null}
+function normNow(o){if(!o)return null;o=o.item&&o.item.name?Object.assign({},o,o.item):(o.current||o.now_playing||o.track&&typeof o.track==="object"&&!o.track.name?o.track:o);
+  var track=first(o,["track.name","name","title","track_name","song","track"]);if(typeof track!=="string")return null;
+  return{track:track,artist:names(first(o,["artists","artist","artist_name","track.artists","track.artist","track.artist_name"])),album:names(first(o,["album.name","track.album.name","album","track.album","album_name"])),
+    art:first(o,["album.images.0.url","track.album.images.0.url","track.image","track.album_image","track.image_url","album_image","image","image_url","album_art","albumArt","art","cover"]),playing:first(o,["is_playing","playing","isPlaying"])}}
+function normTop(o){if(!o)return null;var a=Array.isArray(o)?o:first(o,["artists","items","top","data","results"]);if(!Array.isArray(a)||!a.length)return null;
+  return a.slice(0,7).map(function(x){return typeof x==="string"?{n:x}:{n:first(x,["name","artist","artist_name"]),c:first(x,["plays","play_count","count","streams","listens","minutes"])}}).filter(function(x){return x.n})}
+function pgNow(){var n=normNow(DATA.spotify&&DATA.spotify.now);if(!n)return null;var live=n.playing!==false;
+  var art=n.art?' style="background-image:url(\''+esc(n.art)+'\')"':"";
+  return {t1:"Spotify",t2:live?"Now Playing":"Last Played",html:'<div class="pad np sh"><div class="art"'+art+'>'+(n.art?"":'<svg viewBox="0 0 100 100" width="110" height="110"><circle cx="50" cy="50" r="44" fill="#111" stroke="#cfe0ff" stroke-width="3"/><circle cx="50" cy="50" r="14" fill="#e3261b"/><circle cx="50" cy="50" r="3" fill="#000"/></svg>')+'</div>'+
+    '<div class="meta"><label>Track</label><div class="v">'+esc(n.track)+'</div>'+(n.artist?'<label>Artist</label><div class="v sm">'+esc(n.artist)+'</div>':"")+(n.album?'<label>Album</label><div class="v sm">'+esc(n.album)+'</div>':"")+
+    (live?'<div class="eq">'+[0,1,2,3,4,5,6].map(function(i){return '<i style="animation-delay:'+(-i*.23)+'s;animation-duration:'+(.5+((i*37)%5)/10)+'s"></i>'}).join("")+'</div>':"")+'</div></div>'}}
+function pgTop(){var t=normTop(DATA.spotify&&DATA.spotify.top);if(!t)return null;
+  return {t1:"Top Artists",t2:esc(CFG.spotify_top_label),html:'<div class="pad list sh">'+t.map(function(x,i){return '<div class="li"><span class="rk">'+(i+1)+'</span><span class="nm">'+esc(x.n)+'</span>'+(x.c!=null?'<span class="ct">'+esc(x.c)+'</span>':"")+'</div>'}).join("")+'</div>'}}
+
+/* ---------- NAS status ---------- */
+function pgNas(){var m=DATA.kuma;if(!m||!m.length)return null;var down=m.filter(function(x){return x.status===0}).length;
+  return {t1:"System",t2:"Status Report",html:'<div class="pad list sh">'+m.slice(0,7).map(function(x){
+    var st=x.status===1?'<span class="st">UP</span>':x.status===0?'<span class="st down">DOWN</span>':x.status===3?'<span class="st pend">MAINT</span>':'<span class="st pend">WAIT</span>';
+    return '<div class="li"><span class="nm">'+esc(x.name)+'</span>'+(x.ping!=null&&x.status===1?'<span class="ct">'+r(x.ping)+' ms</span>':"")+(x.uptime!=null?'<span class="ct">'+(x.uptime*100).toFixed(x.uptime>=.9995?0:1)+'%</span>':"")+st+'</div>'}).join("")+
+    '<div class="sum'+(down?" bad":"")+'">'+(down?down+" SERVICE"+(down>1?"S":"")+" DOWN":"ALL SYSTEMS NORMAL")+'</div></div>'}}
+
+/* ---------- news ---------- */
+var NI={local:0,us:0};
+function newsPage(key,t1,t2){var g=DATA.news&&DATA.news[key];if(!g||!g.headlines||!g.headlines.length)return null;
+  var h=g.headlines,n=Math.min(4,h.length),start=NI[key]%h.length,pick=[];
+  for(var i=0;i<n;i++)pick.push(h[(start+i)%h.length]);NI[key]=start+n;
+  return {t1:t1,t2:t2,secs:Math.max(CFG.page_seconds,14),html:'<div class="pad news sh">'+pick.map(function(x){return '<div class="hd"><i></i><span>'+esc(x)+'</span></div>'}).join("")+
+    (g.sources&&g.sources.length?'<div class="src">'+esc(g.sources.join(" / "))+'</div>':"")+'</div>'}}
+function pgLocalNews(){return newsPage("local","Local News","Headlines")}
+function pgUsNews(){return newsPage("us","National News","Headlines")}
+
+/* ---------- maps: Doppler radar and precipitation outlook ---------- */
+var MS=.78,MW=Math.round(584/MS),MH=Math.round(320/MS),MZ=8;
+/* the maps fill whatever width the panel has */
+function dims(){var p=$("panel");if(p&&p.clientWidth){MW=Math.round((p.clientWidth-12)/MS);MH=Math.round((p.clientHeight-12)/MS)}}
+function wpx(lat,lon,z){var s=256*Math.pow(2,z),r=lat*Math.PI/180;return[(lon+180)/360*s,(1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*s]}
+function unpx(x,y,z){var s=256*Math.pow(2,z);return[Math.atan(Math.sinh(Math.PI*(1-2*y/s)))*180/Math.PI,x/s*360-180]}
+function view(){dims();var c=wpx(+CFG.lat||36.0626,+CFG.lon||-94.1574,MZ);return{x0:c[0]-MW/2,y0:c[1]-MH/2}}
+/* towns on the maps come from the server (MAP_CITIES, or nearby towns from OpenStreetMap) */
+function baseLayer(v){var t=CFG.basemap||"",h='<div class="base">';if(!t)return h+'</div>';
+  for(var tx=Math.floor(v.x0/256);tx<=Math.floor((v.x0+MW)/256);tx++)for(var ty=Math.floor(v.y0/256);ty<=Math.floor((v.y0+MH)/256);ty++)
+    h+='<img alt="" src="'+esc(t.replace("{z}",MZ).replace("{x}",tx).replace("{y}",ty).replace("{s}","a"))+'" style="left:'+(tx*256-v.x0)+'px;top:'+(ty*256-v.y0)+'px" onerror="this.style.visibility=\'hidden\'">';
+  return h+'</div>'}
+function cityLayer(v){var h="",home=(CFG.city||"").toLowerCase(),list=(CFG.cities||[]).slice(),boxes=[],hasHome=false;
+  list.forEach(function(c){if(c[0].toLowerCase()===home)hasHome=true});
+  if(hasHome)list.sort(function(a,b){return (b[0].toLowerCase()===home)-(a[0].toLowerCase()===home)});else list.unshift([CFG.city||"Home",+CFG.lat,+CFG.lon]);
+  list.forEach(function(c,i){var p=wpx(c[1],c[2],MZ),x=p[0]-v.x0,y=p[1]-v.y0,w=c[0].length*12+22,bx=[x-6,y-14,x+w,y+16];
+    if(x<8||y<14||x+w>MW-4||y>MH-14)return;
+    if(y>MH-58&&(x<170||x+w>MW-300))return;               // keep clear of the time stamp and legend
+    if(y<34&&x+w>MW-420)return;                            // and the credit line
+    for(var k=0;k<boxes.length;k++){var o=boxes[k];if(bx[0]<o[2]&&bx[2]>o[0]&&bx[1]<o[3]&&bx[3]>o[1])return}
+    boxes.push(bx);h+='<div class="city'+(i===0?" home":"")+'" style="left:'+x+'px;top:'+y+'px"><i></i>'+esc(c[0])+'</div>'});return h}
+function pgRadar(){var R=DATA.radar;if(!R||!R.frames||!R.frames.length)return null;var v=view(),h='<div class="map"><div class="kb"><div class="zoom" style="width:'+MW+'px;height:'+MH+'px;transform:scale('+MS+')">'+baseLayer(v);
+  R.frames.forEach(function(f,i){h+='<div class="rad" data-t="'+f.time+'">';
+    for(var tx=Math.floor(v.x0/512);tx<=Math.floor((v.x0+MW)/512);tx++)for(var ty=Math.floor(v.y0/512);ty<=Math.floor((v.y0+MH)/512);ty++)
+      h+='<img alt="" src="'+esc(R.host+f.path+"/256/7/"+tx+"/"+ty+"/"+(R.color||"2")+"/1_1.png")+'" style="left:'+(tx*512-v.x0)+'px;top:'+(ty*512-v.y0)+'px" onerror="this.style.visibility=\'hidden\'">';
+    h+='</div>'});
+  h+=cityLayer(v)+'</div></div><div class="stamp"></div><div class="legend">LIGHT <b style="background:#9be0f5"></b><b style="background:#2a9fd6"></b><b style="background:#1450a8"></b><b style="background:#f5e400"></b><b style="background:#e8331a"></b> HEAVY</div><div class="credit">Radar: RainViewer · '+esc(CFG.map_credit||'Map © OpenStreetMap contributors')+'</div></div>';
+  return {t1:"Local",t2:"Doppler Radar",secs:Math.max(CFG.page_seconds,16),html:'<div class="pad sh" style="top:0;right:0;bottom:0;left:0">'+h+'</div>',after:function(el,secs){
+    var layers=el.querySelectorAll(".rad"),st=el.querySelector(".stamp"),i=0,n=layers.length,timer;
+    function show(){layers.forEach(function(l,k){l.classList.toggle("on",k===i)});var t=+layers[i].dataset.t;st.textContent=t?hm(new Date(t*1000)):"";
+      var wait=i===n-1?1800:520;i=(i+1)%n;timer=setTimeout(function(){if(document.body.contains(layers[0]))show()},wait)}
+    show()}}}
+function rainColor(amt,prob){if(prob<15)return null;var a=Math.min(1,(prob-15)/55)*.78;
+  var c=amt>=.5?[227,38,27]:amt>=.25?[255,138,26]:amt>=.1?[255,210,58]:amt>=.03?[30,143,46]:[63,191,63];return "rgba("+c[0]+","+c[1]+","+c[2]+","+a.toFixed(2)+")"}
+function pgOutlook(){var O=DATA.outlook;if(!O||!O.points||!O.points.length||!O.times||!O.times.length)return null;var v=view();
+  var h='<div class="map"><div class="kb"><div class="zoom" style="width:'+MW+'px;height:'+MH+'px;transform:scale('+MS+')">'+baseLayer(v)+'<canvas width="'+MW+'" height="'+MH+'"></canvas><canvas class="off" width="'+MW+'" height="'+MH+'"></canvas>'+cityLayer(v)+'</div></div><div class="stamp"></div><div class="legend">CHANCE <b style="background:rgba(63,191,63,.45)"></b><b style="background:rgba(63,191,63,.85)"></b> AMOUNT <b style="background:#ffd23a"></b><b style="background:#e3261b"></b></div><div class="credit">Forecast: Open-Meteo · '+esc(CFG.map_credit||'Map © OpenStreetMap contributors')+'</div></div>';
+  return {t1:"Precipitation",t2:"Outlook",secs:Math.max(CFG.page_seconds,16),html:'<div class="pad sh" style="top:0;right:0;bottom:0;left:0">'+h+'</div>',after:function(el){
+    var cvs=el.querySelectorAll("canvas"),st=el.querySelector(".stamp"),R=O.rows,C=O.cols,P=O.points,
+      la0=O.lat[0],la1=O.lat[1],lo0=O.lon[0],lo1=O.lon[1],hrs=Math.min(12,O.times.length),hI=0,cell=5,front=0,cells=[];
+    // work out once which forecast points each little square sits between (the slow part), then each frame is quick
+    for(var y=0;y<MH;y+=cell)for(var x=0;x<MW;x+=cell){var ll=unpx(v.x0+x+cell/2,v.y0+y+cell/2,MZ),fr=(la0-ll[0])/(la0-la1)*(R-1),fc=(ll[1]-lo0)/(lo1-lo0)*(C-1);
+      if(fr<-.5||fc<-.5||fr>R-.5||fc>C-.5)continue;var r0=Math.floor(fr),c0=Math.floor(fc);cells.push([x,y,r0,c0,fr-r0,fc-c0])}
+    function val(arr,r,c,k){var p=P[Math.max(0,Math.min(R-1,r))*C+Math.max(0,Math.min(C-1,c))];return p&&p[arr]&&p[arr][k]!=null?+p[arr][k]:0}
+    function draw(ctx,k){ctx.clearRect(0,0,MW,MH);
+      for(var i=0;i<cells.length;i++){var q=cells[i],r0=q[2],c0=q[3],dr=q[4],dc=q[5];
+        function bl(arr){return val(arr,r0,c0,k)*(1-dr)*(1-dc)+val(arr,r0,c0+1,k)*(1-dr)*dc+val(arr,r0+1,c0,k)*dr*(1-dc)+val(arr,r0+1,c0+1,k)*dr*dc}
+        var col=rainColor(bl("amt"),bl("prob"));if(col){ctx.fillStyle=col;ctx.fillRect(q[0],q[1],cell,cell)}}}
+    function step(){if(!document.body.contains(cvs[0]))return;var back=1-front;draw(cvs[back].getContext("2d"),hI);
+      cvs[back].classList.remove("off");cvs[front].classList.add("off");front=back;
+      var t=new Date(O.times[hI]);st.textContent=(hI===0?"NOW":hm(t).replace(":00",""));
+      var wait=hI===hrs-1?1900:750;hI=(hI+1)%hrs;setTimeout(step,wait)}
+    step()}}}
+
+/* ---------- rotation ---------- */
+function build(){var p=[],on=CFG.pages&&CFG.pages.length?CFG.pages:null;
+  function add(name,f){if(!on||on.indexOf(name)>=0)p.push(f)}
+  if(W()){add("current",pgCurrent);add("local",pgLocal);add("radar",pgRadar);add("extended",pgExtended);add("hourly",pgHourly);add("outlook",pgOutlook);add("almanac",pgAlmanac);if(p.length>2)add("current",pgCurrent)}
+  add("localnews",pgLocalNews);add("nowplaying",pgNow);add("top",pgTop);add("usnews",pgUsNews);add("status",pgNas);
+  if(!p.length&&W())p.push(pgCurrent);
+  if(CFG.shuffle&&p.length>2){var first=p[0]===pgCurrent?pgCurrent:null,rest=p.filter(function(f,i){return !(f===pgCurrent&&(first||p.indexOf(f)!==i))});p=(first?[first]:[]).concat(mix(rest))}
+  return p}
+function mix(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.random()*(i+1)|0,t=a[i];a[i]=a[j];a[j]=t}return a}
+
+var queue=[],busy=0;
+function next(){
+  if(!queue.length) queue=build();
+  var pg=null;
+  while(queue.length&&!pg){var f=queue.shift();try{pg=f()}catch(e){console.warn(e);pg=null}}
+  if(!pg){ if(!busy){busy=1;pg={t1:"Please",t2:"Stand By",html:'<div class="nodata sh">WAITING FOR DATA FROM THE NAS...</div>'}} else {queue=build();return setTimeout(next,2000)} }
+  busy=1;
+  var secs=pg.secs||CFG.page_seconds,el=$("panel");
+  setTitle(pg.t1,pg.t2);
+  var old=el.querySelector(".pg"),nw=document.createElement("div");
+  if(old){old.className="pg out";setTimeout(function(){if(old.parentNode)old.parentNode.removeChild(old)},400)}
+  nw.className="pg in";nw.innerHTML=pg.html;el.appendChild(nw);entrance(nw);
+  if(pg.after)pg.after(nw,secs);
+  setTimeout(next,secs*1000);
+}
+function setTitle(a,b){var t=$("t1").parentNode;if($("t1").innerHTML===a&&$("t2").innerHTML===b)return;
+  $("t1").innerHTML=a;$("t2").innerHTML=b;t.classList.remove("swap");void t.offsetWidth;t.classList.add("swap")}
+/* rows, cards and bars come in one after another */
+function entrance(el){var i=0;
+  el.querySelectorAll(".cc-l>*,.row,.ext .d,.hr .h,.alm tr,.moons>div,.np .meta>*,.list .li,.news .hd").forEach(function(n){
+    n.classList.add("rise");n.style.animationDelay=(.2+Math.min(i++,12)*.07).toFixed(2)+"s"});
+  el.querySelectorAll(".hr .bar").forEach(function(n,k){n.classList.add("grow");n.style.animationDelay=(.45+k*.08).toFixed(2)+"s"});
+  var big=el.querySelector(".cc-l .big"),m=big&&/^(-?\d+)(.*)$/.exec(big.textContent);
+  if(m){var to=+m[1],from=to-12,rest=m[2],t0=0;big.textContent=from+rest;
+    setTimeout(function(){function f(ts){if(!t0)t0=ts;var p=Math.min(1,(ts-t0)/900),e=1-Math.pow(1-p,3);big.textContent=Math.round(from+(to-from)*e)+rest;if(p<1)requestAnimationFrame(f)}requestAnimationFrame(f)},350)}}
+
+/* ---------- clock + crawl ---------- */
+function tick(){var d=new Date();$("tm").textContent=hm(d,true);$("dt").textContent=DAYS[d.getDay()]+" "+MON[d.getMonth()]+" "+d.getDate()}
+setInterval(tick,1000);tick();
+var CI={};
+function crawlText(){var s=[],info=W();
+  s.push("<b>"+esc(CFG.station)+"</b> &nbsp;Your Local Forecast");if((window.KNAS&&KNAS.season&&KNAS.season.greeting))s.push("<b>"+esc(KNAS.season.greeting)+"</b>");
+  if(info){var x=wx(info.c.weather_code,info.c.is_day===0);s.push("Now in "+esc(CFG.city)+": <b>"+r(info.c.temperature_2m)+"°</b> and "+x.text.toLowerCase());
+    var d=info.days[0];s.push("Today's high <b>"+r(d.hi)+"°</b>, low <b>"+r(d.lo)+"°</b>")}
+  var n=normNow(DATA&&DATA.spotify&&DATA.spotify.now);if(n&&n.playing!==false)s.push("Now playing: <b>"+esc(n.track)+"</b>"+(n.artist?" by "+esc(n.artist):""));
+  var k=DATA&&DATA.kuma;if(k&&k.length){var dn=k.filter(function(x){return x.status===0});
+    s.push(dn.length?'<span class="alert">SERVICE ALERT: '+dn.map(function(x){return esc(x.name)}).join(", ")+" is DOWN</span>":"All NAS systems normal")}
+  var nw=DATA&&DATA.news;["local","us"].forEach(function(k){var g=nw&&nw[k];if(g&&g.headlines&&g.headlines.length){CI[k]=(CI[k]||0)%g.headlines.length;s.push("<b>"+(k==="local"?"LOCAL NEWS:":"NATIONAL NEWS:")+"</b> "+esc(g.headlines[CI[k]++]))}});
+  if(CFG.crawl)s.push(esc(CFG.crawl));
+  for(var k=0;k<2&&FACTS.length;k++){if(fi>=FACTS.length){fi=0;FACTS.sort(function(){return Math.random()-.5})}s.push("<b>DID YOU KNOW?</b> "+esc(FACTS[fi++]))}
+  if(DEMO)s.push("Demo mode: showing sample data");
+  return s.join(" &nbsp;&#9670;&nbsp; ")}
+var FACTS=[],fi=0;
+function loadFacts(){var u=Q.has("demo")&&location.protocol!=="http:"?null:"api/facts";if(!u)return;fetch(u,{cache:"no-store"}).then(function(r){return r.ok?r.json():[]}).then(function(l){if(Array.isArray(l)&&l.length){FACTS=l.slice().sort(function(){return Math.random()-.5});fi=0}}).catch(function(){})}
+loadFacts();setInterval(loadFacts,600000);
+function setCrawl(){var c=$("crawl");c.innerHTML=crawlText();c.style.animationDuration=((c.offsetWidth+STAGE_W)/85).toFixed(1)+"s"}
+$("crawl").addEventListener("animationiteration",setCrawl);
+
+/* ---------- music: plays on its own when the browser allows it ---------- */
+var tracks=[],ti=0,hint=null;
+function showMusicHint(){if(hint)return;hint=document.createElement("div");hint.className="musichint";hint.textContent="♪ PRESS ANY BUTTON FOR MUSIC";$("stage").appendChild(hint)}
+function hideMusicHint(){if(hint){hint.remove();hint=null}}
+function playNext(){if(!tracks.length)return;var a=$("aud");a.src="music/"+encodeURIComponent(tracks[ti++%tracks.length]);
+  var p=a.play();if(p&&p.then)p.then(hideMusicHint).catch(showMusicHint)}
+$("aud").addEventListener("ended",playNext);if(window.KNASAudio&&!Q.has("cast"))KNASAudio.attach($("aud"),"music");
+$("aud").addEventListener("error",function(){setTimeout(playNext,1000)});
+function startMusic(){if(!tracks.length)return;var a=$("aud");if(a.src&&!a.paused)return;
+  if(a.src){var p=a.play();if(p&&p.then)p.then(hideMusicHint).catch(showMusicHint)}else playNext()}
+addEventListener("keydown",startMusic);addEventListener("click",startMusic);
+if(!Q.has("cast"))fetch("api/music").then(function(r){return r.ok?r.json():[]}).then(function(l){if(Array.isArray(l)&&l.length){tracks=l.sort(function(){return Math.random()-.5});playNext()}}).catch(function(){});
+
+/* ---------- data ---------- */
+function load(){
+  if(Q.has("demo")){DATA=demo();DEMO=true;return Promise.resolve()}
+  return fetch("api/all",{cache:"no-store"}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){if(!j||typeof j!=="object")throw 0;DATA=j;DEMO=false;if(j.config)Object.assign(CFG,j.config)})
+    .catch(function(){if(!DATA){DATA=demo();DEMO=true}});
+}
+function applyCfg(){if(CFG.needs_setup&&!Q.has("cast")&&!Q.has("demo")&&!Q.has("nosetup")&&window.self===window.top){location.href="/setup";return}if(Q.get("secs"))CFG.page_seconds=+Q.get("secs");var p=String(CFG.station).trim().split(/\s+/),num=p.length>1?p.pop():"";$("lcall").textContent=p.join(" ").slice(0,6)||"TV";$("lnum").textContent=num||"";document.title=CFG.station+" Local"}
+function demo(){
+  var now=new Date(),z=function(n){return(n<10?"0":"")+n},ds=function(d){return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate())};
+  var codes=[2,61,3,0,1,80,2],hi=[72,66,61,68,74,70,65],lo=[54,50,47,45,52,55,49],pp=[10,60,20,0,5,40,15],wind=[12,17,10,7,9,14,11];
+  var daily={time:[],weather_code:codes,temperature_2m_max:hi,temperature_2m_min:lo,precipitation_probability_max:pp,wind_speed_10m_max:wind,sunrise:[],sunset:[]};
+  var hourly={time:[],temperature_2m:[],weather_code:[],precipitation_probability:[],is_day:[]};
+  for(var i=0;i<7;i++){var d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+i);daily.time.push(ds(d));daily.sunrise.push(ds(d)+"T07:"+z(14+i));daily.sunset.push(ds(d)+"T18:"+z(48-i*2));
+    for(var h=0;h<24;h++){var nl=lo[Math.min(i+1,6)];hourly.time.push(ds(d)+"T"+z(h)+":00");hourly.temperature_2m.push(lo[i]+(hi[i]-lo[i])*Math.max(0,Math.sin((h-7)/12*Math.PI))*(h<7?.15:1)-(h>19?(h-19)*1.2:0));
+      hourly.weather_code.push(h>=20||h<6?(i===0?3:codes[Math.min(i+1,6)]):codes[i]);hourly.precipitation_probability.push(Math.max(0,pp[i]-10+((h*7)%20)));hourly.is_day.push(h>=7&&h<19?1:0)}}
+  var ci=now.getHours();
+  return{config:{},weather:{current:{temperature_2m:64,relative_humidity_2m:58,dew_point_2m:49,apparent_temperature:64,weather_code:2,wind_speed_10m:8,wind_direction_10m:190,surface_pressure:1016,visibility:16000,is_day:ci>=7&&ci<19?1:0},daily:daily,hourly:hourly},
+    spotify:{now:{is_playing:true,track:"Midnight Drive",artist:"The Static Hours",album:"Late Night Broadcast"},top:[{name:"The Static Hours",plays:84},{name:"Velvet Antenna",plays:61},{name:"Channel Zero",plays:47},{name:"Cathode Kids",plays:39},{name:"Summer Rerun",plays:31},{name:"Test Pattern",plays:22}]},
+    news:{local:{sources:["Channel 7 News"],headlines:["Home team hosts rivals in Saturday night showdown","City council approves new bike trail connection downtown","Farmers Market extends Saturday hours through November","Local schools announce new STEM center opening next fall","Police remind drivers of road closures for weekend festival"]},
+      us:{sources:["NPR Topics: News"],headlines:["Congress returns to debate spending bill ahead of deadline","Scientists track unusually active hurricane season in the Atlantic","Fall foliage expected to peak early across much of the Northeast","Federal Reserve signals it will hold rates steady","New study looks at how much sleep teenagers really need"]}},
+    kuma:[{name:"Jellyfin",status:1,ping:12,uptime:1},{name:"Immich",status:1,ping:18,uptime:.998},{name:"ErsatzTV",status:1,ping:9,uptime:1},{name:"Spotify Tracker",status:1,ping:6,uptime:1},{name:"Home Assistant",status:1,ping:4,uptime:.994},{name:"RomM",status:1,ping:21,uptime:1}]}
+}
+
+load().then(function(){applyCfg();setCrawl();next()});
+setInterval(function(){load().then(applyCfg)},30000);
+})();
+</script>
+</body>
+</html>

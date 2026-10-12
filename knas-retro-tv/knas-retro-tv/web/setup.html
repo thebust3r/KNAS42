@@ -1,0 +1,1145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KNAS Setup</title>
+<link rel="icon" href="/icon-192.png">
+<style>
+/* fonts are stored on your NAS (web/fonts), so this page works with no internet */
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-400.woff) format("woff");font-weight:400;font-display:swap}
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-500.woff) format("woff");font-weight:500;font-display:swap}
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-600.woff) format("woff");font-weight:600;font-display:swap}
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-700.woff) format("woff");font-weight:700;font-display:swap}
+@font-face{font-family:"KNAS Head";src:url(/fonts/classic-700.woff) format("woff");font-weight:700;font-display:swap}
+@font-face{font-family:"KNAS Head";src:url(/fonts/classic-800i.woff) format("woff");font-weight:800;font-style:italic;font-display:swap}
+@font-face{font-family:"KNAS Head";src:url(/fonts/classic-800.woff) format("woff");font-weight:800;font-display:swap}
+:root{--bg:#090c2b;--side:#0d1340;--card:#131b4f;--card2:#18225e;--line:rgba(156,184,255,.18);--line2:rgba(156,184,255,.35);
+  --text:#eef2ff;--muted:#a3b0dd;--gold:#ffd23a;--gold2:#ffb000;--ink:#1a1300;--red:#e3261b;--ok:#7dff9e;--bad:#ff9a8a;--input:#0a1036;--hover:#1f2c76;
+  --head:"KNAS Head","Barlow Condensed","Arial Narrow",Arial,sans-serif;--ui:"KNAS UI",Barlow,"Segoe UI",Roboto,Arial,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg)}
+body{font:500 16px/1.4 var(--ui);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;
+  background:radial-gradient(1200px 600px at 80% -10%,rgba(90,47,134,.45),transparent 60%),radial-gradient(900px 500px at -10% 110%,rgba(181,81,47,.25),transparent 60%),var(--bg) fixed}
+a{color:var(--gold)}
+code{font:600 .95em var(--ui);color:var(--gold);background:rgba(255,210,58,.08);padding:0 4px;border-radius:3px}
+.hidden{display:none!important}
+
+/* ---------- layout ---------- */
+.app{display:grid;grid-template-columns:260px minmax(0,1fr);min-height:100vh}
+aside{position:sticky;top:0;height:100vh;overflow-y:auto;background:linear-gradient(180deg,var(--side),#0a0f35);border-right:1px solid var(--line);padding:18px 14px 90px}
+.brand{display:flex;align-items:center;gap:11px;padding:0 4px 14px}
+.logo{width:46px;height:46px;flex:none;border-radius:8px;position:relative;background:linear-gradient(160deg,#5d8bff,#1d3db8 55%,#0b1a66);box-shadow:inset 0 0 0 2px #cfe0ff,inset 0 0 0 4px #0b1a66}
+.logo b{position:absolute;top:1px;left:0;right:0;text-align:center;font:italic 800 27px/30px var(--head)}
+.logo span{position:absolute;bottom:5px;left:5px;right:5px;height:11px;background:var(--red);border-radius:2px;font:800 10px/11px var(--head);text-align:center;letter-spacing:1.5px}
+.brand h1{font:italic 800 26px/1 var(--head);color:var(--gold)}
+.brand small{display:block;font-size:13px;color:var(--muted);font-weight:600;margin-top:2px}
+.find{position:relative;margin:0 0 12px}
+.find input{padding-left:34px;font-size:15px}
+.find:before{content:"⌕";position:absolute;left:11px;top:6px;font-size:20px;color:var(--muted);pointer-events:none}
+#findRes{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:20;background:#0b1240;border:1px solid var(--line2);border-radius:8px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.6)}
+#findRes button{display:block;width:100%;text-align:left;background:none;border:0;color:var(--text);font:600 15px var(--ui);padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--line)}
+#findRes button small{display:block;color:var(--muted);font-size:12px;font-weight:600}
+#findRes button:hover,#findRes button:focus{background:var(--hover);outline:0}
+#findRes .none{padding:9px 12px;color:var(--muted);font-size:14px}
+nav .grp{font:700 12px var(--ui);letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);opacity:.8;margin:14px 8px 5px}
+nav a{display:flex;align-items:center;gap:10px;color:var(--text);text-decoration:none;font-weight:600;font-size:15.5px;padding:7px 10px;border-radius:7px;margin:1px 0}
+nav a i{font-style:normal;width:22px;text-align:center;flex:none}
+nav a:hover{background:rgba(255,255,255,.06)}
+nav a.on{background:linear-gradient(90deg,rgba(255,210,58,.2),rgba(255,210,58,.05));color:var(--gold);box-shadow:inset 3px 0 0 var(--gold)}
+nav a .req{margin-left:auto;font-size:11px;font-weight:700;background:var(--gold);color:var(--ink);border-radius:9px;padding:0 7px;letter-spacing:.5px}
+main{padding:26px 34px 140px;max-width:880px;width:100%}
+
+/* ---------- panels ---------- */
+.panel{display:none;animation:fade .18s ease-out}
+.panel.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.phead{margin-bottom:14px}
+.phead h2{font:italic 800 34px/1.05 var(--head);color:var(--gold);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.phead p{color:#d5ddfb;font-size:16.5px;margin-top:6px;max-width:68ch}
+.badge{font:700 11px var(--ui);letter-spacing:1px;text-transform:uppercase;color:var(--ink);background:var(--muted);border-radius:4px;padding:2px 7px;font-style:normal}
+.badge.gold{background:var(--gold)}
+.card{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:12px;padding:18px 20px 20px;margin:0 0 14px;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.card>h3{font:700 19px var(--ui);color:#fff;margin-bottom:2px}
+.card>h3+.why{margin-top:0}
+.why{font-size:15px;color:var(--muted);margin:4px 0 6px;max-width:70ch}
+.tip{font-size:14px;color:var(--muted);margin-top:6px}
+.field{margin-top:14px}
+.field:first-child,.card>h3+.why+.field,.card>h3+.field{margin-top:10px}
+label,.lbl{display:block;font-weight:700;font-size:15px;margin-bottom:5px;color:#fff}
+label small,.lbl small{font-weight:500;color:var(--muted);font-size:13.5px;margin-left:6px}
+input,select,textarea{width:100%;font:500 16px var(--ui);color:var(--text);background:var(--input);border:1px solid var(--line2);border-radius:8px;padding:9px 12px;transition:border-color .15s,box-shadow .15s}
+input::placeholder,textarea::placeholder{color:#6f7bab}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,210,58,.25)}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 18px) 55%,calc(100% - 13px) 55%;background-size:5px 5px;background-repeat:no-repeat;padding-right:34px}
+select option{background:#0b1240}
+input[type=range]{padding:0;border:0;background:none;accent-color:var(--gold);box-shadow:none}
+textarea{min-height:74px;resize:vertical}
+.row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.row>*{flex:1;min-width:150px}
+.row>.narrow{flex:0 0 130px;min-width:110px}
+.row>.field{margin-top:14px}
+button,.btn{font:700 15.5px var(--ui);color:var(--ink);background:linear-gradient(180deg,#ffe680,var(--gold) 50%,var(--gold2));border:0;border-radius:8px;padding:9px 16px;cursor:pointer;text-decoration:none;display:inline-block;white-space:nowrap;box-shadow:0 2px 0 rgba(0,0,0,.35)}
+button:hover,.btn:hover{filter:brightness(1.06)}
+button:active{transform:translateY(1px)}
+button.ghost,.btn.ghost{background:rgba(255,255,255,.06);color:var(--text);box-shadow:inset 0 0 0 1px var(--line2)}
+button.ghost:hover,.btn.ghost:hover{background:rgba(255,255,255,.11)}
+button.del{background:rgba(227,38,27,.85);color:#fff;padding:6px 11px;font-size:14px}
+button:focus-visible,.btn:focus-visible,nav a:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.seg{display:flex;flex-wrap:wrap;gap:4px;background:var(--input);border:1px solid var(--line2);border-radius:10px;padding:4px}
+.seg button{flex:1;min-width:max-content;background:none;color:var(--text);font-weight:600;font-size:15px;padding:8px 12px;box-shadow:none;white-space:normal;border-radius:7px}
+.seg button:hover{background:rgba(255,255,255,.07);filter:none}
+.seg button.on{background:linear-gradient(180deg,#ffe680,var(--gold) 50%,var(--gold2));color:var(--ink);font-weight:700}
+.checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px 10px;margin-top:4px}
+.checks label{display:flex;align-items:center;gap:9px;margin:0;font-weight:600;font-size:15px;background:rgba(0,0,30,.3);border:1px solid var(--line);padding:7px 10px;border-radius:8px;cursor:pointer}
+.checks label:hover{border-color:var(--line2)}
+.checks input{width:18px;height:18px;flex:none;accent-color:var(--gold);padding:0}
+.results{margin-top:6px;border-radius:8px;overflow:hidden;border:1px solid var(--line2)}
+.results div{padding:9px 12px;font-weight:600;background:#101a55;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line)}
+.results div:hover,.results div:focus{background:var(--hover);outline:0}
+.results img{width:26px;height:26px;object-fit:contain;background:#fff;border-radius:50%;padding:2px}
+.picked{margin-top:8px;font-weight:700;color:var(--gold)}
+.msg{margin-top:8px;font-size:15px;font-weight:600}
+.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}
+.team{display:flex;align-items:center;gap:10px;background:rgba(0,0,30,.3);border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-top:8px;flex-wrap:wrap}
+.team img{width:34px;height:34px;object-fit:contain;background:#fff;border-radius:50%;padding:2px}
+.team .tn{flex:1;min-width:120px}
+.team .tn b{display:block;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.team .tn small{font-size:13px;color:var(--muted)}
+.team input{flex:2;min-width:150px;font-size:15px;padding:7px 10px}
+details.help{margin-top:8px}
+details.help summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--muted);list-style:none;display:inline-flex;gap:6px;align-items:center}
+details.help summary::-webkit-details-marker,details.more summary::-webkit-details-marker,.faq summary::-webkit-details-marker{display:none}
+details.help summary::before{content:"?";display:inline-flex;width:17px;height:17px;border-radius:50%;border:1.5px solid var(--muted);font-size:11px;font-weight:700;align-items:center;justify-content:center}
+details.help summary:hover{color:var(--text)}
+details.help>div{font-size:14.5px;color:#d5ddfb;padding:9px 12px;margin-top:6px;background:rgba(0,0,30,.35);border-left:3px solid var(--line2);border-radius:0 6px 6px 0}
+details.more{margin-top:16px;border-top:1px dashed var(--line2);padding-top:10px}
+details.more>summary{cursor:pointer;list-style:none;font-weight:700;font-size:14.5px;color:var(--muted);display:inline-flex;align-items:center;gap:8px}
+details.more>summary::before{content:"▸";transition:transform .15s;display:inline-block}
+details.more[open]>summary::before{transform:rotate(90deg)}
+details.more>summary:hover{color:var(--text)}
+.rng{display:flex;align-items:center;gap:12px}.rng input{flex:1}.rng output{flex:0 0 120px;font-weight:700;color:var(--gold);text-align:right;font-size:15px}
+.tiles{display:grid;gap:10px;margin-top:4px}
+.tiles button{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;padding:0;border-radius:10px;overflow:hidden;background:var(--input);color:var(--text);font-size:15px;font-weight:600;box-shadow:0 0 0 1px var(--line2);white-space:normal;text-align:left;position:relative}
+.tiles button:hover{box-shadow:0 0 0 1px var(--muted);filter:none}
+.tiles button.on{box-shadow:0 0 0 3px var(--gold)}
+.tiles button>*{flex:none}.tiles button>span{display:block;padding:7px 10px;flex:1}
+.tiles button>span small{display:block;font-size:12.5px;color:var(--muted);font-weight:500}
+.tiles button.on>span{background:rgba(255,210,58,.14)}
+.tiles button.on::after{content:"✓";position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:var(--ink);font:800 13px/22px var(--ui);text-align:center}
+.swatches{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
+.swatches i{display:block;height:50px;position:relative}
+.swatches i b{position:absolute;left:10px;right:10px;bottom:9px;height:15px;border-radius:3px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.6)}
+.gstyles{grid-template-columns:repeat(auto-fill,minmax(185px,1fr))}
+.gp{height:92px;position:relative;font-size:0}.gp i{position:absolute;display:block}
+.maps{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.maps img{display:block;width:100%;height:92px;object-fit:cover;background:#5d86b8}
+.fonts{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.fonts .fs{display:block;height:84px;padding:10px 12px;background:linear-gradient(180deg,#241a72,#5a2f86);color:#fff;overflow:hidden;line-height:1}
+.fonts .fs b{display:block;font-size:30px;font-weight:800;font-style:italic;color:var(--gold);text-shadow:2px 2px 0 #000;white-space:nowrap}
+.fonts .fs em{display:block;font-size:20px;font-weight:600;font-style:normal;margin-top:6px;text-shadow:2px 2px 0 #000;white-space:nowrap}
+.fgrp{font:700 12px var(--ui);letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);margin:16px 0 7px}
+.fgrp:first-child{margin-top:6px}
+.hols{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.hols button{padding:10px 8px;text-align:center}
+.lookrow{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;margin-top:14px}
+.colors{flex:1;min-width:250px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:7px}
+.colors label{display:flex;align-items:center;gap:9px;margin:0;font-size:14.5px;font-weight:600;background:rgba(0,0,30,.3);border:1px solid var(--line);padding:5px 8px;border-radius:8px}
+.colors input[type=color]{width:34px;height:28px;padding:0;border:0;border-radius:5px;background:none;cursor:pointer;flex:none;box-shadow:0 0 0 1px var(--line2)}
+.pv{flex:0 0 300px;max-width:100%;height:225px;border-radius:10px;position:relative;overflow:hidden;box-shadow:0 0 0 2px #000,0 8px 24px rgba(0,0,0,.5);font-family:"Barlow Condensed",var(--head);line-height:1.15}
+.pv .lg{position:absolute;left:10px;top:9px;width:40px;height:40px;border-radius:6px;text-align:center;font-weight:800;font-style:italic;font-size:22px;line-height:26px}
+.pv .lg i{position:absolute;left:4px;right:4px;bottom:4px;height:9px;border-radius:1px}
+.pv .lg img{width:100%;height:100%;object-fit:contain}
+.pv .hd{position:absolute;left:58px;top:8px;line-height:1;font-weight:800;font-style:italic}
+.pv .hd small{display:block;font-size:14px}.pv .hd b{font-size:22px}
+.pv .ck{position:absolute;right:10px;top:12px;font-weight:800;font-size:15px;text-align:right}
+.pv .pn{position:absolute;left:10px;right:10px;top:58px;bottom:34px;border-radius:5px;padding:10px 12px;font-weight:700;font-size:17px}
+.pv .pn div{display:flex;justify-content:space-between;border-bottom:1px dotted rgba(255,255,255,.3);padding:2px 0}
+.pv .tk{position:absolute;left:0;right:0;bottom:0;height:26px;font-weight:700;font-size:15px;padding:4px 10px;white-space:nowrap;overflow:hidden}
+.pv .sh{text-shadow:2px 2px 0 #000,0 0 1px #000}
+.pv:after{content:"";position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none}
+.pv.scan-on:after{background:repeating-linear-gradient(0deg,rgba(255,255,255,.03) 0 2px,transparent 2px 4px)}
+.pv.scan-strong:after{background:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 2px,transparent 2px 4px)}
+.logos{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:6px}
+.logos>div{background:rgba(0,0,30,.3);border:1px solid var(--line);border-radius:10px;padding:12px}
+.logos b{display:block;font-size:16px}.logos small{display:block;font-size:13px;color:var(--muted);margin-bottom:8px}
+.logos .pic{height:72px;display:flex;align-items:center;justify-content:center;background:repeating-conic-gradient(#1d2a63 0 25%,#17224f 0 50%) 0 0/16px 16px;border-radius:6px;margin-bottom:10px;font-size:13px;color:var(--muted)}
+.logos .pic img{max-height:62px;max-width:100%}
+.logos .btns{display:flex;gap:8px}.logos .btns button{font-size:14px;padding:6px 12px}
+.dl{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.dl .btn{white-space:normal;max-width:100%}
+.faq details{border-bottom:1px solid var(--line);padding:11px 0}
+.faq details:last-child{border:0}
+.faq summary{cursor:pointer;font-size:16.5px;font-weight:700;list-style:none;display:flex;gap:10px;align-items:baseline}
+.faq summary::before{content:"▸";color:var(--gold);transition:transform .15s;display:inline-block}
+.faq details[open] summary::before{transform:rotate(90deg)}
+.faq p,.faq li{font-size:15px;color:#d5ddfb;margin-top:7px}
+.faq ul{padding-left:22px}
+.clipinfo{font-size:14px;color:var(--muted);margin:4px 0 8px}
+#clipSum{font-size:16px;font-weight:600;color:#fff}
+#clipSum.ok{color:var(--ok)}#clipSum.warn{color:var(--gold)}#clipSum.bad{color:var(--bad)}
+.cliptab{width:100%;border-collapse:collapse;font-size:14.5px}
+.cliptab th{text-align:left;font-weight:700;color:var(--muted);font-size:12px;letter-spacing:1px;text-transform:uppercase;padding:6px 8px;border-bottom:1px solid var(--line2)}
+.cliptab td{padding:6px 8px;border-bottom:1px solid var(--line)}
+.cliptab td.w{color:var(--gold)}.cliptab td.b{color:var(--bad)}.cliptab td.g{color:var(--ok)}
+.clipsoff .clipsOnly{display:none}
+.steps{margin:8px 0 4px 22px;font-size:15px;color:#d5ddfb}.steps li{margin:7px 0}.steps .tip{display:inline-block}
+nav a .warn{margin-left:auto;width:18px;height:18px;border-radius:50%;background:var(--gold);color:var(--ink);font:800 12px/18px var(--ui);text-align:center}
+.editor{margin-top:12px;padding:12px;border:1px solid var(--line2);border-radius:10px;background:rgba(0,0,30,.3)}
+.editor textarea{min-height:260px;font-size:14.5px;line-height:1.45}
+.topics{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.topics button{padding:9px 10px;text-align:left}
+.hi{animation:hi 1.6s ease-out}
+@keyframes hi{0%,30%{box-shadow:0 0 0 3px var(--gold);border-radius:8px}100%{box-shadow:0 0 0 3px transparent}}
+.notice{border-color:rgba(255,210,58,.5);background:linear-gradient(180deg,#2a2a6a,#1b1f5a)}
+.notice h2{font:italic 800 28px var(--head);color:var(--gold)}
+.notice .links{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+#done{display:none}
+
+/* ---------- save bar ---------- */
+#bar{position:fixed;left:260px;right:0;bottom:0;z-index:15;background:rgba(9,12,43,.92);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-top:1px solid var(--line2);padding:12px 34px}
+#bar .in{max-width:812px;display:flex;align-items:center;gap:14px}
+#bar .st{flex:1;font-weight:600;color:#d5ddfb}
+#bar .st.dirty{color:var(--gold)}
+#bar .st.dirty:before{content:"● ";}
+#bar button{font-size:17px;padding:11px 26px}
+#bar button:disabled{opacity:.5;cursor:default;filter:none}
+
+/* ---------- phones & small screens ---------- */
+@media (max-width:860px){
+  .app{display:block}
+  aside{position:sticky;top:0;z-index:12;height:auto;overflow:visible;padding:10px 12px 0;border-right:0;border-bottom:1px solid var(--line);background:#0d1340}
+  .brand{padding-bottom:8px}.brand h1{font-size:22px}.brand small{display:none}.logo{width:38px;height:38px}.logo b{font-size:22px;line-height:25px}.logo span{height:9px;font-size:8px;line-height:9px;bottom:4px}
+  .find{position:absolute;right:12px;top:14px;width:46%;margin:0}
+  .find input{padding:6px 10px 6px 30px;font-size:14px}.find:before{top:3px;left:9px;font-size:18px}
+  nav{display:flex;gap:4px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  nav::-webkit-scrollbar{display:none}
+  nav .grp{display:none}
+  nav a{flex:none;font-size:14px;padding:6px 11px;background:rgba(255,255,255,.05);white-space:nowrap}
+  nav a.on{box-shadow:inset 0 -3px 0 var(--gold)}
+  nav a .req{margin-left:4px}
+  main{padding:18px 14px 130px}
+  .phead h2{font-size:28px}
+  .card{padding:15px 14px 16px}
+  #bar{left:0;padding:10px 14px}
+  #bar .st{font-size:14px}
+  #bar button{padding:10px 18px;font-size:16px}
+  .pv{flex-basis:100%}
+  .fonts{grid-template-columns:1fr 1fr}.fonts .fs{height:64px;padding:8px 9px}.fonts .fs b{font-size:21px}.fonts .fs em{font-size:15px;margin-top:5px}
+  .tiles button>span small{font-size:12px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <div class="brand"><div class="logo"><b>42</b><span>KNAS</span></div><div><h1>KNAS Setup</h1><small>Your retro cable system</small></div></div>
+  <div class="find"><input id="find" placeholder="Find a setting…" autocomplete="off" aria-label="Find a setting"><div id="findRes" class="hidden"></div></div>
+  <nav id="nav">
+    <div class="grp">Get started</div>
+    <a href="#s-loc"><i>📍</i>Location<span class="req hidden" id="reqLoc">START</span></a>
+    <a href="#s-ch"><i>📺</i>Channels &amp; screen</a>
+    <div class="grp">Channels</div>
+    <a href="#s-wx"><i>⛅</i>Weather</a>
+    <a href="#s-sp"><i>🏈</i>Sports</a>
+    <a href="#s-news"><i>📰</i>News</a>
+    <a href="#s-facts"><i>💡</i>Facts &amp; trivia</a>
+    <a href="#s-etv"><i>🎬</i>ErsatzTV</a>
+    <div class="grp">Make it yours</div>
+    <a href="#s-look"><i>🎨</i>Colors</a>
+    <a href="#s-font"><i>🔤</i>Fonts</a>
+    <a href="#s-guide"><i>🗂️</i>Guide style</a>
+    <a href="#s-names"><i>🏷️</i>Names &amp; logos</a>
+    <a href="#s-sound"><i>🔊</i>Sound</a>
+    <a href="#s-hol"><i>🎃</i>Holidays</a>
+    <div class="grp">Recording</div>
+    <a href="#s-brk"><i>⏺️</i>Breaks &amp; clips<span class="warn hidden" id="brkWarn" title="Break clips need attention">!</span></a>
+    <a href="#s-more"><i>🧩</i>Extras</a>
+    <div class="grp">Help</div>
+    <a href="#s-files"><i>📦</i>Files</a>
+    <a href="#s-faq"><i>❓</i>Questions</a>
+  </nav>
+</aside>
+
+<main id="main">
+
+<div class="card notice" id="done">
+  <h2>📺 You're on the air!</h2>
+  <div class="why">Your settings are saved and KNAS restarted with them. Refresh any screen that's already open to see the changes.</div>
+  <div class="links">
+    <a class="btn" href="/tv">Open the Cable Box</a>
+    <a class="btn ghost" href="/">Weather Channel</a>
+    <a class="btn ghost" href="/sports">Sports</a>
+    <a class="btn ghost" href="/break">Break Screen</a>
+  </div>
+</div>
+<div class="card notice hidden" id="welcome">
+  <h2>👋 Welcome to KNAS!</h2>
+  <div class="why"><span id="welcomeAuto">KNAS is already running. Open the cable box at <a href="/tv"><code>/tv</code></a> on your TV and you're on the air.<br></span>
+  <span id="welcomeNeed">First, type your town under <a href="#s-loc">Location</a>, press Find, then <b>Save &amp; Start</b>. Then open the cable box at <code>/tv</code> on your TV.<br></span>
+  <b>Everything on this page is optional.</b> It all works out of the box. Each section marked <span class="badge">Optional</span> is just there if you want to change something. If you use ErsatzTV, add it under <a href="#s-etv">ErsatzTV</a>.</div>
+</div>
+<div class="card notice hidden" id="nosave"><h2>👀 View only</h2><div class="why">Settings can only be changed from a device on the same home network as KNAS. You're looking from outside it.</div></div>
+
+<!-- ============ LOCATION ============ -->
+<section class="panel" id="s-loc">
+  <div class="phead"><h2>Where are you? <span class="badge gold" id="locBadge">Needed for weather</span></h2><p>Your town is used for the weather, the forecast, the radar map and the sunrise and sunset times. If you don't set one, KNAS guesses it from your internet connection. Everything else has a sensible default.</p></div>
+  <div class="card notice hidden" id="autoLoc"><h2>📍 KNAS guessed your town</h2><div class="why">From your internet connection it looks like you're in <b id="autoCity"></b>, so the weather is already working. If that's right, there's nothing to do. If it's wrong (internet providers sometimes place you in a nearby city), type your town below and press <b>Save</b>.</div></div>
+  <div class="card">
+    <div class="field"><label for="city">Your town <small>e.g. "Springfield, MO" or "Leeds, UK"</small></label>
+    <div class="row"><input id="city" placeholder="Type your town and press Find" autocomplete="off"><button class="narrow" id="findCity" type="button">Find</button></div>
+    <div class="results hidden" id="cityRes"></div>
+    <div class="picked" id="cityPicked"></div>
+    <details class="help"><summary>How does this work?</summary><div>Press <b>Find</b> and pick your town from the list. That saves its exact location, and the time zone fills itself in. If you skip Find, KNAS looks the town up by itself when it starts. Add the state or country if your town's name is common.</div></details></div>
+    <div class="row">
+      <div class="field"><span class="lbl">Units</span><div class="seg" id="UNITS"><button type="button" data-v="us">°F · mph · inches</button><button type="button" data-v="metric">°C · km/h · mm</button></div></div>
+      <div class="field"><label for="TZ">Time zone <small>filled in for you</small></label><input id="TZ" placeholder="America/Chicago"></div>
+    </div>
+    <details class="help"><summary>Why does it need a time zone?</summary><div>The recorded weather channel and break clips show a clock. The time zone makes sure it matches your local time. It uses names like <code>America/New_York</code>, <code>America/Chicago</code>, <code>America/Denver</code>, <code>America/Los_Angeles</code> or <code>Europe/London</code>.</div></details>
+  </div>
+</section>
+
+<!-- ============ CHANNELS ============ -->
+<section class="panel" id="s-ch">
+  <div class="phead"><h2>Channels &amp; screen <span class="badge">Optional</span></h2><p>Where your KNAS channels sit in the cable box (<code>/tv</code>), and how the screens fit your TV.</p></div>
+  <div class="card">
+    <h3>Channel numbers</h3>
+    <div class="row">
+      <div class="field"><label for="STATION_NAME">Station name <small>last word = logo number</small></label><input id="STATION_NAME" placeholder="KNAS 42"></div>
+      <div class="field narrow"><label for="KNAS_CHANNEL">Weather ch.</label><input id="KNAS_CHANNEL" inputmode="numeric" placeholder="42"></div>
+      <div class="field narrow"><label for="SPORTS_CHANNEL">Sports ch.</label><input id="SPORTS_CHANNEL" inputmode="numeric" placeholder="43"></div>
+    </div>
+    <div class="tip">Use <b>0</b> to hide a channel. If you pick a number one of your ErsatzTV channels already uses, the KNAS channel takes that spot.</div>
+  </div>
+  <div class="card">
+    <h3>Screen</h3>
+    <div class="field"><span class="lbl">Screen shape</span>
+    <div class="seg" id="SCREEN"><button type="button" data-v="auto">Fill any screen</button><button type="button" data-v="4:3">Classic 4:3 (CRT)</button></div>
+    <details class="help"><summary>Which one should I pick?</summary><div><b>Fill any screen</b> stretches the layout, not the picture, to fit widescreen TVs and phones. <b>Classic 4:3</b> keeps the old square shape with black bars, which is best for a CRT. TV shows always keep their own shape either way. You can also pick per device by adding <code>?screen=4:3</code> or <code>?screen=auto</code> to the address.</div></details></div>
+    <div class="field"><span class="lbl">Order of screens <small>weather pages, sports teams and break segments</small></span>
+    <div class="seg" id="SHUFFLE"><button type="button" data-v="on">Shuffle</button><button type="button" data-v="off">Same order every time</button></div>
+    <div class="tip">With shuffle on, the weather channel still starts with Current Conditions and breaks still start with "We'll Be Right Back".</div></div>
+  </div>
+</section>
+
+<!-- ============ WEATHER ============ -->
+<section class="panel" id="s-wx">
+  <div class="phead"><h2>Weather channel <span class="badge">Optional</span></h2><p>Which pages your weather channel shows, how long each one stays up, and what the radar map looks like.</p></div>
+  <div class="card">
+    <h3>Pages</h3>
+    <div class="why">Untick any you don't want. Pages with nothing to show are skipped automatically.</div>
+    <div class="checks" id="WEATHER_PAGES">
+      <label><input type="checkbox" value="current" checked>Current Conditions</label>
+      <label><input type="checkbox" value="local" checked>Local Forecast</label>
+      <label><input type="checkbox" value="radar" checked>Doppler Radar</label>
+      <label><input type="checkbox" value="extended" checked>Extended Forecast</label>
+      <label><input type="checkbox" value="hourly" checked>Hourly Outlook</label>
+      <label><input type="checkbox" value="outlook" checked>Precipitation Outlook</label>
+      <label><input type="checkbox" value="almanac" checked>Almanac (sun &amp; moon)</label>
+      <label><input type="checkbox" value="localnews" checked>Local News</label>
+      <label><input type="checkbox" value="usnews" checked>National News</label>
+      <label><input type="checkbox" value="nowplaying" checked>Now Playing (music)</label>
+      <label><input type="checkbox" value="top" checked>Top Artists</label>
+      <label><input type="checkbox" value="status" checked>System Status (Kuma)</label>
+    </div>
+    <div class="row">
+      <div class="field narrow" style="flex-basis:170px"><label for="PAGE_SECONDS">Seconds per page</label><input id="PAGE_SECONDS" inputmode="numeric" placeholder="10"></div>
+      <div class="field"><label for="CRAWL_MESSAGE">Crawl message <small>your own line in the ticker</small></label><input id="CRAWL_MESSAGE" placeholder="Stay tuned for your local forecast"></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Map style</h3>
+    <div class="why">The map under the radar and rain outlook. The previews show your area. Dark and Light look the most like a TV weather map. None of these need a key.</div>
+    <div class="tiles maps" id="MAP_STYLE"></div>
+    <details class="more"><summary>More map options</summary>
+      <div class="field"><label for="MAP_CITIES">Towns on the radar map <small>blank = the biggest nearby towns</small></label><input id="MAP_CITIES" placeholder="Springfield, 37.21, -93.29; Branson, 36.64, -93.22">
+      <details class="help"><summary>How do I list my own towns?</summary><div>Write <code>Name, latitude, longitude</code> for each town, with a semicolon between towns. You can get the numbers by right-clicking a spot in Google Maps. Leave it blank and KNAS uses the biggest towns near you from OpenStreetMap.</div></details></div>
+      <div class="field"><label for="MAP_KEY">CARTO map key <small>only for the "CARTO" style, most people won't need this</small></label><input id="MAP_KEY" placeholder="CARTO key (optional)"></div>
+    </details>
+  </div>
+  <div class="card">
+    <h3>Music</h3>
+    <div class="why">Put your own music files (.mp3, .m4a, .ogg, .flac) in the <code>music</code> folder inside the KNAS folder. They shuffle on the weather channel. Smooth jazz is the classic choice.</div>
+  </div>
+</section>
+
+<!-- ============ SPORTS ============ -->
+<section class="panel" id="s-sp">
+  <div class="phead"><h2>Sports channel <span class="badge">Optional</span></h2><p>Live scores for your teams, with the ball on the field, play-by-play, a cheer when you score and a countdown to the next game. Scores come from ESPN and update every 5 seconds during games.</p></div>
+  <div class="card">
+    <h3>Your teams</h3>
+    <div class="row">
+      <div class="field narrow" style="flex:0 0 210px"><label for="sport">Sport</label><select id="sport"></select></div>
+      <div class="field"><label for="teamQ">Team</label><input id="teamQ" placeholder="Type a team name, e.g. Chiefs" autocomplete="off"></div>
+    </div>
+    <div class="results hidden" id="teamRes"></div>
+    <div id="teams"></div>
+    <div class="tip">The text box next to each team is the cheer that flashes on screen when they score.</div>
+  </div>
+  <div class="card">
+    <h3>Radio</h3>
+    <div class="why">A radio station that plays on the sports channel. Leave it blank for no radio.</div>
+    <div class="row">
+      <div class="field"><label for="SPORTS_RADIO">Stream address</label><input id="SPORTS_RADIO" placeholder="https://... (.mp3, .aac or .m3u8 stream)" autocomplete="off"></div>
+      <div class="field narrow" style="flex:0 0 200px"><label for="SPORTS_RADIO_NAME">Station name</label><input id="SPORTS_RADIO_NAME" placeholder="e.g. 103.7 The Buzz"></div>
+    </div>
+    <details class="help"><summary>How do I find a station's stream address?</summary><div>It has to be the direct audio stream, not the station's website. Try searching "<i>station call letters</i> stream URL", or look the station up on <a href="https://www.radio-browser.info" target="_blank" rel="noopener">radio-browser.info</a> and copy its stream link. Many look like <code>https://playerservices.streamtheworld.com/api/livestream-redirect/KXXXFM.mp3</code>.</div></details>
+    <details class="more"><summary>More radio options</summary>
+      <div class="field"><label for="RADIO_KEEP_MINUTES">Keep the radio tuned for <small>minutes after you stop watching</small></label><input id="RADIO_KEEP_MINUTES" inputmode="numeric" placeholder="30">
+      <div class="tip">Staying tuned lets KNAS skip the ad some stations play every time you reconnect.</div></div>
+    </details>
+  </div>
+</section>
+
+<!-- ============ NEWS ============ -->
+<section class="panel" id="s-news">
+  <div class="phead"><h2>News headlines <span class="badge">Optional</span></h2><p>One news source per line. Each line can be <b>a news website</b> (like <code>kshb.com</code>), <b>a few words to search</b> (like <code>Kansas City Chiefs</code>), or <b>an RSS feed</b>. Press <b>Check</b> to see the headlines it finds.</p></div>
+  <div class="card">
+    <div class="field"><label for="LOCAL_NEWS_FEEDS">Local news <small>your local TV station, newspaper, or town's name</small></label><textarea id="LOCAL_NEWS_FEEDS" placeholder="yourlocalstation.com&#10;Your Town, State"></textarea>
+    <div style="margin-top:8px"><button class="ghost" type="button" data-check="LOCAL_NEWS_FEEDS">Check</button></div><div class="msg" id="LOCAL_NEWS_FEEDS_msg"></div></div>
+    <div class="field"><label for="US_NEWS_FEEDS">National news</label><textarea id="US_NEWS_FEEDS" placeholder="https://feeds.npr.org/1001/rss.xml"></textarea>
+    <div style="margin-top:8px"><button class="ghost" type="button" data-check="US_NEWS_FEEDS">Check</button></div><div class="msg" id="US_NEWS_FEEDS_msg"></div></div>
+    <div class="field narrow" style="flex-basis:280px"><label for="NEWS_MAX_HOURS">Only headlines from the last <small>hours</small></label><input id="NEWS_MAX_HOURS" inputmode="numeric" placeholder="6"></div>
+    <div class="tip">Older stories are skipped, so the news is always current. If a site's own feed has nothing that recent, KNAS gets that site's newest stories from Google News instead.</div>
+    <details class="help"><summary>How does it get headlines from a regular website?</summary><div>First it looks for the site's own headline feed. If the site doesn't have one, or the feed hasn't been updated in weeks, KNAS gets that site's latest headlines from Google News instead, so they're always current. Typing words instead of a website searches Google News for them. The ticker shows one headline from each list, and the News pages show the top ones.</div></details>
+  </div>
+</section>
+
+<!-- ============ FACTS & TRIVIA ============ -->
+<section class="panel" id="s-facts">
+  <div class="phead"><h2>Facts &amp; trivia <span class="badge">Optional</span></h2><p>The "Did You Know?" facts and trivia questions on the break screen, and the facts in the weather channel ticker. Mix your own lists with facts and trivia pulled from the internet.</p></div>
+  <div class="card">
+    <h3>Facts</h3>
+    <div class="checks" style="margin-top:8px">
+      <label><input type="checkbox" id="FACTS_LIST">My facts list <small style="margin-left:auto;color:var(--muted)" id="factsCount"></small></label>
+      <label><input type="checkbox" id="FACTS_LOCAL">Facts about where I live <small style="margin-left:auto;color:var(--muted)">from Wikipedia</small></label>
+    </div>
+    <div class="row" style="margin-top:10px;align-items:center"><button type="button" class="ghost" style="flex:0 0 auto;min-width:0" data-edit="facts">Edit my facts list</button><button type="button" class="ghost" style="flex:0 0 auto;min-width:0" id="checkLocal">Preview facts about where I live</button><div></div></div>
+    <div class="msg" id="localMsg"></div>
+    <div class="editor hidden" id="ed_facts"><label for="edt_facts">My facts list <small>one fact per line, lines starting with # are notes</small></label><textarea id="edt_facts" spellcheck="true"></textarea>
+      <div class="row" style="margin-top:8px;align-items:center"><button type="button" style="flex:0 0 auto;min-width:0" data-save="facts">Save list</button><button type="button" class="ghost" style="flex:0 0 auto;min-width:0" data-close="facts">Close</button><div class="msg" id="edm_facts" style="margin:0"></div></div></div>
+    <div class="field"><label for="FACTS_SOURCES">More facts from <small>one per line</small></label><textarea id="FACTS_SOURCES" placeholder="Space&#10;Kansas City Chiefs&#10;https://docs.google.com/spreadsheets/d/..."></textarea>
+    <div style="margin-top:8px"><button class="ghost" type="button" data-fcheck="FACTS_SOURCES">Check</button></div><div class="msg" id="FACTS_SOURCES_msg"></div></div>
+    <details class="help"><summary>What can I put here?</summary><div>
+      • <b>A topic in plain words</b>, like <code>Space</code>, <code>Dinosaurs</code>, <code>The Simpsons</code> or <code>Chicago</code>. KNAS pulls facts from its Wikipedia article.<br>
+      • <b>A Wikipedia page</b> link.<br>
+      • <b>A Google Sheet</b> with one fact per row in the first column. In Google Sheets use <b>Share → Anyone with the link</b>.<br>
+      • <b>A text file link</b> (.txt or .csv) with one fact per line.<br>
+      • <b>Any web page</b> with a list of facts, or an <b>RSS feed</b>.<br>
+      They're fetched every few hours and saved, so the break screen never waits on the internet.</div></details>
+  </div>
+  <div class="card">
+    <h3>Trivia</h3>
+    <div class="checks" style="margin-top:8px">
+      <label><input type="checkbox" id="TRIVIA_LIST">My trivia list <small style="margin-left:auto;color:var(--muted)" id="triviaCount"></small></label>
+    </div>
+    <div class="row" style="margin-top:10px;align-items:center"><button type="button" class="ghost" style="flex:0 0 auto;min-width:0" data-edit="trivia">Edit my trivia list</button><div></div></div>
+    <div class="editor hidden" id="ed_trivia"><label for="edt_trivia">My trivia list <small>one per line: question | right answer | wrong | wrong | wrong</small></label><textarea id="edt_trivia" spellcheck="true"></textarea>
+      <div class="row" style="margin-top:8px;align-items:center"><button type="button" style="flex:0 0 auto;min-width:0" data-save="trivia">Save list</button><button type="button" class="ghost" style="flex:0 0 auto;min-width:0" data-close="trivia">Close</button><div class="msg" id="edm_trivia" style="margin:0"></div></div></div>
+    <div class="field"><span class="lbl">Trivia topics <small>from the free Open Trivia Database, pick any</small></span><div class="tiles topics" id="TRIVIA_TOPICS"></div></div>
+    <div class="field"><label for="TRIVIA_SOURCES">More trivia from <small>Google Sheet or text file links, one per line</small></label><textarea id="TRIVIA_SOURCES" placeholder="https://docs.google.com/spreadsheets/d/..."></textarea>
+    <div style="margin-top:8px"><button class="ghost" type="button" data-fcheck="TRIVIA_SOURCES">Check</button></div><div class="msg" id="TRIVIA_SOURCES_msg"></div></div>
+    <details class="help"><summary>How do I make my own trivia sheet?</summary><div>One question per row: <b>question</b> in the first column, the <b>right answer</b> in the second, and up to three <b>wrong answers</b> after that. A text file works the same, with <code>|</code> between them:<br><code>What year did Toy Story come out? | 1995 | 1993 | 1997 | 1999</code></div></details>
+  </div>
+</section>
+
+<!-- ============ ERSATZTV ============ -->
+<section class="panel" id="s-etv">
+  <div class="phead"><h2>ErsatzTV <span class="badge">Optional</span></h2><p><a href="https://ersatztv.org" target="_blank" rel="noopener">ErsatzTV</a> turns your own shows and movies into live TV channels. Add it here and those channels show up in the KNAS cable box, with a guide and static between channels.</p></div>
+  <div class="card">
+    <div class="field"><label for="ERSATZTV_URL">ErsatzTV address <small>what you open ErsatzTV at in your browser</small></label>
+    <div class="row"><input id="ERSATZTV_URL" placeholder="http://192.168.1.50:8409" autocomplete="off"><button class="narrow ghost" id="testEtv" type="button">Test</button></div>
+    <div class="msg" id="etvMsg"></div>
+    <details class="help"><summary>Where do I find this?</summary><div>It's the computer ErsatzTV runs on, plus port <b>8409</b>, for example <code>http://192.168.1.50:8409</code>. If ErsatzTV runs on this same machine, use this machine's IP address. Press <b>Test</b> to make sure it connects.</div></details></div>
+    <div class="field"><span class="lbl">Where does ErsatzTV run?</span>
+    <div class="seg" id="ERSATZTV_HOST"><button type="button" data-v="nas">On this same NAS / server</button><button type="button" data-v="windows">On a Windows PC</button><button type="button" data-v="other">On a Mac or Linux computer</button></div>
+    <div class="tip" id="etvHostTip"></div></div>
+    <details class="more"><summary>More ErsatzTV options</summary>
+      <div class="field"><span class="lbl">Stream type</span>
+      <div class="seg" id="ERSATZTV_MODE"><button type="button" data-v="segmenter">Segmenter (recommended)</button><button type="button" data-v="hls-direct">HLS Direct (lighter)</button></div>
+      <div class="tip">Leave this on Segmenter unless channels stutter on a slow ErsatzTV computer.</div></div>
+    </details>
+  </div>
+</section>
+
+<!-- ============ COLORS ============ -->
+<section class="panel" id="s-look">
+  <div class="phead"><h2>Colors <span class="badge">Optional</span></h2><p>Pick a color theme, then fine-tune any color you like. Every screen follows along: weather, sports, guide, banner and break.</p></div>
+  <div class="card">
+    <h3>Theme</h3>
+    <div class="tiles swatches" id="THEME"></div>
+    <div class="lookrow">
+      <div class="pv" id="pv"><div class="lg sh"><span id="pvNum">42</span><i></i></div><div class="hd sh"><small>Current</small><b>Conditions</b></div><div class="ck sh">9:41 PM<br><span>SAT OCT 11</span></div>
+        <div class="pn sh"><div><span>Temperature</span><span>72°</span></div><div><span>Humidity</span><span>58%</span></div><div><span>Wind</span><span>S 8</span></div></div>
+        <div class="tk sh"><b>KNAS 42</b> &nbsp;Your local forecast ◆ Stay tuned</div></div>
+      <div class="colors" id="colors"></div>
+    </div>
+    <div class="row" style="margin-top:12px;align-items:center"><button class="ghost" style="flex:0 0 auto;min-width:0" type="button" id="resetColors">Reset colors</button><div class="tip" style="margin:0">Colors you haven't changed follow the theme.</div></div>
+  </div>
+  <div class="card">
+    <h3>Scan lines</h3>
+    <div class="why">The faint CRT lines over the picture.</div>
+    <div class="seg" id="SCANLINES"><button type="button" data-v="on">Subtle</button><button type="button" data-v="strong">Strong</button><button type="button" data-v="off">Off</button></div>
+  </div>
+</section>
+
+<!-- ============ FONTS ============ -->
+<section class="panel" id="s-font">
+  <div class="phead"><h2>Fonts <span class="badge">Optional</span></h2><p>The lettering on every screen. All of these are stored on your NAS, so they load instantly on TV boxes and work even if the internet is down.</p></div>
+  <div class="card">
+    <h3>Font style</h3>
+    <div id="FONT"></div>
+    <div class="tip">Every screen uses your font, including the TV guide and channel banner. With <b>Classic</b>, the 2000s guide styles keep their own 2000s look.</div>
+  </div>
+  <div class="card">
+    <h3>Fine-tune</h3>
+    <div class="lookrow" style="margin-top:6px">
+      <div class="pv" id="fpv"><div class="lg sh"><span>42</span><i></i></div><div class="hd sh"><small>Local</small><b>Forecast</b></div><div class="ck sh">9:41 PM<br><span>SAT OCT 11</span></div>
+        <div class="pn sh"><div><span>Tonight</span><span>Clear · 54°</span></div><div><span>Sunday</span><span>Sunny · 78°</span></div><div><span>Monday</span><span>T-Storms · 71°</span></div></div>
+        <div class="tk sh"><b>NEWS</b> &nbsp;Chiefs win 24-17 in overtime ◆ Stay tuned</div></div>
+      <div style="flex:1;min-width:240px">
+        <div class="field" style="margin-top:0"><span class="lbl">Thickness</span>
+        <div class="seg" id="FONT_WEIGHT"><button type="button" data-v="bold">Bold</button><button type="button" data-v="lighter">Lighter</button></div>
+        <div class="tip">Lighter makes every word a little thinner. Nice on big, sharp TVs.</div></div>
+        <div class="field"><span class="lbl">Text shadow</span>
+        <div class="seg" id="TEXT_SHADOW"><button type="button" data-v="classic">Classic</button><button type="button" data-v="soft">Soft</button><button type="button" data-v="thin">Thin</button></div>
+        <div class="tip">Classic is the hard 90s drop shadow. Soft is a smooth glow. Thin is barely there.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GUIDE STYLE ============ -->
+<section class="panel" id="s-guide">
+  <div class="phead"><h2>Guide style <span class="badge">Optional</span></h2><p>How the cable box guide and channel banner look. The 2000s styles also play the live channel in a little window, like the satellite and cable boxes did.</p></div>
+  <div class="card">
+    <div class="tiles gstyles" id="GUIDE_STYLE">
+      <button type="button" data-v="knas"><div class="gp" style="background:linear-gradient(#241a72,#5a2f86)"><i style="left:8px;top:8px;width:46px;height:26px;color:#ffd23a;font:italic 800 13px Arial;font-size:13px">TV Guide</i><i style="left:62px;top:8px;right:8px;height:30px;background:#0a1a5a;border:2px solid #9cb8ff;border-radius:3px"></i><i style="left:0;right:0;top:44px;bottom:0;background:#0e2a8f;border-top:2px solid #ffb000"></i><i style="left:6px;right:6px;top:52px;height:14px;background:#2449b8"></i><i style="left:40px;width:60px;top:52px;height:14px;background:#ffd23a"></i><i style="left:6px;right:6px;top:70px;height:14px;background:#2449b8"></i></div><span>KNAS 90s<small>the classic look</small></span></button>
+      <button type="button" data-v="satellite"><div class="gp" style="background:#00143a"><i style="left:8px;top:8px;width:46px;height:30px;background:linear-gradient(#3b6,#295);border:2px solid #7fb2ff;border-radius:2px"></i><i style="left:62px;top:8px;right:8px;height:30px;background:linear-gradient(#123e8c,#06225a);border:2px solid #4f8fe6;border-radius:5px"></i><i style="left:6px;right:6px;top:46px;height:10px;background:linear-gradient(#3a6fd0,#1b479e);border-radius:3px 3px 0 0"></i><i style="left:6px;right:6px;top:59px;height:13px;background:#2a57ad;border-radius:2px"></i><i style="left:46px;width:60px;top:59px;height:13px;background:linear-gradient(#8ff0ff,#25b8e8);border-radius:2px"></i><i style="left:6px;right:6px;top:75px;height:13px;background:#2a57ad;border-radius:2px"></i></div><span>Satellite 2000s<small>deep blue, glossy, aqua highlight</small></span></button>
+      <button type="button" data-v="cable"><div class="gp" style="background:#121212"><i style="left:8px;top:8px;width:46px;height:30px;background:linear-gradient(#3b6,#295);border:2px solid #9a9a9a"></i><i style="left:62px;top:8px;right:8px;height:30px;background:#1c1c1c;border:2px solid #555"></i><i style="left:6px;right:6px;top:46px;height:10px;background:#2e2e2e;border-top:2px solid #ffd400"></i><i style="left:6px;right:6px;top:59px;height:13px;background:#404040"></i><i style="left:46px;width:60px;top:59px;height:13px;background:#ffd400"></i><i style="left:6px;right:6px;top:75px;height:13px;background:#404040"></i></div><span>Digital Cable 2000s<small>black &amp; steel gray, yellow highlight</small></span></button>
+      <button type="button" data-v="chrome"><div class="gp" style="background:#26344c"><i style="left:8px;top:8px;width:46px;height:30px;background:linear-gradient(#3b6,#295);border:3px solid #e8edf4;border-radius:6px"></i><i style="left:62px;top:8px;right:8px;height:30px;background:linear-gradient(#fbfcfe,#c4cddb);border-radius:8px"></i><i style="left:6px;right:6px;top:46px;height:10px;background:linear-gradient(#e9eef5,#a9b5c7);border-radius:5px 5px 0 0"></i><i style="left:6px;right:6px;top:59px;height:13px;background:linear-gradient(#fff,#cdd5e0)"></i><i style="left:46px;width:60px;top:59px;height:13px;background:linear-gradient(#c8f6ff,#3cc3ee)"></i><i style="left:6px;right:6px;top:75px;height:13px;background:linear-gradient(#fff,#cdd5e0)"></i></div><span>Y2K Chrome<small>shiny silver &amp; aqua</small></span></button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ NAMES & LOGOS ============ -->
+<section class="panel" id="s-names">
+  <div class="phead"><h2>Names &amp; logos <span class="badge">Optional</span></h2><p>Rename things and swap in your own logos. The weather channel's name and number are the <b>Station name</b> under <a href="#s-ch">Channels &amp; screen</a>.</p></div>
+  <div class="card">
+    <h3>Names</h3>
+    <div class="row">
+      <div class="field"><label for="CABLE_NAME">Cable box name <small>guide, break screen</small></label><input id="CABLE_NAME" placeholder="KNAS Cable"></div>
+      <div class="field"><label for="GUIDE_NAME">Guide title</label><input id="GUIDE_NAME" placeholder="TV Guide"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label for="SPORTS_NAME">Sports channel name <small>last word goes on the badge</small></label><input id="SPORTS_NAME" placeholder="KNAS Sports"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label for="BREAK_LINE1">Break screen big words</label><input id="BREAK_LINE1" placeholder="Stay Tuned"></div>
+      <div class="field"><label for="BREAK_LINE2">Break screen line</label><input id="BREAK_LINE2" placeholder="We'll be right back"></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Logos</h3>
+    <div class="why">Square PNGs with a see-through background look best. Logos change right away, no need to press Save.</div>
+    <div class="logos">
+      <div><b>Station logo</b><small>weather channel</small><div class="pic" id="lg_station"></div><div class="btns"><button type="button" class="ghost" data-up="station">Upload</button><button type="button" class="del" data-rm="station">Remove</button></div></div>
+      <div><b>Sports logo</b><small>sports channel badge</small><div class="pic" id="lg_sports"></div><div class="btns"><button type="button" class="ghost" data-up="sports">Upload</button><button type="button" class="del" data-rm="sports">Remove</button></div></div>
+      <div><b>Cable box logo</b><small>TV guide and break screen</small><div class="pic" id="lg_cable"></div><div class="btns"><button type="button" class="ghost" data-up="cable">Upload</button><button type="button" class="del" data-rm="cable">Remove</button></div></div>
+    </div>
+    <input type="file" id="logoFile" accept="image/png,image/jpeg,image/gif,image/webp" class="hidden">
+    <div class="msg" id="logoMsg"></div>
+  </div>
+</section>
+
+<!-- ============ SOUND ============ -->
+<section class="panel" id="s-sound">
+  <div class="phead"><h2>Sound <span class="badge">Optional</span></h2><p>Every channel, song and radio station is recorded at a different volume. The <b>volume leveler</b> evens them out as they play, so you're not grabbing the remote every time you change channels.</p></div>
+  <div class="card">
+    <h3>Volume leveler</h3>
+    <div class="field"><div class="seg" id="LEVEL_AUDIO"><button type="button" data-v="on">On: keep everything about the same volume</button><button type="button" data-v="off">Off</button></div></div>
+    <div class="field"><span class="lbl">Strength</span>
+    <div class="seg" id="LEVEL_STRENGTH"><button type="button" data-v="light">Light</button><button type="button" data-v="medium">Medium</button><button type="button" data-v="strong">Strong (night mode)</button></div>
+    <details class="help"><summary>Which strength should I pick?</summary><div><b>Light</b> only smooths out the jumps between channels and keeps movies sounding natural. <b>Medium</b> also tames loud scenes and commercials, and is a good everyday choice. <b>Strong</b> keeps whispers and explosions close together, like a TV's night mode. It's great for late nights, but music can sound flatter.</div></details></div>
+    <div class="field"><label for="LEVEL_TARGET">Overall loudness <small>after leveling</small></label>
+    <div class="rng"><input type="range" id="LEVEL_TARGET" min="-12" max="12" step="1"><output id="LEVEL_TARGET_v"></output></div></div>
+    <details class="more"><summary>More leveler options</summary>
+      <div class="field"><span class="lbl">Limiter <small>a ceiling nothing can get louder than</small></span>
+      <div class="seg" id="LEVEL_LIMITER"><button type="button" data-v="on">On</button><button type="button" data-v="off">Off</button></div>
+      <div class="rng" style="margin-top:8px"><input type="range" id="LEVEL_CEILING" min="-12" max="0" step="1" aria-label="Limiter ceiling"><output id="LEVEL_CEILING_v"></output></div></div>
+      <div class="field"><label for="LEVEL_FADE_MS">Fade in after changing channel</label>
+      <div class="rng"><input type="range" id="LEVEL_FADE_MS" min="0" max="3000" step="100"><output id="LEVEL_FADE_MS_v"></output></div></div>
+    </details>
+  </div>
+  <div class="card">
+    <h3>Volume of each kind of sound</h3>
+    <div class="why">Match these by ear. 100% is normal.</div>
+    <div class="field"><label for="VOL_TV">TV channels <small>your ErsatzTV shows and movies</small></label>
+    <div class="rng"><input type="range" id="VOL_TV" min="0" max="200" step="5"><output id="VOL_TV_v"></output></div></div>
+    <div class="field"><label for="VOL_MUSIC">Weather channel music</label>
+    <div class="rng"><input type="range" id="VOL_MUSIC" min="0" max="200" step="5"><output id="VOL_MUSIC_v"></output></div></div>
+    <div class="field"><label for="VOL_RADIO">Sports radio</label>
+    <div class="rng"><input type="range" id="VOL_RADIO" min="0" max="200" step="5"><output id="VOL_RADIO_v"></output></div></div>
+    <div class="field"><label for="STATIC_VOLUME">Static between channels</label>
+    <div class="rng"><input type="range" id="STATIC_VOLUME" min="0" max="100" step="5"><output id="STATIC_VOLUME_v"></output></div></div>
+    <details class="help"><summary>Where does leveling work?</summary><div>
+      • <b>KNAS Cable box</b> (<code>/tv</code>) on TV boxes, PCs, Xbox and Android phones: everything is leveled.<br>
+      • <b>Recorded channels</b> (weather stream and break clips for ErsatzTV): leveled too, when the leveler is on.<br>
+      • <b>iPhones and iPads:</b> Apple doesn't let web pages adjust video sound, so TV channels play at their normal volume there.<br>
+      • <b>Shows watched straight in Jellyfin or the ErsatzTV app</b> don't go through KNAS. Turn on <b>Normalize Loudness</b> in ErsatzTV's FFmpeg profile for those.<br>
+      • Leveling starts as soon as the page is allowed to play sound. On some devices that's after the first button press.</div></details>
+  </div>
+</section>
+
+<!-- ============ HOLIDAYS ============ -->
+<section class="panel" id="s-hol">
+  <div class="phead"><h2>Holidays <span class="badge">Optional</span></h2><p>A little holiday reskin on top of your normal look: snow at Christmas, bats at Halloween, fireworks on the Fourth. Effects stay off your TV shows. <span id="holNow"></span></p></div>
+  <div class="card">
+    <h3>Holiday skin</h3>
+    <div class="tiles hols" id="SEASON">
+      <button type="button" data-v="auto">📅 Automatic</button><button type="button" data-v="off">Off</button>
+      <button type="button" data-v="halloween">🎃 Halloween</button><button type="button" data-v="thanksgiving">🍂 Thanksgiving</button>
+      <button type="button" data-v="christmas">🎄 Christmas</button><button type="button" data-v="newyear">🎆 New Year</button>
+      <button type="button" data-v="valentines">💘 Valentine's</button><button type="button" data-v="stpatricks">☘️ St. Patrick's</button>
+      <button type="button" data-v="easter">🐣 Easter</button><button type="button" data-v="july4">🎇 Fourth of July</button>
+      <button type="button" data-v="winter">❄️ Winter snow</button>
+    </div>
+    <details class="help"><summary>When does Automatic switch?</summary><div>Halloween: all of October · Thanksgiving: Nov 1 to Thanksgiving · Christmas: the day after Thanksgiving to Dec 26 · New Year: Dec 27 to Jan 2 · Valentine's: Feb 7–14 · St. Patrick's: Mar 10–17 · Easter: the week before Easter · Fourth of July: Jul 1–5 · Winter snow: the rest of December, January and February (if turned on below).</div></details>
+  </div>
+  <div class="card">
+    <h3>Effects</h3>
+    <div class="field"><div class="seg" id="SEASON_EFFECTS"><button type="button" data-v="full">Full</button><button type="button" data-v="light">Light (easier on TV boxes)</button><button type="button" data-v="off">Off</button></div></div>
+    <div class="checks" style="margin-top:12px">
+      <label><input type="checkbox" id="SEASON_TUNE">Animation when changing channel</label>
+      <label><input type="checkbox" id="SEASON_GREETING">Holiday greeting in the ticker</label>
+      <label><input type="checkbox" id="SEASON_COLORS">Holiday colors</label>
+      <label><input type="checkbox" id="SEASON_WINTER">Winter snow in Jan &amp; Feb</label>
+    </div>
+    <div class="tip">TV boxes automatically use the lighter effects so everything stays smooth.</div>
+  </div>
+</section>
+
+<!-- ============ BREAKS & RECORDING ============ -->
+<section class="panel" id="s-brk">
+  <div class="phead"><h2>Breaks &amp; clips <span class="badge">Optional</span></h2><p>KNAS can turn its screens into real video for ErsatzTV: the weather channel as a live stream, plus short <b>break clips</b> ErsatzTV plays between shows so they start right on the :00 and :30.</p></div>
+  <div class="card">
+    <h3>Break clips</h3>
+    <div class="why">Short videos of the break screen that ErsatzTV plays between shows, so every show starts right on the :00 or :30. Turn this off if you use your own filler clips.</div>
+    <div class="seg" id="BREAK_CLIPS_ON"><button type="button" data-v="on">On: KNAS makes them for me</button><button type="button" data-v="off">Off: I use my own filler</button></div>
+    <div class="tip" id="clipsOffTip">With break clips off, KNAS doesn't record anything for breaks and leaves the files in your <code>break-clips</code> folder alone.</div>
+  </div>
+  <div class="card">
+    <h3>What to record</h3>
+    <div class="checks" id="CAST">
+      <label><input type="checkbox" value="8643=/?cast=1">Weather channel stream (port 8643)</label>
+      <label><input type="checkbox" value="8644=/break?cast=1" checked>Break screen (port 8644, for break clips)</label>
+    </div>
+    <div class="tip"><b>Weather channel stream</b> is only needed if you added the weather channel to ErsatzTV. It runs all the time and uses a lot of CPU, so leave it off if you watch the weather channel in the KNAS cable box. The <b>break screen</b> only runs for a few minutes while break clips are being made.</div>
+  </div>
+  <div class="card">
+    <h3>Break screen</h3>
+    <div class="checks" id="BREAK_SEGMENTS">
+      <label><input type="checkbox" value="trivia" checked>Trivia with countdown</label>
+      <label><input type="checkbox" value="facts" checked>Did You Know facts</label>
+      <label><input type="checkbox" value="comingup" checked>Coming Up Next</label>
+      <label><input type="checkbox" value="onthisday" checked>On This Day</label>
+      <label><input type="checkbox" value="videos" checked>Your video clips</label>
+      <label><input type="checkbox" value="news" checked>News headlines in the ticker</label>
+    </div>
+    <div class="tip">Your own trivia goes in <code>trivia.txt</code>, facts in <code>facts.txt</code>, and video clips (.mp4/.webm) in the <code>break-videos</code> folder. Recorded clips leave out the date, Coming Up and On This Day so they never look old.</div>
+    <details class="more"><summary>More break options</summary>
+      <div class="field"><label for="BREAK_VIDEO_MAX">Longest video clip <small>seconds</small></label><input id="BREAK_VIDEO_MAX" inputmode="numeric" placeholder="90"></div>
+    </details>
+  </div>
+  <div class="card clipsOnly" id="clipCard">
+    <h3>Clip status</h3>
+    <div class="why" id="clipSum">Checking…</div>
+    <div class="clipinfo" id="clipInfo"></div>
+    <table class="cliptab" id="clipTab"></table>
+    <div class="row" style="margin-top:12px;align-items:center"><button type="button" id="clipNow" style="flex:0 0 auto;min-width:0">Make new clips now</button><div class="tip" style="margin:0">Takes about as long as all your clips added together. You can leave this page.</div></div>
+  </div>
+  <div class="card clipsOnly" id="clipHow">
+    <h3>Getting the clips to ErsatzTV</h3>
+    <div id="how_none" class="why">Set your ErsatzTV address first, under <a href="#s-etv">ErsatzTV</a>, and say where ErsatzTV runs. The steps for your setup will show up here.</div>
+    <div id="how_nas" class="hidden">
+      <div class="why">ErsatzTV runs on this same machine, so it can read the clips straight from the <code>break-clips</code> folder inside your KNAS folder. Nothing gets copied.</div>
+      <ol class="steps">
+        <li>In your NAS's Docker app, edit the <b>ErsatzTV</b> container (or its compose file) and add a <b>volume / folder mapping</b>:<br>your KNAS folder's <code>break-clips</code> folder → <code>/knas-clips</code> (read-only is fine).<br><span class="tip">Compose example: <code>- /volume1/docker/knas-retro-tv/break-clips:/knas-clips:ro</code> (use your real KNAS folder path).</span></li>
+        <li>Restart the ErsatzTV container.</li>
+        <li>In ErsatzTV: <b>Media Sources → Local</b>, add a library of kind <b>Other Videos</b> with the folder <code>/knas-clips</code>, and scan it.</li>
+        <li>Make the filler presets (see <b>How do I use break clips in ErsatzTV?</b> below).</li>
+      </ol>
+    </div>
+    <div id="how_windows" class="hidden">
+      <div class="why">ErsatzTV runs on a Windows PC, which can't read the clips from the NAS by itself. One small setup file takes care of it: it copies the clips onto the PC and keeps them fresh by itself.</div>
+      <div class="dl"><a class="btn" href="/api/setup/download/get-clips.bat">Download Get KNAS Break Clips.bat</a></div>
+      <ol class="steps">
+        <li>On the PC that runs ErsatzTV, download the file above and <b>double-click it</b>. It already knows this NAS's address. (If Windows warns you, click <b>More info → Run anyway</b>, or <b>Keep</b> in your browser.)</li>
+        <li>It sets everything up and shows you your clips folder (usually <code>C:\Users\<i>you</i>\KNAS Break Clips\break-clips</code>). The folder path is already copied, so you can paste it.</li>
+        <li>In ErsatzTV: <b>Media Sources → Local</b>, add a library of kind <b>Other Videos</b>, paste that folder, save, and scan it.</li>
+        <li>Put that library's number in <b>Keep ErsatzTV up to date</b> below, then make the filler presets (see <b>How do I use break clips in ErsatzTV?</b>).</li>
+      </ol>
+      <div class="tip">It checks for new or missing clips every 5 minutes in the background (no windows pop up), updates itself when KNAS updates, and gives KNAS ErsatzTV's API key by itself. Running the file again is safe. The <b>Copied to ErsatzTV computer</b> column above shows it working.</div>
+    </div>
+    <div id="how_other" class="hidden">
+      <div class="why">ErsatzTV runs on a Mac or Linux computer. A small copier keeps a fresh copy of the clips on that computer.</div>
+      <div class="dl"><a class="btn" href="/api/setup/download/clip-sync.sh">Download the copier (.sh)</a></div>
+      <ol class="steps">
+        <li>Put <b>knas-clip-sync.sh</b> in a folder on that computer. It already knows this NAS's address.</li>
+        <li>Open Terminal in that folder and run it once: <code>sh knas-clip-sync.sh</code>. The clips land in a <code>break-clips</code> folder next to it.</li>
+        <li>Make it run every 5 minutes: run <code>crontab -e</code> and add the line<br><code>*/5 * * * * /bin/sh "/full/path/to/knas-clip-sync.sh" &gt;/dev/null 2&gt;&amp;1</code></li>
+        <li>In ErsatzTV: add a <b>Local</b> library of kind <b>Other Videos</b> with that <code>break-clips</code> folder, scan it, and make the filler presets (below).</li>
+      </ol>
+    </div>
+  </div>
+  <div class="card clipsOnly">
+    <h3>Keep ErsatzTV up to date</h3>
+    <div class="why">ErsatzTV only notices new clips when it scans its library. Until then it can try to play a clip it remembers and say the media isn't available. Give KNAS the library's number and it asks ErsatzTV to rescan the clips every time they change.</div>
+    <div class="row">
+      <div class="field narrow" style="flex-basis:190px"><label for="ERSATZTV_CLIPS_LIBRARY">Clips library number</label><input id="ERSATZTV_CLIPS_LIBRARY" inputmode="numeric" placeholder="e.g. 5"></div>
+      <div class="field"><label for="ERSATZTV_API_KEY">ErsatzTV API key <small>filled in by the clip copier</small></label><input id="ERSATZTV_API_KEY" autocomplete="off" spellcheck="false" placeholder="paste the key from api-secrets.json"></div>
+      <div class="field" style="flex:0 0 auto;min-width:0"><button type="button" class="ghost" id="testScan">Test</button></div>
+    </div>
+    <div class="msg" id="scanMsg"></div>
+    <details class="help"><summary>Where do I find the number?</summary><div>In ErsatzTV, go to <b>Media Sources → Local</b> and click the <b>edit</b> (pencil) button on the library that has the KNAS break clips. Look at the address bar: the number in it is the library number, for example <code>…/media/sources/local/<b>5</b>/edit</code> means <b>5</b>. Press <b>Test</b>: ErsatzTV should start scanning that library.</div></details>
+    <div class="tip">Newer ErsatzTV versions (26.8 and later) need their API key. <b>If ErsatzTV is on a Windows PC, Mac or Linux computer, the clip copier finds the key and fills it in for you</b> the next time it runs. Just wait for its next copy, or run it once by hand.</div>
+    <details class="help"><summary>Where do I find the API key myself?</summary><div>You only need this if ErsatzTV runs in Docker on the NAS, or the copier couldn't find the key. ErsatzTV saves the key in a file called <code>api-secrets.json</code> in its config folder:<br>
+      • <b>Windows:</b> press <b>Windows key + R</b>, type <code>%LOCALAPPDATA%\ersatztv</code> and press Enter.<br>
+      • <b>Docker:</b> the folder you mapped to ErsatzTV's config (often <code>/config</code> or <code>/root/.local/share/ersatztv</code> inside the container).<br>
+      Open <code>api-secrets.json</code> with Notepad or any text editor. Copy the long key (the text between the quotes, not the name before it) and paste it here. Older ErsatzTV versions don't need a key: leave it blank.</div></details>
+  </div>
+  <div class="card clipsOnly">
+    <h3>Clip settings</h3>
+    <div class="row">
+      <div class="field"><label for="BREAK_CLIPS">Clips to make <small>length x how many, blank = off</small></label><input id="BREAK_CLIPS" placeholder="30s x2, 1m x3, 2m x2, 5m x2"></div>
+      <div class="field narrow" style="flex-basis:190px"><label for="BREAK_CLIPS_HOURS">Re-record every <small>hours</small></label><input id="BREAK_CLIPS_HOURS" inputmode="numeric" placeholder="3"></div>
+    </div>
+    <div class="tip">They're also re-made just after midnight. Every 3 hours keeps the headlines in them current and the trivia and facts mixed up.</div>
+    <details class="help"><summary>How do I use break clips in ErsatzTV?</summary><div>
+      1) Get the clips to ErsatzTV (see <b>Getting the clips to ErsatzTV</b> above), add them as a <b>Local</b> library of kind <b>Other Videos</b>, scan it, and make a <b>collection</b> of the clips.<br>
+      2) In ErsatzTV, go to <b>Lists → Filler Presets</b>.<br>
+      3) Create a <b>Filler Preset</b>: Post-Roll, Mode <b>Pad</b>, Pad to Nearest Minute <b>30</b>, using that collection. Create another: <b>Fallback</b>, same collection.<br>
+      4) On your schedule items set Start Type <b>Dynamic</b>, Post-Roll = the Pad preset, Fallback = the Fallback preset, then reset the playouts.</div></details>
+    <details class="more"><summary>Recording quality</summary>
+      <div class="row">
+        <div class="field"><label for="VIDEO_BITRATE">Video quality</label><select id="VIDEO_BITRATE"><option value="1000k">Low (1000k): easy on slow servers</option><option value="1500k">Normal (1500k)</option><option value="2500k">High (2500k): sharper</option></select></div>
+        <div class="field"><label for="FPS">Smoothness</label><select id="FPS"><option value="30">30 fps: smoothest</option><option value="24">24 fps</option><option value="15">15 fps: least work</option></select></div>
+      </div>
+      <div class="row">
+        <div class="field"><label for="MUSIC_VOLUME">Music volume <small>recorded weather, 0 to 1</small></label><input id="MUSIC_VOLUME" inputmode="decimal" placeholder="0.8"></div>
+        <div class="field"><label for="BROWSER_RESTART_HOURS">Refresh the recorder every <small>hours, 0 = never</small></label><input id="BROWSER_RESTART_HOURS" inputmode="numeric" placeholder="24"></div>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ============ EXTRAS ============ -->
+<section class="panel" id="s-more">
+  <div class="phead"><h2>Extras <span class="badge">Optional</span></h2><p>Extra pages for the weather channel if you run these apps on your server.</p></div>
+  <div class="card">
+    <h3>Uptime Kuma status page</h3>
+    <div class="why">If you run <a href="https://github.com/louislam/uptime-kuma" target="_blank" rel="noopener">Uptime Kuma</a>, the weather channel can show a "System Status" page of your servers and apps.</div>
+    <div class="row"><div class="field"><label for="KUMA_URL">Kuma address</label><input id="KUMA_URL" placeholder="http://192.168.1.50:3001"></div><div class="field narrow" style="flex:0 0 200px"><label for="KUMA_SLUG">Status page slug</label><input id="KUMA_SLUG" placeholder="e.g. home"></div></div>
+    <div class="tip">In Kuma: <b>Status Pages → New Status Page</b>, give it a slug, and add the monitors you want shown (up to 7 fit).</div>
+  </div>
+  <div class="card">
+    <h3>Music tracker</h3>
+    <div class="why">If you run a self-hosted listening tracker with a JSON API, the weather channel can show "Now Playing" and your top artists.</div>
+    <div class="field"><label for="SPOTIFY_URL">Tracker address</label><input id="SPOTIFY_URL" placeholder="http://192.168.1.50:8787"></div>
+    <details class="more"><summary>More tracker options</summary>
+      <div class="row">
+        <div class="field"><label for="SPOTIFY_NOWPLAYING_PATH">Now-playing path</label><input id="SPOTIFY_NOWPLAYING_PATH" placeholder="/api/now"></div>
+        <div class="field"><label for="SPOTIFY_TOP_PATH">Top artists path</label><input id="SPOTIFY_TOP_PATH" placeholder="/api/top/artists?range=7d&amp;limit=7"></div>
+        <div class="field"><label for="SPOTIFY_TOP_LABEL">Top artists label</label><input id="SPOTIFY_TOP_LABEL" placeholder="This Week"></div>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ============ FILES ============ -->
+<section class="panel" id="s-files">
+  <div class="phead"><h2>Files for your ErsatzTV computer <span class="badge">Optional</span></h2><p>Already filled in with this server's address (<code id="srv"></code>).</p></div>
+  <div class="card">
+    <div class="dl">
+      <a class="btn ghost" href="/api/setup/download/weather.yml">Weather channel for ErsatzTV (.yml)</a>
+      <a class="btn ghost" href="/api/setup/download/get-clips.bat">Break clip setup for Windows (.bat)</a>
+      <a class="btn ghost" href="/api/setup/download/clip-sync.sh">Break clip copier for Mac / Linux (.sh)</a>
+      <a class="btn ghost" href="/api/setup/download/restart-ersatztv.bat">Restart ErsatzTV (.bat)</a>
+    </div>
+    <details class="help"><summary>What are these for?</summary><div>
+      <b>Weather channel (.yml):</b> put it in a folder ErsatzTV can see, add that folder as a <b>Remote Streams</b> library, and the weather channel becomes an ErsatzTV channel too.<br>
+      <b>Break clip setup for Windows:</b> for ErsatzTV on a Windows PC. Double-click it on that PC. It copies the break clips there and keeps them fresh (checked every 5 minutes), all by itself.<br>
+      <b>Break clip copier for Mac / Linux:</b> for ErsatzTV on a Mac or Linux computer. Run it once, then every 5 minutes with cron (steps under Breaks &amp; clips).<br>
+      <b>Restart ErsatzTV:</b> for Windows. Fully closes and restarts ErsatzTV if it gets stuck.</div></details>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="panel" id="s-faq">
+  <div class="phead"><h2>Common questions</h2></div>
+  <div class="card faq">
+    <details><summary>How do I watch on my TV?</summary>
+      <p>Open <code>http://<span class="ip"></span>/tv</code> in any browser. For a TV box (Onn, Chromecast, Fire TV), install <b>Fully Kiosk Browser</b>, set its start page to that address, and turn on <b>Autoplay Videos</b> and <b>Launch on Boot</b>. On an Xbox, use Edge. A game controller works as a remote.</p></details>
+    <details><summary>How do I use the remote?</summary>
+      <ul><li><b>Up / Down:</b> change channel</li><li><b>OK:</b> TV guide (OK again to tune)</li><li><b>Left:</b> last channel</li><li><b>Right:</b> what's on</li><li><b>Back:</b> close</li>
+      <li><b>Phone:</b> swipe up or down for channels, tap for info, double-tap for the guide</li><li><b>Controller:</b> LB/RB for channels, A for guide, B for back</li></ul></details>
+    <details><summary>How do I make it full screen on a phone?</summary>
+      <p><b>iPhone:</b> in Safari tap <b>Share → Add to Home Screen</b>. It opens like an app with no address bar. Tapping a TV channel in Safari also opens it in the iPhone player. <b>Android:</b> the first tap goes full screen, and <b>⋮ → Add to Home screen</b> makes it an app.</p></details>
+    <details><summary>It's choppy or laggy on my TV box.</summary>
+      <p>Set the box's output resolution to <b>720p or 1080p</b> instead of 4K in its display settings. KNAS also turns off its heavier effects by itself on Android TV boxes.</p></details>
+    <details><summary>The picture looks squished or skinny on my CRT.</summary>
+      <p>Pick <b>Classic 4:3</b> under Screen shape. If it still looks skinny, add <code>?stretch=1</code> to the address. If the edges are cut off, add <code>?zoom=0.92</code>.</p></details>
+    <details><summary>The words look blocky or blurry.</summary>
+      <p>Try the <b>Smooth</b> or <b>Modern News</b> font under <a href="#s-font">Fonts</a>, and set Text shadow to <b>Soft</b>. On a TV box, setting its output to 1080p instead of 4K also makes text sharper.</p></details>
+    <details><summary>KNAS is using a lot of CPU on my NAS.</summary>
+      <p>That's the recorder (the <code>knas42-cast</code> container), which runs a hidden web browser and a video encoder. Under <a href="#s-brk">Breaks &amp; clips</a>, untick <b>Weather channel stream</b> unless you added the weather channel to ErsatzTV. The break screen only runs for a few minutes each time clips are made. If you don't use ErsatzTV at all, untick both and also blank out <b>Clips to make</b>. Lowering <b>Smoothness</b> to 15 fps under Recording quality helps too.</p></details>
+    <details><summary>A page is missing or empty.</summary>
+      <p>Optional pages hide when they have nothing to show. To see why, open <code>http://<span class="ip"></span>/api/all</code> and look at the <b>errors</b> section.</p></details>
+    <details><summary>How do updates work?</summary>
+      <p>Drop a new KNAS <b>.zip</b> into the <code>updates</code> folder. It installs itself, keeps your settings, teams, facts, trivia and music, and restarts. <code>updates/update-log.txt</code> shows what happened, and a broken update is refused.</p></details>
+    <details><summary>Will saving here mess anything up?</summary>
+      <p>No. Values that don't make sense are skipped and your old setting is kept. Settings that aren't on this page are left alone. Every save also keeps a copy of your previous settings in <code>data/settings.backup.txt</code>. If something goes wrong, copy that file over <code>settings.txt</code>.</p></details>
+    <details><summary>Can I edit the settings by hand instead?</summary>
+      <p>Yes. Everything here is saved in <code>settings.txt</code> and <code>teams.txt</code> in the KNAS folder. Edit them with any text editor and KNAS restarts itself within a few seconds of saving.</p></details>
+    <details><summary>Is this private? Can other people change my settings?</summary>
+      <p>KNAS only runs on your home network. Only devices on that network can save changes here. The only things it contacts on the internet are free weather, map, news and sports data services, with no accounts or tracking.</p></details>
+    <details><summary>Where does all the data come from?</summary>
+      <p>Weather: Open-Meteo. Radar: RainViewer. Maps and towns: OpenStreetMap. Scores: ESPN's public scoreboard. News: the feeds you add, or Google News. On This Day: Wikipedia. All free, no keys needed. Fonts are free (SIL Open Font License).</p></details>
+  </div>
+</section>
+
+</main>
+</div>
+
+<div id="bar"><div class="in"><div class="st" id="status">Loading…</div><button id="save" type="button" disabled>Save &amp; Start</button></div></div>
+
+<script>
+(function(){
+"use strict";
+var $=function(i){return document.getElementById(i)},S={},TEAMS=[],LOC=null,CANSAVE=true;
+var FIELDS=["STATION_NAME","KNAS_CHANNEL","SPORTS_CHANNEL","ERSATZTV_URL","SPORTS_RADIO","SPORTS_RADIO_NAME","RADIO_KEEP_MINUTES","CRAWL_MESSAGE","PAGE_SECONDS",
+  "MUSIC_VOLUME","MAP_CITIES","MAP_KEY","KUMA_URL","KUMA_SLUG","SPOTIFY_URL","SPOTIFY_NOWPLAYING_PATH","SPOTIFY_TOP_PATH","SPOTIFY_TOP_LABEL",
+  "BREAK_CLIPS","BREAK_CLIPS_HOURS","NEWS_MAX_HOURS","ERSATZTV_CLIPS_LIBRARY","ERSATZTV_API_KEY","BREAK_VIDEO_MAX","BROWSER_RESTART_HOURS","TZ","CABLE_NAME","GUIDE_NAME","SPORTS_NAME","BREAK_LINE1","BREAK_LINE2"];
+var SLIDERS={LEVEL_TARGET:[0,function(v){return v==0?"Normal":(v>0?"+"+v+" dB louder":v+" dB softer")}],LEVEL_CEILING:[-1,function(v){return v+" dB"}],
+  LEVEL_FADE_MS:[700,function(v){return v==0?"No fade":(v/1000).toFixed(1)+" seconds"}],VOL_TV:[100,pct],VOL_MUSIC:[70,pct],VOL_RADIO:[100,pct],STATIC_VOLUME:[50,function(v){return v==0?"Silent":v+"%"}]};
+function pct(v){return v==0?"Off":v+"%"}
+var PRESETS={},CKEYS=[],CNAMES={COLOR_SKY_TOP:"Sky top",COLOR_SKY_MIDDLE:"Sky middle",COLOR_SKY_BOTTOM:"Sky bottom",COLOR_PANEL:"Panels",COLOR_EDGE:"Panel border",
+  COLOR_ACCENT:"Highlights",COLOR_TEXT:"Text",COLOR_TICKER:"Ticker bar",COLOR_LOGO:"Logo box",COLOR_LOGO_BAND:"Logo stripe"},LOGOS={};
+var TNAMES={classic:"Classic 90s",midnight:"Midnight",sunset:"Sunset",ocean:"Ocean",forest:"Forest",cherry:"Cherry",amber:"Amber CRT",terminal:"Green Screen",mono:"Black & White",pastel:"Pastel"};
+var DEFAULTS={STATION_NAME:"KNAS 42",KNAS_CHANNEL:"42",SPORTS_CHANNEL:"43",RADIO_KEEP_MINUTES:"30",PAGE_SECONDS:"10",MUSIC_VOLUME:"0.8",
+  SPOTIFY_NOWPLAYING_PATH:"/api/now",SPOTIFY_TOP_PATH:"/api/top/artists?range=7d&limit=7",SPOTIFY_TOP_LABEL:"This Week",BREAK_CLIPS_HOURS:"3",NEWS_MAX_HOURS:"6",BREAK_VIDEO_MAX:"90",BROWSER_RESTART_HOURS:"24"};
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function get(u){return fetch(u,{cache:"no-store"}).then(function(r){return r.json()})}
+function seg(id,val){var el=$(id);el.querySelectorAll("button").forEach(function(b){b.classList.toggle("on",b.dataset.v===val);b.onclick=function(){seg(id,b.dataset.v);el.dataset.picked="1";dirty();if(el.dataset.preview)preview()}});el.dataset.v=val}
+function setChecks(id,csv){var on=(csv||"").split(",").map(function(x){return x.trim()}).filter(Boolean);$(id).querySelectorAll("input").forEach(function(c){c.checked=!on.length||on.indexOf(c.value)>=0})}
+function getChecks(id){var all=$(id).querySelectorAll("input"),on=[].filter.call(all,function(c){return c.checked}).map(function(c){return c.value});return on.length===all.length?"":on.join(", ")}
+function status(t,isDirty){var s=$("status");s.textContent=t;s.classList.toggle("dirty",!!isDirty)}
+var LOADED=false,DIRTY=false,AUTOLOC=null;function dirty(){if(!LOADED||!CANSAVE)return;DIRTY=true;status("You have changes that aren't saved yet.",true)}
+
+/* ---------- load ---------- */
+get("api/setup").then(function(j){
+  S=j.settings||{};TEAMS=(j.teams||[]).map(function(t){return{sport:t.sport,id:t.id,cheer:t.cheer,radio:t.radio,name:t.name||("Team "+t.id),logo:""}});
+  CANSAVE=j.can_save!==false;AUTOLOC=j.auto_location||null;
+  if(j.configured===false||AUTOLOC){$("welcome").classList.remove("hidden");$("welcomeAuto").classList.toggle("hidden",!AUTOLOC);$("welcomeNeed").classList.toggle("hidden",!!AUTOLOC)}
+  if(AUTOLOC){$("autoLoc").classList.remove("hidden");$("autoCity").textContent=AUTOLOC.city+(AUTOLOC.region?", "+AUTOLOC.region:"");$("locBadge").textContent="Guessed for you";$("city").placeholder="Guessed: "+AUTOLOC.city+(AUTOLOC.region?", "+AUTOLOC.region:"")+" (type to change)";if(AUTOLOC.tz&&!S.TZ)$("TZ").placeholder=AUTOLOC.tz}if(!CANSAVE)$("nosave").classList.remove("hidden");
+  var addr=j.server.ip+":"+j.server.port;$("srv").textContent=addr;document.querySelectorAll(".ip").forEach(function(e){e.textContent=addr});
+  FIELDS.forEach(function(k){if($(k))$(k).value=S[k]||DEFAULTS[k]||""});
+  ["LOCAL_NEWS_FEEDS","US_NEWS_FEEDS"].forEach(function(k){$(k).value=(S[k]||"").split(",").map(function(x){return x.trim()}).filter(Boolean).join("\n")});
+  if(S.US_NEWS_FEEDS==null)$("US_NEWS_FEEDS").value="https://feeds.npr.org/1001/rss.xml";
+  if(S.BREAK_CLIPS==null)$("BREAK_CLIPS").value="30s x2, 1m x3, 2m x2, 5m x2";
+  $("city").value=S.CITY_NAME||"";
+  if(S.CITY_NAME)$("cityPicked").textContent="✔ "+S.CITY_NAME+(S.LATITUDE?"  ("+S.LATITUDE+", "+S.LONGITUDE+")":"");
+  var tz="";try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||""}catch(e){}
+  if(!S.TZ)$("TZ").value=tz;
+  seg("UNITS",S.UNITS||(AUTOLOC?(AUTOLOC.metric?"metric":"us"):(/^(en-US|en-LR|my)/.test(navigator.language||"en-US")?"us":"metric")));
+  seg("ERSATZTV_HOST",S.ERSATZTV_HOST||j.etv_where_auto||"");hostShow();$("ERSATZTV_HOST").querySelectorAll("button").forEach(function(b){b.addEventListener("click",hostShow)});
+  $("ERSATZTV_URL").addEventListener("change",function(){if(!S.ERSATZTV_HOST&&!$("ERSATZTV_HOST").dataset.picked){var h=($("ERSATZTV_URL").value.match(/\/\/([^:\/]+)/)||[])[1]||"";if(h)seg("ERSATZTV_HOST",(h===location.hostname||/^(localhost|127\.)/.test(h))?"nas":"windows");hostShow()}});
+  setTimeout(function(){clipStatus(true)},300);
+  seg("SCREEN",S.SCREEN||"auto");seg("SHUFFLE",S.SHUFFLE||"on");seg("ERSATZTV_MODE",S.ERSATZTV_MODE||"segmenter");
+  Object.keys(SLIDERS).forEach(function(k){var el=$(k);el.value=(S[k]!=null&&S[k]!=="")?S[k]:SLIDERS[k][0];showRange(k);el.addEventListener("input",function(){showRange(k)})});
+  seg("LEVEL_AUDIO",S.LEVEL_AUDIO||"on");seg("LEVEL_STRENGTH",S.LEVEL_STRENGTH||"medium");seg("LEVEL_LIMITER",S.LEVEL_LIMITER||"on");
+  seg("GUIDE_STYLE",S.GUIDE_STYLE||"knas");seg("SEASON",S.SEASON||"auto");seg("SEASON_EFFECTS",S.SEASON_EFFECTS||"full");
+  ["SEASON_TUNE","SEASON_GREETING","SEASON_COLORS","SEASON_WINTER"].forEach(function(k){$(k).checked=(S[k]||"on")!=="off"});
+  var HN={halloween:"Halloween",thanksgiving:"Thanksgiving",christmas:"Christmas",newyear:"New Year",valentines:"Valentine's Day",stpatricks:"St. Patrick's Day",easter:"Easter",july4:"the Fourth of July",winter:"winter"};
+  $("holNow").textContent=j.season_now?"Right now Automatic is showing: "+HN[j.season_now]+".":"There's no holiday on right now, so Automatic shows your normal look.";
+  buildFonts(j.fonts||[],S.FONT||"classic");seg("FONT_WEIGHT",S.FONT_WEIGHT||"bold");seg("TEXT_SHADOW",S.TEXT_SHADOW||"classic");
+  PRESETS=j.presets||{};CKEYS=j.color_keys||[];LOGOS=j.logos||{};buildLook(S.THEME||"classic");seg("SCANLINES",S.SCANLINES||"on");
+  showLogos();preview();
+  $("VIDEO_BITRATE").value=S.VIDEO_BITRATE||"1500k";if(!$("VIDEO_BITRATE").value)$("VIDEO_BITRATE").value="1500k";
+  $("FPS").value=S.FPS||"30";if(!$("FPS").value)$("FPS").value="30";
+  drawMaps(+(S.LATITUDE||39.83),+(S.LONGITUDE||-98.58),S.MAP_STYLE||"osm");
+  ["FACTS_LIST","TRIVIA_LIST"].forEach(function(k){$(k).checked=(S[k]||"on")!=="off"});$("FACTS_LOCAL").checked=S.FACTS_LOCAL==="on";
+  ["FACTS_SOURCES","TRIVIA_SOURCES"].forEach(function(k){$(k).value=(S[k]||"").split(";").map(function(x){return x.trim()}).filter(Boolean).join("\n")});
+  var cn=j.counts||{};$("factsCount").textContent=(cn.facts||0)+" facts";$("triviaCount").textContent=(cn.trivia||0)+" questions";
+  var tsel=(S.TRIVIA_TOPICS||"").split(",").map(function(x){return x.trim()});
+  $("TRIVIA_TOPICS").innerHTML=(j.trivia_topics||[]).map(function(t){return '<button type="button" data-v="'+esc(t[0])+'"'+(tsel.indexOf(t[0])>=0?' class="on"':'')+'><span>'+esc(t[1])+'</span></button>'}).join("");
+  $("TRIVIA_TOPICS").querySelectorAll("button").forEach(function(b){b.onclick=function(){b.classList.toggle("on");dirty()}});
+  srcStatus(j.facts_status||{});
+  seg("BREAK_CLIPS_ON",S.BREAK_CLIPS_ON||"on");clipsToggle();$("BREAK_CLIPS_ON").querySelectorAll("button").forEach(function(b){b.addEventListener("click",clipsToggle)});
+  setChecks("WEATHER_PAGES",S.WEATHER_PAGES);setChecks("BREAK_SEGMENTS",S.BREAK_SEGMENTS);
+  var cc=S.CAST_CHANNELS;$("CAST").querySelectorAll("input").forEach(function(c){c.checked=(cc==null||cc==="")?c.value.indexOf("/break")>=0:(cc!=="none"&&cc.replace(/\s/g,"").indexOf(c.value)>=0)});
+  var sel=$("sport");sel.innerHTML=(j.sports||[]).map(function(s){return '<option value="'+esc(s[0])+'">'+esc(s[1])+'</option>'}).join("");
+  renderTeams();
+  $("save").disabled=!CANSAVE;
+  $("reqLoc").classList.toggle("hidden",!!S.CITY_NAME||!!AUTOLOC);
+  status(S.CITY_NAME||AUTOLOC?"All saved. Change anything, then press Save.":"Start with your town, then press Save & Start.");
+  if(!S.CITY_NAME&&!AUTOLOC&&!location.hash)show("s-loc");
+  setTimeout(function(){LOADED=true},50);
+}).catch(function(){status("Can't reach KNAS. Is it running?")});
+/* ---------- map styles with little previews of your area ---------- */
+var STYLES=[["osm","Street map","https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+  ["dark","Dark","https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"],
+  ["light","Light","https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}"],
+  ["terrain","Terrain","https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}"],
+  ["relief","Shaded relief","https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}"],
+  ["satellite","Satellite","https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"],
+  ["streets","Road map","https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"],
+  ["topo","Topographic","https://tile.opentopomap.org/{z}/{x}/{y}.png"],
+  ["carto","CARTO (needs key)",""]];
+function drawMaps(lat,lon,cur){var z=7,n=Math.pow(2,z),r=lat*Math.PI/180,x=Math.floor((lon+180)/360*n),y=Math.floor((1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*n),box=$("MAP_STYLE");
+  box.innerHTML=STYLES.map(function(st){var src=st[2]?st[2].replace("{z}",z).replace("{x}",x).replace("{y}",y):"";
+    return '<button type="button" data-v="'+st[0]+'">'+(src?'<img alt="" loading="lazy" src="'+src+'" onerror="this.style.visibility=\'hidden\'">':'<img alt="" style="visibility:hidden">')+'<span>'+esc(st[1])+'</span></button>'}).join("");
+  seg("MAP_STYLE",cur||box.dataset.v||"osm")}
+function showRange(k){$(k+"_v").textContent=SLIDERS[k][1](+$(k).value)}
+
+/* ---------- look & feel ---------- */
+function buildLook(theme){var box=$("THEME");
+  box.innerHTML=Object.keys(PRESETS).map(function(t){var p=PRESETS[t];return '<button type="button" data-v="'+t+'"><i style="background:linear-gradient(180deg,'+p[0]+','+p[1]+' 55%,'+p[2]+')"><b style="background:'+p[3]+'"></b></i><span>'+esc(TNAMES[t]||t)+'</span></button>'}).join("");
+  box.querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){seg("THEME",b.dataset.v);fillColors(true);preview();dirty()})});
+  $("colors").innerHTML=CKEYS.map(function(k){return '<label><input type="color" id="'+k+'">'+esc(CNAMES[k]||k)+'</label>'}).join("");
+  seg("THEME",PRESETS[theme]?theme:"classic");
+  CKEYS.forEach(function(k,i){var el=$(k);el.addEventListener("input",function(){el.dataset.custom="1";preview()})});
+  fillColors(false);preview()}
+function fillColors(reset){var p=PRESETS[$("THEME").dataset.v]||PRESETS.classic;
+  CKEYS.forEach(function(k,i){var el=$(k);if(reset||!S[k]){el.value=p[i];el.dataset.custom=""}else{el.value=S[k];el.dataset.custom="1"}})}
+function mix(a,b,t){var x=[1,3,5].map(function(i){return parseInt(a.substr(i,2),16)}),y=[1,3,5].map(function(i){return parseInt(b.substr(i,2),16)});
+  return "#"+x.map(function(v,i){return ("0"+Math.round(v+(y[i]-v)*t).toString(16)).slice(-2)}).join("")}
+function preview(){var c=CKEYS.map(function(k){return $(k).value}),pv=$("pv");if(c.length<10)return;
+  pv.style.background="linear-gradient(180deg,"+c[0]+","+c[1]+" 55%,"+c[2]+")";pv.style.color=c[6];
+  var pn=pv.querySelector(".pn");pn.style.background="linear-gradient(180deg,"+mix(c[3],"#ffffff",.22)+","+c[3]+" 50%,"+mix(c[3],"#000000",.35)+")";pn.style.boxShadow="inset 0 0 0 3px "+c[4]+",inset 0 0 0 5px "+mix(c[3],"#000000",.6);
+  pv.querySelector(".hd b").style.color=c[5];pv.querySelector(".ck span").style.color=c[5];pv.querySelector(".tk b").style.color=c[5];
+  var tk=pv.querySelector(".tk");tk.style.background="linear-gradient(180deg,"+mix(c[7],"#ffffff",.12)+","+c[7]+")";tk.style.boxShadow="inset 0 2px 0 "+c[5];
+  var lg=pv.querySelector(".lg");lg.style.background="linear-gradient(160deg,"+mix(c[8],"#ffffff",.35)+","+c[8]+" 55%,"+mix(c[8],"#000000",.45)+")";lg.querySelector("i").style.background=c[9];
+  var nm=($("STATION_NAME").value||"KNAS 42").trim().split(/\s+/),pnum=$("pvNum");if(pnum)pnum.textContent=nm.length>1?nm[nm.length-1].slice(0,3):"TV";pv.querySelector(".tk b").textContent=$("STATION_NAME").value||"KNAS 42";
+  pv.className="pv scan-"+($("SCANLINES").dataset.v||"on");
+  var f=$("fpv");if(f){f.style.background=pv.style.background;f.style.color=c[6];f.className=pv.className;
+    ["pn","tk"].forEach(function(k){var a=pv.querySelector("."+k),b=f.querySelector("."+k);b.style.background=a.style.background;b.style.boxShadow=a.style.boxShadow});
+    f.querySelector(".hd b").style.color=c[5];f.querySelector(".ck span").style.color=c[5];f.querySelector(".tk b").style.color=c[5];
+    var fl=f.querySelector(".lg");fl.style.background=lg.style.background&&!LOGOS.station?lg.style.background:"linear-gradient(160deg,"+mix(c[8],"#ffffff",.35)+","+c[8]+" 55%,"+mix(c[8],"#000000",.45)+")";fl.querySelector("i").style.background=c[9]}
+  fontPreview();
+  if(LOGOS.station){lg.style.background="none";lg.innerHTML='<img alt="" src="'+LOGOS.station+'">'}else if(lg.querySelector("img")){lg.innerHTML='<span id="pvNum"></span><i></i>';preview()}}
+$("resetColors").onclick=function(){fillColors(true);preview();dirty()};
+$("SCANLINES").dataset.preview="1";
+/* ---------- fonts ---------- */
+var SHADOW={classic:"2px 2px 0 #000,0 0 1px #000",soft:"0 2px 5px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.9)",thin:"1px 1px 0 rgba(0,0,0,.9),0 0 1px rgba(0,0,0,.6)"};
+var LIGHT={400:400,500:400,600:400,700:500,800:600};
+function buildFonts(list,cur){var css=list.map(function(f){return f.css}).join("\n"),st=document.createElement("style");st.textContent=css;document.head.appendChild(st);
+  var box=$("FONT");box.dataset.preview="1";
+  var groups=[];list.forEach(function(f){var g=f.group||"Fonts";if(groups.indexOf(g)<0)groups.push(g)});
+  box.innerHTML=groups.map(function(g){return '<div class="fgrp">'+esc(g)+'</div><div class="tiles fonts">'+list.filter(function(f){return (f.group||"Fonts")===g}).map(function(f){return '<button type="button" data-v="'+esc(f.key)+'"><div class="fs" style="font-family:\'KNASPV-'+esc(f.key)+'\'"><b>Local Forecast</b><em>Tonight: Clear, low 54°</em></div><span>'+esc(f.name)+'<small>'+esc(f.desc)+'</small></span></button>'}).join("")+'</div>'}).join("");
+  seg("FONT",list.some(function(f){return f.key===cur})?cur:"classic");
+  ["FONT_WEIGHT","TEXT_SHADOW"].forEach(function(k){$(k).dataset.preview="1"})}
+function fontPreview(){var fam="'KNASPV-"+($("FONT").dataset.v||"classic")+"'",light=$("FONT_WEIGHT").dataset.v==="lighter",sh=SHADOW[$("TEXT_SHADOW").dataset.v]||SHADOW.classic;
+  ["pv","fpv"].forEach(function(id){var p=$(id);if(!p)return;p.style.fontFamily=fam+",var(--head)";
+    p.querySelectorAll(".sh").forEach(function(e){e.style.textShadow=sh});
+    p.querySelectorAll(".lg,.hd,.ck,.pn,.tk,.tk b").forEach(function(e){e.style.fontWeight="";var w=parseInt(getComputedStyle(e).fontWeight,10)||700;if(light)e.style.fontWeight=LIGHT[w]||w})})
+  $("FONT").querySelectorAll(".fs b,.fs em").forEach(function(e){e.style.fontWeight="";var w=parseInt(getComputedStyle(e).fontWeight,10);if(light)e.style.fontWeight=LIGHT[w]||w;e.style.textShadow=sh})}
+$("STATION_NAME").addEventListener("input",preview);
+function showLogos(){["station","sports","cable"].forEach(function(k){$("lg_"+k).innerHTML=LOGOS[k]?'<img alt="" src="'+LOGOS[k]+'">':"Built-in logo"})}
+var upKind="";
+document.querySelectorAll("[data-up]").forEach(function(b){b.onclick=function(){upKind=b.dataset.up;$("logoFile").value="";$("logoFile").click()}});
+document.querySelectorAll("[data-rm]").forEach(function(b){b.onclick=function(){sendLogo({kind:b.dataset.rm,remove:true},"Removed. The built-in logo is back.")}});
+$("logoFile").onchange=function(){var f=this.files[0];if(!f)return;if(f.size>3*1024*1024){$("logoMsg").className="msg bad";$("logoMsg").textContent="✖ That picture is too big (3 MB max).";return}
+  var r=new FileReader();r.onload=function(){sendLogo({kind:upKind,data:r.result},"✔ Logo saved. Refresh your TV screens to see it.")};r.readAsDataURL(f)};
+function sendLogo(body,ok){var m=$("logoMsg");m.className="msg";m.textContent="Uploading…";
+  fetch("api/setup/logo",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}).then(function(r){return r.json()}).then(function(r){
+    if(!r.ok){m.className="msg bad";m.textContent="✖ "+(r.message||"Couldn't save that picture.");return}LOGOS=r.logos||{};showLogos();preview();m.className="msg ok";m.textContent=ok})
+  .catch(function(){m.className="msg bad";m.textContent="✖ Upload failed."})}
+
+/* ---------- town search ---------- */
+function findCity(){var q=$("city").value.trim();if(!q)return;status("Looking up "+q+"…");
+  get("api/setup/geocode?q="+encodeURIComponent(q)).then(function(l){var box=$("cityRes");
+    if(!l||l.error||!l.length){box.classList.add("hidden");status(l&&l.error?"Lookup failed: "+l.error:"No town found. Try adding the state or country.");return}
+    box.innerHTML=l.map(function(c,i){return '<div tabindex="0" data-i="'+i+'">📍 '+esc(c.label)+'</div>'}).join("");box.classList.remove("hidden");status("Pick your town from the list.");
+    box.querySelectorAll("div").forEach(function(d){d.onclick=d.onkeydown=function(e){if(e.type==="keydown"&&e.key!=="Enter")return;var c=l[+d.dataset.i];
+      LOC=c;$("city").value=c.name+(c.country_code==="US"&&c.admin1?", "+c.admin1:(c.country_code?", "+c.country_code:""));
+      $("cityPicked").textContent="✔ "+c.label+"  ("+(+c.lat).toFixed(3)+", "+(+c.lon).toFixed(3)+")";box.classList.add("hidden");
+      if(c.tz)$("TZ").value=c.tz;drawMaps(+c.lat,+c.lon,$("MAP_STYLE").dataset.v);status("Got it. Keep going, then press Save.")}})})}
+$("findCity").onclick=findCity;$("city").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();findCity()}});
+$("city").addEventListener("input",function(){LOC=null;$("cityPicked").textContent=""});
+
+/* ---------- ErsatzTV test ---------- */
+$("testEtv").onclick=function(){var m=$("etvMsg");m.className="msg";m.textContent="Testing…";
+  get("api/setup/test-etv?url="+encodeURIComponent($("ERSATZTV_URL").value)).then(function(r){m.className="msg "+(r.ok?"ok":"bad");m.textContent=(r.ok?"✔ ":"✖ ")+r.message;if(r.ok&&r.url)$("ERSATZTV_URL").value=r.url})
+  .catch(function(){m.className="msg bad";m.textContent="✖ Test failed."})};
+
+/* ---------- news check ---------- */
+document.querySelectorAll("[data-check]").forEach(function(b){b.onclick=function(){var id=b.dataset.check,box=$(id),m=$(id+"_msg"),
+    urls=box.value.split(/[\n,]+/).map(function(x){return x.trim()}).filter(Boolean);
+  if(!urls.length){m.className="msg bad";m.textContent="Paste a website or feed address first.";return}
+  m.className="msg";m.textContent="Checking…";var out=[],fixed=urls.slice();
+  Promise.all(urls.map(function(u,i){return get("api/setup/test-feed?url="+encodeURIComponent(u)).then(function(r){
+      if(r.ok){var g=r.feed.indexOf("news.google.com")>=0;if(!g)fixed[i]=r.feed;out[i]="✔ "+(r.source||u)+(g?" (via Google News)":"")+": "+(r.headlines[0]||"(no headlines yet)")}else out[i]="✖ "+u+": "+r.message}).catch(function(){out[i]="✖ "+u+": couldn't check"})}))
+  .then(function(){box.value=fixed.join("\n");var bad=out.some(function(x){return x.charAt(0)==="✖"});m.className="msg "+(bad?"bad":"ok");m.innerHTML=out.map(esc).join("<br>")})}});
+
+/* ---------- teams ---------- */
+var tq=0;
+function teamSearch(){var q=$("teamQ").value.trim(),sp=$("sport").value,my=++tq,box=$("teamRes");if(q.length<2){box.classList.add("hidden");return}
+  get("api/setup/teams?sport="+encodeURIComponent(sp)+"&q="+encodeURIComponent(q)).then(function(l){if(my!==tq)return;
+    if(!l||l.error||!l.length){box.innerHTML='<div>'+(l&&l.error?"Couldn't reach ESPN":"No teams found")+'</div>';box.classList.remove("hidden");return}
+    box.innerHTML=l.map(function(t,i){return '<div tabindex="0" data-i="'+i+'">'+(t.logo?'<img src="'+esc(t.logo)+'" alt="">':'')+esc(t.name)+'</div>'}).join("");box.classList.remove("hidden");
+    box.querySelectorAll("div[data-i]").forEach(function(d){d.onclick=d.onkeydown=function(e){if(e.type==="keydown"&&e.key!=="Enter")return;var t=l[+d.dataset.i];
+      if(!TEAMS.some(function(x){return x.sport===sp&&x.id===t.id}))TEAMS.push({sport:sp,id:t.id,name:t.name,logo:t.logo,cheer:"GO "+(t.short||t.name).toUpperCase()+"!",radio:""});
+      $("teamQ").value="";box.classList.add("hidden");renderTeams()}})})}
+var tt=0;$("teamQ").addEventListener("input",function(){clearTimeout(tt);tt=setTimeout(teamSearch,300)});
+$("sport").addEventListener("change",teamSearch);
+function sportName(k){var o=[].slice.call($("sport").options).filter(function(x){return x.value===k})[0];return o?o.textContent:k}
+function renderTeams(){var box=$("teams");
+  box.innerHTML=TEAMS.length?TEAMS.map(function(t,i){return '<div class="team">'+(t.logo?'<img src="'+esc(t.logo)+'" alt="">':'')+'<div class="tn"><b>'+esc(t.name)+'</b><small>'+esc(sportName(t.sport))+'</small></div>'+
+    '<input data-i="'+i+'" value="'+esc(t.cheer)+'" placeholder="Cheer when they score"><button class="del" type="button" data-i="'+i+'" title="Remove">✕</button></div>'}).join(""):'<div class="why" style="margin-top:8px">No teams yet. Pick a sport and type a team name above.</div>';
+  box.querySelectorAll("input").forEach(function(inp){inp.oninput=function(){TEAMS[+inp.dataset.i].cheer=inp.value}});
+  box.querySelectorAll("button.del").forEach(function(b){b.onclick=function(){TEAMS.splice(+b.dataset.i,1);renderTeams()}})}
+
+/* ---------- save ---------- */
+$("save").onclick=function(){
+  var city=$("city").value.trim();
+  if(!city&&!AUTOLOC){status("Please type your town first.",true);show("s-loc");$("city").focus();return}
+  var st={};FIELDS.forEach(function(k){if($(k))st[k]=$(k).value.trim()});
+  ["LOCAL_NEWS_FEEDS","US_NEWS_FEEDS"].forEach(function(k){st[k]=$(k).value.split(/[\n,]+/).map(function(x){return x.trim()}).filter(Boolean).join(", ")});
+  st.CITY_NAME=city;st.UNITS=$("UNITS").dataset.v||"us";st.SCREEN=$("SCREEN").dataset.v||"auto";st.SHUFFLE=$("SHUFFLE").dataset.v||"on";st.ERSATZTV_MODE=$("ERSATZTV_MODE").dataset.v||"segmenter";
+  st.MAP_STYLE=$("MAP_STYLE").dataset.v||"osm";Object.keys(SLIDERS).forEach(function(k){st[k]=$(k).value});
+  st.LEVEL_AUDIO=$("LEVEL_AUDIO").dataset.v||"on";st.LEVEL_STRENGTH=$("LEVEL_STRENGTH").dataset.v||"medium";st.LEVEL_LIMITER=$("LEVEL_LIMITER").dataset.v||"on";
+  st.GUIDE_STYLE=$("GUIDE_STYLE").dataset.v||"knas";st.SEASON=$("SEASON").dataset.v||"auto";st.SEASON_EFFECTS=$("SEASON_EFFECTS").dataset.v||"full";
+  ["SEASON_TUNE","SEASON_GREETING","SEASON_COLORS","SEASON_WINTER"].forEach(function(k){st[k]=$(k).checked?"on":"off"});
+  st.THEME=$("THEME").dataset.v||"classic";st.SCANLINES=$("SCANLINES").dataset.v||"on";
+  st.FONT=$("FONT").dataset.v||"classic";st.FONT_WEIGHT=$("FONT_WEIGHT").dataset.v||"bold";st.TEXT_SHADOW=$("TEXT_SHADOW").dataset.v||"classic";
+  var pr=PRESETS[st.THEME]||[];CKEYS.forEach(function(k,i){var v=$(k).value.toLowerCase();st[k]=(v===(pr[i]||"").toLowerCase())?"":v});st.VIDEO_BITRATE=$("VIDEO_BITRATE").value;st.FPS=$("FPS").value;
+  st.BREAK_CLIPS_ON=$("BREAK_CLIPS_ON").dataset.v||"on";
+  st.ERSATZTV_API_KEY=st.ERSATZTV_API_KEY.replace(/^"|"$/g,"");if(!st.ERSATZTV_API_KEY)delete st.ERSATZTV_API_KEY;   // blank = keep the key the copier found
+  if($("ERSATZTV_HOST").dataset.v)st.ERSATZTV_HOST=$("ERSATZTV_HOST").dataset.v;
+  ["FACTS_LIST","TRIVIA_LIST","FACTS_LOCAL"].forEach(function(k){st[k]=$(k).checked?"on":"off"});
+  ["FACTS_SOURCES","TRIVIA_SOURCES"].forEach(function(k){st[k]=$(k).value.split("\n").map(function(x){return x.replace(/;/g," ").trim()}).filter(Boolean).join("; ")});
+  st.TRIVIA_TOPICS=[].map.call($("TRIVIA_TOPICS").querySelectorAll("button.on"),function(b){return b.dataset.v}).join(",");
+  st.WEATHER_PAGES=getChecks("WEATHER_PAGES");st.BREAK_SEGMENTS=getChecks("BREAK_SEGMENTS");
+  st.CAST_CHANNELS=[].filter.call($("CAST").querySelectorAll("input"),function(c){return c.checked}).map(function(c){return c.value}).join(", ")||"none";
+  if(LOC){st.LATITUDE=(+LOC.lat).toFixed(4);st.LONGITUDE=(+LOC.lon).toFixed(4)}
+  else if(city!==S.CITY_NAME){st.LATITUDE="";st.LONGITUDE=""}
+  if(st.ERSATZTV_URL&&!/^https?:\/\//.test(st.ERSATZTV_URL))st.ERSATZTV_URL="http://"+st.ERSATZTV_URL;
+  $("save").disabled=true;status("Saving…");
+  fetch("api/setup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({settings:st,teams:TEAMS})}).then(function(r){return r.json()}).then(function(r){
+    if(!r.ok){status("✖ "+(r.message||"Couldn't save."));$("save").disabled=false;return}
+    DIRTY=false;$("reqLoc").classList.add("hidden");$("welcome").classList.add("hidden");status("Saved! Restarting KNAS with your settings…");var t0=Date.now(),wentDown=false;
+    (function wait(){setTimeout(function(){fetch("api/version",{cache:"no-store"}).then(function(x){return x.json()}).then(function(){
+        if(!wentDown&&Date.now()-t0<9000)return wait();finish()}).catch(function(){wentDown=true;if(Date.now()-t0<60000)wait();else finish()})},1200)})();
+  }).catch(function(){status("✖ Couldn't save. Is KNAS running?");$("save").disabled=false})};
+function finish(){status("✔ All set! Your changes are live.");$("save").disabled=false;$("done").style.display="block";window.scrollTo({top:0,behavior:"smooth"})}
+
+/* ---------- facts & trivia ---------- */
+function srcStatus(stt){["FACTS_SOURCES","TRIVIA_SOURCES"].forEach(function(id){var kind=id==="FACTS_SOURCES"?"facts":"trivia",lines=[],bad=false;
+    $(id).value.split("\n").map(function(x){return x.trim()}).filter(Boolean).forEach(function(src){var v=stt[kind+":"+src];if(!v)return;
+      if(v.error&&!v.count){bad=true;lines.push("✖ "+src+": "+v.error)}else lines.push("✔ "+src+": "+v.count+(kind==="facts"?" facts":" questions")+(v.from?" ("+v.from+")":""))});
+    if(lines.length){var m=$(id+"_msg");m.className="msg "+(bad?"bad":"ok");m.innerHTML=lines.map(esc).join("<br>")}})}
+document.querySelectorAll("[data-fcheck]").forEach(function(b){b.onclick=function(){var id=b.dataset.fcheck,kind=id==="FACTS_SOURCES"?"facts":"trivia",m=$(id+"_msg"),
+    srcs=$(id).value.split("\n").map(function(x){return x.trim()}).filter(Boolean);
+  if(!srcs.length){m.className="msg bad";m.textContent=kind==="facts"?"Type a topic or paste a link first.":"Paste a Google Sheet or text file link first.";return}
+  m.className="msg";m.textContent="Checking… (Wikipedia and big pages can take a few seconds)";var out=[];
+  Promise.all(srcs.map(function(s,i){return get("api/setup/test-facts?kind="+kind+"&src="+encodeURIComponent(s)).then(function(r){
+      out[i]=r.ok?"✔ "+s+": "+r.count+(kind==="facts"?" facts":" questions")+" from "+r.from+(r.sample&&r.sample[0]?'. For example: "'+r.sample[0]+'"':""):"✖ "+s+": "+r.message}).catch(function(){out[i]="✖ "+s+": couldn't check"})}))
+  .then(function(){var bad=out.some(function(x){return x.charAt(0)==="✖"});m.className="msg "+(bad?"bad":"ok");m.innerHTML=out.map(esc).join("<br>")})}});
+$("testScan").onclick=function(){var m=$("scanMsg");m.className="msg";m.textContent="Asking ErsatzTV…";
+  get("api/setup/test-scan?lib="+encodeURIComponent($("ERSATZTV_CLIPS_LIBRARY").value.trim())+"&url="+encodeURIComponent($("ERSATZTV_URL").value.trim())+"&key="+encodeURIComponent($("ERSATZTV_API_KEY").value.trim().replace(/^"|"$/g,""))).then(function(r){m.className="msg "+(r.ok?"ok":"bad");m.textContent=(r.ok?"✔ ":"✖ ")+r.message+(r.ok?". Check ErsatzTV: it should be scanning that library now.":"")})
+  .catch(function(){m.className="msg bad";m.textContent="✖ Couldn't check."})};
+$("checkLocal").onclick=function(){var m=$("localMsg");m.className="msg";m.textContent="Looking up your town on Wikipedia…";
+  get("api/setup/test-facts?kind=facts&src=%40local").then(function(r){m.className="msg "+(r.ok?"ok":"bad");m.textContent=r.ok?"✔ "+r.count+" facts from "+r.from+'. For example: "'+(r.sample[0]||"")+'"':"✖ "+r.message+(/CITY|town/i.test(r.message||"")?"":" (is your town set under Location?)")})
+  .catch(function(){m.className="msg bad";m.textContent="✖ Couldn't check."})};
+document.querySelectorAll("[data-edit]").forEach(function(b){b.onclick=function(){var k=b.dataset.edit,box=$("ed_"+k);
+  if(!box.classList.contains("hidden")){box.classList.add("hidden");return}
+  $("edm_"+k).textContent="Loading…";box.classList.remove("hidden");
+  get("api/setup/file/"+k).then(function(r){$("edt_"+k).value=r.text||"";$("edm_"+k).textContent="";$("edt_"+k).focus()})}});
+document.querySelectorAll("[data-close]").forEach(function(b){b.onclick=function(){$("ed_"+b.dataset.close).classList.add("hidden")}});
+document.querySelectorAll("[data-save]").forEach(function(b){b.onclick=function(){var k=b.dataset.save,m=$("edm_"+k);m.className="msg";m.textContent="Saving…";
+  fetch("api/setup/file",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({kind:k,text:$("edt_"+k).value})}).then(function(r){return r.json()}).then(function(r){
+    if(!r.ok){m.className="msg bad";m.textContent="✖ "+(r.message||"Couldn't save.");return}
+    m.className="msg ok";m.textContent="✔ Saved "+r.count+(k==="facts"?" facts":" questions")+". The break screen picks them up within a few minutes.";
+    $(k==="facts"?"factsCount":"triviaCount").textContent=r.count+(k==="facts"?" facts":" questions")}).catch(function(){m.className="msg bad";m.textContent="✖ Couldn't save."})}});
+
+/* ---------- break clip status ---------- */
+function ago(t,now){if(!t)return "";var m=Math.round((now-t)/60);if(m<1)return "just now";if(m<60)return m+" min ago";var h=Math.floor(m/60);if(h<24)return h+" hr "+(m%60)+" min ago";
+  var d=new Date(t*1000);return d.toLocaleDateString([], {weekday:"short",month:"short",day:"numeric"})+" "+d.toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})}
+var clipBusy=false;
+function hostShow(){var w=$("ERSATZTV_HOST").dataset.v||"";if(typeof clipStatus==="function"&&$("s-brk").classList.contains("on"))clipStatus();
+  ["none","nas","windows","other"].forEach(function(k){$("how_"+k).classList.toggle("hidden",k!==(w||"none"))});
+  $("etvHostTip").innerHTML=w==="nas"?"KNAS and ErsatzTV share this machine, so break clips can be read straight from the KNAS folder.":
+    w?"Break clips are made on the NAS, so that computer needs a small copier to get them. The steps are under <a href=\"#s-brk\">Breaks &amp; clips</a> → <b>Getting the clips to ErsatzTV</b>.":"This decides how the break clips get to ErsatzTV."}
+function clipsToggle(){var off=$("BREAK_CLIPS_ON").dataset.v==="off";$("s-brk").classList.toggle("clipsoff",off);$("clipsOffTip").classList.toggle("hidden",!off)}
+function clipStatus(force){if(!force&&!$("s-brk").classList.contains("on"))return;
+  get("api/clips").then(function(c){var now=c.now||Math.floor(Date.now()/1000),hrs=Math.max(1,+c.hours||1),sum=$("clipSum"),files={},dl=c.downloads||{};
+    (c.files||[]).forEach(function(f){files[f.name]=f});
+    var plan=c.plan||[],newest=0,missing=0,stale=0,notCopied=0,anyCopy=Object.keys(dl).length>0,remote=($("ERSATZTV_HOST").dataset.v||c.where)!=="nas";
+    var rows=plan.map(function(n){var f=files[n],d=dl[n],made=f?f.mtime:0,cls="",cp="",ccls="";if(made>newest)newest=made;
+      if(!f){missing++;cls="b"}else if(now-made>(hrs+1)*3600){stale++;cls="w"}
+      if(!d){cp=anyCopy?"not copied yet":"–";if(f&&anyCopy){notCopied++;ccls="w"}}else{cp=ago(d.time,now);if(made&&d.time<made-60){if(now-made>1200){notCopied++;ccls="w"}cp+=" (older copy)"}else ccls="g"}
+      return '<tr><td>'+esc(n.replace(/^KNAS Break /,"").replace(/\.ts$/,""))+'</td><td class="'+cls+'">'+(f?esc(ago(made,now)):"missing")+'</td><td class="'+ccls+'">'+esc(cp)+'</td></tr>'});
+    if(!remote)rows=rows.map(function(r){return r.replace(/<td class="[^"]*">[^<]*<\/td><\/tr>$/,"</tr>")});
+    $("clipTab").innerHTML=plan.length?'<tr><th>Clip</th><th>Made</th>'+(remote?'<th>Copied to ErsatzTV computer</th>':'')+'</tr>'+rows.join(""):"";
+    var oldest=0;(c.files||[]).forEach(function(f){if(!oldest||f.mtime<oldest)oldest=f.mtime});
+    var needCopier=remote&&c.enabled!==false&&plan.length&&!anyCopy&&oldest&&now-oldest>1800;
+    $("brkWarn").classList.toggle("hidden",!needCopier);
+    var st=String(c.state||""),busy=/record|waking|checking/.test(st);clipBusy=busy;
+    $("clipNow").disabled=busy||!CANSAVE;$("clipNow").textContent=busy?"Making clips…":"Make new clips now";
+    var sc=c.etv_scan;$("clipInfo").textContent=[st?"Now: "+st:"",c.last_run?"Last run: "+c.last_run:"",c.next_run?"Next run: "+c.next_run:"",
+      sc?"ErsatzTV rescan "+ago(sc.time,now)+(sc.ok?" ✔":": "+sc.message):(c.etv_library?"":"ErsatzTV rescans: off (add the clips library number below)")].filter(Boolean).join("  ·  ");
+    if(c.enabled===false){sum.className="";sum.textContent="Break clips are turned off."+($("BREAK_CLIPS_ON").dataset.v==="on"?" Press Save to turn them on.":"")}
+    else if(!plan.length){sum.className="";sum.textContent="No clips listed under Clips to make."}
+    else if(c.error&&!busy){sum.className="bad";sum.textContent="✖ KNAS couldn't make new clips: "+c.error}
+    else if(busy){sum.className="warn";sum.textContent="⏺ Making new clips right now…"}
+    else if(missing){sum.className="bad";sum.textContent="✖ "+missing+" clip"+(missing>1?"s are":" is")+" missing. Press Make new clips now."}
+    else if(stale){sum.className="warn";sum.textContent="⚠ Some clips are older than they should be. Press Make new clips now, and if that fails the message here will say why."}
+    else if(needCopier){sum.className="warn";sum.innerHTML="⚠ ErsatzTV runs on another computer, and it hasn't picked up any clips yet. Set up the clip copier: see <b>Getting the clips to ErsatzTV</b> below."}
+    else if(remote&&!anyCopy){sum.className="warn";sum.textContent="Clips on the NAS are fresh. Waiting for your ErsatzTV computer to copy them (it checks every 5 minutes)."}
+    else if(remote&&notCopied){sum.className="warn";sum.textContent="⚠ The NAS has new clips your ErsatzTV computer hasn't copied. Make sure the copier is still set up (see Getting the clips to ErsatzTV below)."}
+    else if(!remote){sum.className="ok";sum.textContent="✔ Clips are fresh. ErsatzTV reads them straight from the break-clips folder."}
+    else{sum.className="ok";sum.textContent="✔ Clips are fresh and your ErsatzTV computer has the latest ones."}
+  }).catch(function(){$("clipSum").className="bad";$("clipSum").textContent="Can't reach KNAS."})}
+setInterval(clipStatus,10000);
+$("clipNow").onclick=function(){$("clipNow").disabled=true;fetch("api/setup/clips-now",{method:"POST"}).then(function(){setTimeout(clipStatus,1500);setTimeout(clipStatus,6000)})};
+
+/* ---------- tabs ---------- */
+var PANELS=[].slice.call(document.querySelectorAll(".panel")),NAV=[].slice.call(document.querySelectorAll("#nav a"));
+function show(id,noScroll){if(!$(id)||!$(id).classList.contains("panel"))id="s-loc";
+  PANELS.forEach(function(p){p.classList.toggle("on",p.id===id)});
+  NAV.forEach(function(a){var on=a.getAttribute("href")==="#"+id;a.classList.toggle("on",on);if(on&&window.innerWidth<=860){var n=$("nav");n.scrollLeft=a.offsetLeft-n.clientWidth/2+a.offsetWidth/2}});
+  if(location.hash!=="#"+id)history.replaceState(null,"","#"+id);
+  try{localStorage.setItem("knas-setup-tab",id)}catch(e){}
+  if(!noScroll)window.scrollTo(0,0);if(id==="s-brk")setTimeout(clipStatus,50)}
+document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest('a[href^="#s-"]');if(!a)return;e.preventDefault();show(a.getAttribute("href").slice(1))});
+window.addEventListener("hashchange",function(){show(location.hash.slice(1))});
+(function(){var start=location.hash.slice(1);if(!start){try{start=localStorage.getItem("knas-setup-tab")||""}catch(e){}}show(start||"s-loc");window.addEventListener("load",function(){window.scrollTo(0,0)})})();
+
+/* ---------- anything typed or ticked counts as a change ---------- */
+$("main").addEventListener("input",function(e){if(e.target.id!=="teamQ"&&e.target.id!=="city"&&e.target.type!=="file"&&!/^edt_/.test(e.target.id))dirty()});
+$("main").addEventListener("change",function(e){if(e.target.type==="checkbox"||e.target.tagName==="SELECT")dirty()});
+window.addEventListener("beforeunload",function(e){if(DIRTY){e.preventDefault();e.returnValue=""}});
+
+/* ---------- find a setting ---------- */
+var INDEX=[];
+PANELS.forEach(function(p){var title=p.querySelector(".phead h2").firstChild.textContent.trim();
+  INDEX.push({t:title,p:p.id,el:p.querySelector(".phead"),s:title});
+  p.querySelectorAll("label,.lbl,.card>h3,details.more>summary,details.help>summary,.faq summary").forEach(function(el){
+    var t=(el.childNodes[0]&&el.childNodes[0].nodeType===3?el.childNodes[0].textContent:el.textContent).replace(/\s+/g," ").trim();
+    if(el.closest(".checks")||el.closest(".colors"))t=el.textContent.trim();
+    if(t.length>1)INDEX.push({t:t,p:p.id,el:el,s:title})})});
+INDEX.push({t:"Font style",p:"s-font",el:$("FONT"),s:"Fonts"},{t:"Text color",p:"s-look",el:$("colors"),s:"Colors"},{t:"Font color",p:"s-look",el:$("colors"),s:"Colors"});
+function go(r){show(r.p,true);$("findRes").classList.add("hidden");$("find").value="";
+  var el=r.el,d=el.closest("details");while(d){d.open=true;d=d.parentElement&&d.parentElement.closest("details")}
+  setTimeout(function(){el.scrollIntoView({block:"center",behavior:"smooth"});var t=el.closest(".field")||el.closest("label")||el;t.classList.remove("hi");void t.offsetWidth;t.classList.add("hi")},30)}
+$("find").addEventListener("input",function(){var q=this.value.trim().toLowerCase(),box=$("findRes");if(q.length<2){box.classList.add("hidden");return}
+  var words=q.split(/\s+/),seen={},hits=INDEX.filter(function(r){var h=(r.t+" "+r.s).toLowerCase();return words.every(function(w){return h.indexOf(w)>=0})}).filter(function(r){var k=r.t+"|"+r.p;if(seen[k])return false;return seen[k]=true}).slice(0,8);
+  box.innerHTML=hits.length?hits.map(function(r,i){return '<button type="button" data-i="'+i+'">'+esc(r.t)+'<small>'+esc(r.s)+'</small></button>'}).join(""):'<div class="none">No setting matches that.</div>';
+  box.classList.remove("hidden");box.querySelectorAll("button").forEach(function(b){b.onclick=function(){go(hits[+b.dataset.i])}})});
+$("find").addEventListener("keydown",function(e){var b=$("findRes").querySelector("button");if(e.key==="Enter"&&b){e.preventDefault();b.click()}if(e.key==="Escape"){this.value="";$("findRes").classList.add("hidden")}});
+document.addEventListener("click",function(e){if(!e.target.closest(".find"))$("findRes").classList.add("hidden")});
+})();
+</script>
+</body>
+</html>

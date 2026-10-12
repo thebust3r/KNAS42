@@ -1,0 +1,38 @@
+# Fresh-install check: every time the code changes, GitHub installs KNAS from scratch on a clean
+# computer, exactly like a new user would, and makes sure it works. A green check mark next to your
+# latest change means a first-time install builds, starts, opens with no setup, saves settings,
+# loads the weather and records a break clip. Click the check (or the Actions tab) to see details.
+name: Fresh install
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:      # lets you run it by hand from the Actions tab
+
+jobs:
+  fresh-install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Get the files (like downloading the ZIP)
+        uses: actions/checkout@v4
+
+      - name: Build KNAS (what the first "docker compose up" does)
+        run: docker compose build
+
+      - name: Start KNAS
+        run: docker compose up -d
+
+      - name: Test it like a first-time user
+        run: sh .github/scripts/fresh-install-test.sh http://localhost:8642
+
+      - name: Show the logs (if something went wrong)
+        if: failure()
+        run: |
+          echo "===== knas42 ====="; docker logs knas42 2>&1 | tail -n 150
+          echo "===== knas42-cast ====="; docker logs knas42-cast 2>&1 | tail -n 150
+          echo "===== break clip log ====="; cat data/break-clips-log.txt 2>/dev/null | tail -n 50
+
+      - name: Clean up
+        if: always()
+        run: docker compose down
