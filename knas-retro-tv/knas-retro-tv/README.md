@@ -8,7 +8,7 @@ It runs on your home server in Docker. Watch it on any TV, computer, phone or ol
 
 ---
 
-## What you get
+# What you get
 
 - 📺 **A cable box:** a 90s TV guide, channel banners and static between channels. Works with a TV remote, a game controller, a mouse or swipes on a phone.
 - ⛅ **A weather channel:** your local forecast, a moving radar map, news headlines and smooth jazz, like the 90s weather channel.
