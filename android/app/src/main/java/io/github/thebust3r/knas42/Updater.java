@@ -45,6 +45,22 @@ class Updater {
         try { return c.getPackageManager().getPackageInfo(c.getPackageName(), 0).versionName; } catch (Exception e) { return "0"; }
     }
 
+    /** The app's internal build number for a version, the same way the build makes it: 1.1.1 -> 110101 */
+    static long code(String v) {
+        String[] x = (v.replaceAll("[^0-9.]", "") + ".0.0.0").split("\\.");
+        int[] n = new int[3];
+        for (int i = 0, j = 0; i < x.length && j < 3; i++) if (!x[i].isEmpty()) n[j++] = Integer.parseInt(x[i]);
+        return 100000L + n[0] * 10000L + n[1] * 100L + n[2];
+    }
+
+    @SuppressWarnings("deprecation")
+    static long installedCode(Context c) {
+        try {
+            android.content.pm.PackageInfo p = c.getPackageManager().getPackageInfo(c.getPackageName(), 0);
+            return Build.VERSION.SDK_INT >= 28 ? p.getLongVersionCode() : p.versionCode;
+        } catch (Exception e) { return 0; }
+    }
+
     /** "2.22.10" is newer than "2.22.9" */
     static boolean newer(String a, String b) {
         String[] x = a.replaceAll("[^0-9.]", "").split("\\."), y = b.replaceAll("[^0-9.]", "").split("\\.");
@@ -82,7 +98,7 @@ class Updater {
                 act.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (v != null && url != null && newer(v, have)) offer(v, url, have);
+                        if (v != null && url != null && code(v) > installedCode(act)) offer(v, url, have);
                         else if (!quiet) toast("The app is up to date (" + have + ")");
                     }
                 });
