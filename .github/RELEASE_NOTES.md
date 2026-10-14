@@ -1,6 +1,12 @@
-**Already have KNAS?** Download `KNAS-1.1.3-update.zip` below and drop it (still zipped) into your `updates` folder. Your settings stay.
+**Already have KNAS?** Download `KNAS-1.1.4-update.zip` below and drop it (still zipped) into your `updates` folder. Your settings stay.
 **New install?** Download the code with the green **Code** button on the main page and follow the README.
-**Android TV box or Android phone?** Download `KNAS-42-1.1.3.apk` below and install it. ([How](https://github.com/thebust3r/knas42/blob/main/docs/SETUP-GUIDE.md#android-tv-box-onn-chromecast-with-google-tv-fire-tv-and-android-phones))
+**Samsung TV?** Download `KNAS-42-Samsung-1.1.4.wgt` below and install it with TizenBrew Installer (install from a file). The TV needs Developer Mode on.
+**Android TV box or Android phone?** Download `KNAS-42-1.1.4.apk` below and install it. ([How](https://github.com/thebust3r/knas42/blob/main/docs/SETUP-GUIDE.md#android-tv-box-onn-chromecast-with-google-tv-fire-tv-and-android-phones))
+
+## New in 1.1.4
+- Android TV app: the Home button really goes to KNAS on Google TV boxes (Onn, Chromecast) when "Use KNAS as the home screen" is on, and "Other apps" shows a list of your installed apps
+- The guide no longer runs channel numbers into names on older TVs, and holiday effects use less power on TV boxes
+- A Samsung TV app: install the KNAS-42-Samsung .wgt with TizenBrew Installer and KNAS opens full screen with the whole remote working (PRE-CH and CH LIST too)
 
 ## New in 1.1.3
 - Install straight from your NAS's Docker app: search for knas42, map an empty folder to /knas, use host network, start. The first start sets everything up, and a newer image updates it (your settings stay)

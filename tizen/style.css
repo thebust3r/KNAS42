@@ -1,0 +1,21 @@
+/* Sized to the TV's real window (vw/vh), centered with a plain table layout so older Samsung TVs draw it right */
+html,body{margin:0;padding:0;width:100%;height:100%;background-color:#070a24;color:#eef2ff;font-family:Arial,Helvetica,sans-serif;overflow:hidden}
+.screen{display:table;width:100%;height:100%;background-color:#070a24}
+.cell{display:table-cell;vertical-align:middle;text-align:center;padding:0 6vw}
+.logo{display:inline-block;background-color:#e3261b;color:#ffffff;font-weight:bold;font-style:italic;font-size:3vw;letter-spacing:0.3vw;padding:0.5vw 2vw;border-radius:0.5vw}
+h1{font-weight:bold;font-style:italic;font-size:6.5vw;color:#ffd23a;margin:2vw 0 1vw;text-shadow:0.35vw 0.35vw 0 #000000}
+p{font-size:2.4vw;color:#cfd8ff;margin:1vw 0;line-height:1.3}
+.ip{min-width:40vw;font-size:4.5vw;font-weight:bold;letter-spacing:0.2vw;padding:1vw 2vw;border-radius:0.8vw;border:0.3vw solid #ffd23a;background-color:#0d1550;color:#ffffff;margin:1.5vw 0}
+.cur{color:#ffd23a;animation:blink 1s steps(1) infinite}@keyframes blink{50%{opacity:0}}
+input{width:50vw;font-size:3.6vw;padding:1vw 1.5vw;border-radius:0.8vw;border:0.3vw solid #9cb8ff;background-color:#0d1550;color:#ffffff;text-align:center;outline:none;box-sizing:border-box}
+input:focus{border-color:#ffd23a}
+.hint{font-size:2vw;color:#a3b0dd;margin-top:2vw}
+.err{color:#ff8a80;font-size:2.2vw;min-height:3vw;margin-top:1vw}
+b{color:#ffd23a}
+.red{display:inline-block;width:1.8vw;height:1.8vw;border-radius:50%;background-color:#e3261b;vertical-align:middle;margin:0 0.4vw}
+
+#ask{display:none}
+body,.screen{background-color:#070a24;color:#eef2ff}
+h1{color:#ffd23a}
+#where,#askMsg{color:#cfd8ff}
+.hint{color:#a3b0dd}

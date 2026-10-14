@@ -202,8 +202,9 @@ GUIDE_STYLES = {
 #gLogo{left:auto!important;right:0!important;top:0!important;width:320px!important;height:182px!important;justify-content:flex-end;background:transparent;
   box-shadow:0 0 0 3000px #8f949b,inset 0 0 0 3px #8f949b!important}
 #gLogo .gl1,#gLogo .gl2,#gLogo .gl3{display:none!important}
-#gHead{display:flex!important;position:absolute;left:0;top:0;right:320px;height:58px;align-items:center;gap:10px;padding:0 8px 0 14px;
+#gHead{display:flex!important;position:absolute;left:0;top:0;right:320px;height:58px;align-items:center;padding:0 8px 0 14px;
   background:linear-gradient(180deg,#22407a,#1a3366);border-bottom:3px solid #8f949b}
+#gHead>*+*{margin-left:10px}
 #gHead .gh1{flex:1;min-width:0;font:700 30px/1 Arial,Helvetica,sans-serif!important;color:#c9ced8;letter-spacing:-1px;text-shadow:none!important;white-space:nowrap;overflow:hidden}
 #gHead .gh1 img{height:44px;width:auto;max-width:100%;display:block}
 #gHead .gh2{display:flex;flex-direction:column;align-items:flex-end;line-height:1.02}
@@ -226,7 +227,8 @@ GUIDE_STYLES = {
 .gh .gs span{color:#fff!important;font-weight:700;font-size:21px!important;top:5px!important;border-left:3px solid #3f6fcf!important;padding-left:12px!important}
 .grows{top:39px!important}
 .gr{border-bottom:3px solid #8f949b!important}
-#guide .gr .gcn{background:#9cc0e8!important;background-image:none!important;border-right:5px solid #0b0d12!important;box-shadow:0 3px 0 #0b0d12;gap:6px!important}
+#guide .gr .gcn{background:#9cc0e8!important;background-image:none!important;border-right:5px solid #0b0d12!important;box-shadow:0 3px 0 #0b0d12}
+#guide .gr .gcn>*+*{margin-left:6px!important}
 #guide .gr .gcn b,#guide .gr .gcn span,#guide .gr.cur .gcn b,#guide .gr.cur .gcn span{color:#10203d!important;text-shadow:none!important;font-style:normal!important;font-weight:700!important}
 .gr .gcn b{font-size:22px!important;min-width:0!important}
 .gr .gcn span{font-size:20px!important;-webkit-line-clamp:1!important;white-space:nowrap;text-overflow:ellipsis}

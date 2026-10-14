@@ -300,7 +300,7 @@ public class MainActivity extends Activity {
                 "Change KNAS address",
                 "Open when the TV turns on: " + (auto ? "ON (press to turn off)" : "OFF (press to turn on)"),
                 "Use KNAS as the home screen: " + (home ? "ON (press to turn off)" : "OFF (press to turn on)"),
-                "Other apps (the TV's normal home screen)",
+                "Other apps (Netflix, YouTube, settings...)",
                 "Check for app updates (this is " + Updater.installedVersion(this) + ")",
                 "Reload KNAS"
         };
@@ -329,48 +329,124 @@ public class MainActivity extends Activity {
     }
 
     private boolean isHome() {
-        return getPackageManager().getComponentEnabledSetting(homeAlias()) == PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
+        return HomeButtonService.on(this);
+    }
+
+    private boolean homeHelperEnabled() {
+        String list = Settings.Secure.getString(getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+        return list != null && list.toLowerCase().contains((getPackageName() + "/").toLowerCase());
     }
 
     private void setHome(boolean on) {
+        prefs.edit().putBoolean(HomeButtonService.PREF_HOME, on).apply();
+        HomeButtonService.resume(this);
+        // Regular Android TV boxes can also pick KNAS as their home app (Google TV ignores this)
         getPackageManager().setComponentEnabledSetting(homeAlias(),
                 on ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                 PackageManager.DONT_KILL_APP);
         if (!on) {
             Toast.makeText(this, "KNAS isn't the home screen anymore", Toast.LENGTH_LONG).show();
-            openOtherApps();
+            return;
+        }
+        if (homeHelperEnabled()) {
+            Toast.makeText(this, "KNAS is your home screen now. Press Home to try it.", Toast.LENGTH_LONG).show();
             return;
         }
         dialog = new AlertDialog.Builder(this)
-                .setTitle("Make KNAS the home screen")
-                .setMessage("Press the remote's Home button. If the TV asks which home screen to use, pick KNAS 42, then Always.\n\n"
-                        + "Google TV boxes (like Onn) don't ask. They need a one-time step from a computer, explained in the KNAS setup guide "
-                        + "under \"Use KNAS as the home screen\".\n\nYour other apps are always under Settings (hold Back) → Other apps.")
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                .setTitle("One more step")
+                .setMessage("So the Home button opens KNAS, turn on \"KNAS 42 Home button\" in the TV's Accessibility settings.\n\n"
+                        + "On the next screen, find KNAS 42 Home button (it may be under \"Downloaded apps\" or \"Services\"), turn it on and press back.\n\n"
+                        + "It only watches for the TV's home screen; it doesn't read anything on your screen.")
+                .setPositiveButton("Open the setting", new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface d, int w) {
-                        try { startActivity(new Intent(Settings.ACTION_HOME_SETTINGS)); } catch (Exception ignored) { }
-                    }
+                    public void onClick(DialogInterface d, int w) { justAskedHome = true; openAccessibilitySettings(); }
                 })
+                .setNegativeButton("Later", null)
                 .create();
         dialog.show();
     }
 
-    /** The TV's own home screen (for Netflix, YouTube, settings...), even when KNAS is the home screen. */
+    private boolean justAskedHome = false;
+
+    private void openAccessibilitySettings() {
+        try {
+            startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));
+        } catch (Exception e) {
+            dialog = new AlertDialog.Builder(this).setTitle("Find it in Settings")
+                    .setMessage("Go to Settings → System → Accessibility → KNAS 42 Home button, and turn it on.")
+                    .setPositiveButton("OK", null).create();
+            dialog.show();
+        }
+    }
+
+    /** Your other apps (Netflix, YouTube...), plus the TV's own home screen, in a list. */
     private void openOtherApps() {
+        final List<String> names = new java.util.ArrayList<String>();
+        final List<Intent> intents = new java.util.ArrayList<Intent>();
+        final List<Boolean> isHomeScreen = new java.util.ArrayList<Boolean>();
+        PackageManager pm = getPackageManager();
+
+        // The TV's own home screen first
         Intent h = new Intent(Intent.ACTION_MAIN);
         h.addCategory(Intent.CATEGORY_HOME);
-        List<ResolveInfo> all = getPackageManager().queryIntentActivities(h, 0);
-        for (ResolveInfo r : all) {
-            if (r.activityInfo == null || getPackageName().equals(r.activityInfo.packageName)) continue;
-            if ("com.android.tv.settings".equals(r.activityInfo.packageName) || r.activityInfo.packageName.contains("fallbackhome")) continue;
+        for (ResolveInfo r : pm.queryIntentActivities(h, 0)) {
+            if (r.activityInfo == null) continue;
+            String pkg = r.activityInfo.packageName;
+            if (getPackageName().equals(pkg) || pkg.contains("settings") || pkg.contains("fallbackhome") || pkg.contains("setupwizard")) continue;
             Intent i = new Intent(Intent.ACTION_MAIN);
             i.addCategory(Intent.CATEGORY_HOME);
-            i.setClassName(r.activityInfo.packageName, r.activityInfo.name);
+            i.setClassName(pkg, r.activityInfo.name);
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            try { startActivity(i); return; } catch (Exception ignored) { }
+            names.add("TV home screen (" + r.loadLabel(pm) + ")");
+            intents.add(i);
+            isHomeScreen.add(true);
+            break;
         }
-        try { startActivity(new Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); } catch (Exception ignored) { }
+
+        // Then every app, the TV kind first (Leanback), phone-style ones if there are no TV ones
+        java.util.TreeMap<String, Intent> apps = new java.util.TreeMap<String, Intent>(String.CASE_INSENSITIVE_ORDER);
+        String[] cats = {"android.intent.category.LEANBACK_LAUNCHER", Intent.CATEGORY_LAUNCHER};
+        java.util.HashSet<String> seen = new java.util.HashSet<String>();
+        for (String cat : cats) {
+            Intent q = new Intent(Intent.ACTION_MAIN);
+            q.addCategory(cat);
+            for (ResolveInfo r : pm.queryIntentActivities(q, 0)) {
+                if (r.activityInfo == null) continue;
+                String pkg = r.activityInfo.packageName;
+                if (getPackageName().equals(pkg) || seen.contains(pkg)) continue;
+                seen.add(pkg);
+                Intent i = new Intent(Intent.ACTION_MAIN);
+                i.addCategory(cat);
+                i.setClassName(pkg, r.activityInfo.name);
+                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                apps.put(String.valueOf(r.loadLabel(pm)), i);
+            }
+        }
+        for (java.util.Map.Entry<String, Intent> a : apps.entrySet()) {
+            names.add(a.getKey());
+            intents.add(a.getValue());
+            isHomeScreen.add(false);
+        }
+        if (names.isEmpty()) {
+            try { startActivity(new Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); } catch (Exception ignored) { }
+            return;
+        }
+        if (dialog != null && dialog.isShowing()) dialog.dismiss();
+        dialog = new AlertDialog.Builder(this)
+                .setTitle("Other apps")
+                .setItems(names.toArray(new String[0]), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface d, int which) {
+                        // Going to the TV's home screen on purpose: don't bounce back to KNAS for a while
+                        if (isHomeScreen.get(which)) HomeButtonService.pause(MainActivity.this, 15 * 60 * 1000L);
+                        try { startActivity(intents.get(which)); } catch (Exception e) {
+                            Toast.makeText(MainActivity.this, "Couldn't open that app", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                })
+                .setNegativeButton("Close", null)
+                .create();
+        dialog.show();
     }
 
     private void setAutoStart(boolean on) {
@@ -421,6 +497,11 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         if (updater != null) updater.resumed();
+        HomeButtonService.resume(this);
+        if (justAskedHome) {
+            justAskedHome = false;
+            if (homeHelperEnabled()) Toast.makeText(this, "All set: the Home button opens KNAS now", Toast.LENGTH_LONG).show();
+        }
         if (WakeService.enabled(this) && Build.VERSION.SDK_INT >= 23 && Settings.canDrawOverlays(this) && justAskedOverlay) {
             justAskedOverlay = false;
             Toast.makeText(this, "All set: KNAS will open when the TV turns on", Toast.LENGTH_LONG).show();

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KNAS 42</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="screen" id="start"><div class="cell">
+  <div class="logo">KNAS 42</div>
+  <h1>Tuning in…</h1>
+  <p id="where"></p>
+  <p class="hint">Press <b>OK</b> or the <span class="red"></span> red (A) button to change the address</p>
+</div></div>
+<div class="screen" id="ask"><div class="cell">
+  <div class="logo">KNAS 42</div>
+  <h1 id="askTitle">Finding KNAS…</h1>
+  <p id="askMsg">Looking for KNAS on your home network</p>
+  <div class="ip" id="ip"><span id="ipText"></span><span class="cur">_</span></div>
+  <div class="err" id="err"></div>
+  <p class="hint" id="askHint"></p>
+</div></div>
+<script src="app.js"></script>
+</body>
+</html>

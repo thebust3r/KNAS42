@@ -24,6 +24,7 @@ It runs on your home server in Docker. Watch it on any TV, computer, phone or ol
 - ✂️ **Commercial breaks in your episodes:** the Tools page finds the act breaks in your shows (one episode or a whole library) so ErsatzTV can play commercials mid-episode, like real TV. If you use Jellyfin, KNAS tells it about the new breaks for you.
 
 **Around the house**
+- 📺 **A Samsung TV app:** KNAS full screen on Samsung (Tizen) TVs, installed with TizenBrew Installer. The whole remote works.
 - 📺 **An Android and Android TV app:** KNAS full screen on your TV box or phone, works with the TV remote, and can open by itself when the TV turns on.
 - 📱 **Your phone as a remote:** open `/remote` to control any TV in the house: channels, guide, number pad and a volume slider, plus a **What's on** list of every channel with what's playing now and next. Name each TV, pick which channels it shows, or turn off every TV at once.
 - 📊 **Viewing history** at `/history`: what each TV watched, top channels and shows, and when you watch. Turn it off any time in Setup → Channels.
@@ -116,6 +117,8 @@ You should see the KNAS cable box with the weather channel on. Press **Enter** (
 | **History** (optional) | `http://YOUR-NAS-IP:8642/history` | What each TV watched. |
 
 **On an Android TV box (Onn, Chromecast with Google TV, Fire TV) or Android phone:** get the **KNAS 42 app** (the `.apk` on the [Releases](../../releases) page). It opens straight to the cable box, full screen, the TV remote just works, and it can open by itself when the TV turns on. [How to install it](docs/SETUP-GUIDE.md#android-tv-box-onn-chromecast-with-google-tv-fire-tv-and-android-phones).
+
+**On a Samsung TV:** get the **KNAS 42 Samsung app** (the `.wgt` on the [Releases](../../releases) page) and install it with TizenBrew Installer. [How](docs/SETUP-GUIDE.md#samsung-tv).
 
 **On other TVs:** open the TV link in the TV's web browser and bookmark it.
 

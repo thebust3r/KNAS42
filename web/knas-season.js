@@ -94,7 +94,7 @@ function drawFx(dt){
 /* ---------- loop ---------- */
 function size(){W=stage.offsetWidth||640;H=stage.offsetHeight||480;if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}}
 function frame(t){if(!running)return;requestAnimationFrame(frame);
-  var dt=last?Math.min(3,(t-last)/16.7):1;if(light&&last&&t-last<30)return;last=t;
+  var dt=last?Math.min(3,(t-last)/16.7):1;if(last&&(lite?t-last<62:light&&t-last<30))return;   /* TV boxes: about 15 frames a second, so the video gets the power */last=t;
   ctx.clearRect(0,0,W,H);if(showParts){for(var i=0;i<parts.length;i++){step(parts[i],dt);drawPart(parts[i],t)}decor(t)}drawFx(dt)}
 function init(){stage=document.getElementById("stage");if(!stage)return;
   cv=document.createElement("canvas");cv.id="seasonFx";cv.style.cssText="position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:45";

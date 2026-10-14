@@ -40,7 +40,7 @@ body.stretch #video{object-fit:fill}
 html.muted #muteTag{display:block}
 /* severe weather alert, emergency-broadcast style */
 #eas{position:absolute;left:0;right:0;top:0;display:none;z-index:48;font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif}
-#eas .t{display:flex;align-items:center;gap:10px;background:#b00000;color:#fff;padding:5px 14px;font-weight:800;font-size:22px;letter-spacing:1px;box-shadow:0 2px 0 #000}
+#eas .t{display:flex;align-items:center;background:#b00000;color:#fff;padding:5px 14px;font-weight:800;font-size:22px;letter-spacing:1px;box-shadow:0 2px 0 #000}
 #eas .t i{font-style:normal;background:#fff;color:#b00000;padding:0 7px;border-radius:2px;font-size:18px;animation:blink 1s steps(1) infinite}
 #eas .t span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #eas .c{position:relative;height:40px;overflow:hidden;background:#000;border-bottom:3px solid #b00000}
@@ -59,10 +59,10 @@ html.muted #muteTag{display:block}
 @keyframes throwOut{to{transform:translateY(-560px) rotate(-10deg) scale(.4);opacity:0}}
 #throw.out .tf{animation:throwOut .4s ease-in forwards}
 #easTag{position:absolute;right:16px;top:16px;display:none;z-index:47;background:#b00000;color:#fff;font:800 15px "Barlow Condensed",Arial,sans-serif;letter-spacing:1px;padding:3px 9px;border-radius:3px;box-shadow:2px 2px 0 #000}
-#notice{position:absolute;left:50%;top:22%;transform:translateX(-50%);display:none;z-index:45;pointer-events:auto;width:min(640px,88%);padding:14px 20px 16px;text-align:center;background:rgba(4,10,50,.92);border-radius:8px;box-shadow:inset 0 0 0 3px var(--gold),0 6px 24px rgba(0,0,0,.6);cursor:pointer}
+#notice{position:absolute;left:50%;top:22%;transform:translateX(-50%);display:none;z-index:45;pointer-events:auto;width:640px;max-width:88%;padding:14px 20px 16px;text-align:center;background:rgba(4,10,50,.92);border-radius:8px;box-shadow:inset 0 0 0 3px var(--gold),0 6px 24px rgba(0,0,0,.6);cursor:pointer}
 #notice b{display:block;font-size:30px;font-weight:800;font-style:italic;color:var(--gold);letter-spacing:1px}
 #notice span{display:block;font-size:22px;font-weight:700;color:#fff;margin-top:4px}
-#notice .nb{display:flex;gap:10px;justify-content:center;margin-top:10px}
+#notice .nb{display:flex;justify-content:center;margin-top:10px}
 #notice .nb button{font:800 18px "Barlow Condensed",Arial,sans-serif;letter-spacing:1px;color:#fff;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.4);border-radius:6px;padding:6px 16px;cursor:pointer}
 #notice .nb button.w{background:var(--gold);color:#1a1300;border-color:var(--gold)}
 html.mouse #notice small,html.touch #notice small{display:none}
@@ -87,7 +87,7 @@ html.mouse #muteTag{bottom:118px}
 .b-main{position:absolute;left:134px;right:16px;top:10px}
 .b-title{font-size:34px;font-weight:800;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .b-sub{font-size:22px;font-weight:700;color:var(--ice);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;height:26px}
-.b-row{display:flex;align-items:center;gap:10px;margin-top:6px;font-size:22px;font-weight:700}
+.b-row{display:flex;align-items:center;margin-top:6px;font-size:22px;font-weight:700}
 .b-bar{flex:1;height:12px;background:#0a1552;border-radius:2px;box-shadow:inset 0 0 0 2px #6f8de0;overflow:hidden}
 .b-bar i{display:block;height:100%;background:linear-gradient(180deg,#ffd23a,#ff9a1a)}
 .b-next{font-size:21px;font-weight:700;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -130,12 +130,12 @@ html.mouse #muteTag{bottom:118px}
 .gh .gs span{position:absolute;top:4px;font-size:23px;font-weight:800;color:var(--gold);padding-left:8px;border-left:2px solid rgba(255,210,58,.5);height:28px}
 .grows{position:absolute;left:0;right:0;top:39px;bottom:0;overflow:hidden}
 .gr{position:absolute;left:0;right:0;height:51px;display:flex;border-bottom:2px solid #061049}
-.gr .gcn{width:150px;flex:none;display:flex;align-items:center;gap:8px;padding:0 8px;background:linear-gradient(180deg,#2c55c8,#173a9e);border-right:2px solid #061049}
+.gr .gcn{width:150px;flex:none;display:flex;align-items:center;padding:0 8px;background:linear-gradient(180deg,#2c55c8,#173a9e);border-right:2px solid #061049}
 .gr .gcn em{font-style:normal;font-size:13px;font-weight:700;color:#fff;background:rgba(0,0,0,.35);border-radius:9px;padding:0 6px;margin-left:auto;white-space:nowrap}
-#sbug{position:fixed;right:2.4vw;bottom:3.5vh;z-index:53;display:none;align-items:stretch;font:800 max(13px,2.3vmin) "Barlow Condensed","Arial Narrow",Arial,sans-serif;letter-spacing:.5px;
+#sbug{position:fixed;right:2.4vw;bottom:3.5vh;z-index:53;display:none;align-items:stretch;font:800 2.3vmin "Barlow Condensed","Arial Narrow",Arial,sans-serif;letter-spacing:.5px;
   color:#fff;border-radius:.4em;overflow:hidden;box-shadow:0 .15em .6em rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.15);pointer-events:none;opacity:.94;transition:opacity .6s}
 #sbug.web{bottom:15vh}
-#sbug .tm{display:flex;align-items:center;gap:.35em;padding:.15em .45em;background:rgba(8,12,30,.88)}
+#sbug .tm{display:flex;align-items:center;padding:.15em .45em;background:rgba(8,12,30,.88)}
 #sbug .tm i{width:.35em;align-self:stretch;margin:-.15em 0 -.15em -.45em;display:block}
 #sbug .tm b{font-weight:800;min-width:1.1em;text-align:right;color:#ffd23a}
 #sbug .dt{padding:.15em .5em;background:rgba(30,40,80,.92);color:#cfe0ff;font-weight:700;white-space:nowrap}
@@ -146,7 +146,7 @@ body.degauss #stage,body.degauss #video,body.degauss #web{animation:degauss 1.6s
 @keyframes degauss{0%{transform-origin:50% 50%;filter:hue-rotate(0) saturate(1)}8%{transform:scale(1.04,.96) skewX(4deg);filter:hue-rotate(160deg) saturate(3) blur(1px)}
   20%{transform:scale(.97,1.03) skewX(-3deg);filter:hue-rotate(-120deg) saturate(2.5)}35%{transform:scale(1.02,.99) skewX(2deg);filter:hue-rotate(80deg) saturate(2)}
   55%{transform:scale(.995,1.005) skewX(-1deg);filter:hue-rotate(-30deg) saturate(1.4)}75%{transform:skewX(.4deg);filter:hue-rotate(10deg)}100%{transform:none;filter:none}}
-#degaussFx{position:fixed;inset:0;z-index:52;pointer-events:none;mix-blend-mode:screen;opacity:0;
+#degaussFx{position:fixed;top:0;right:0;bottom:0;left:0;z-index:52;pointer-events:none;mix-blend-mode:screen;opacity:0;
   background:radial-gradient(circle at 50% 50%,transparent 20%,rgba(255,0,180,.45) 38%,rgba(0,220,255,.45) 52%,rgba(120,255,0,.4) 66%,rgba(255,140,0,.45) 80%,transparent 95%)}
 body.degauss #degaussFx{animation:dgfx 1.6s ease-out}
 @keyframes dgfx{0%{opacity:0;transform:scale(.6) rotate(0)}10%{opacity:1}60%{opacity:.5;transform:scale(1.3) rotate(40deg)}100%{opacity:0;transform:scale(1.6) rotate(70deg)}}
@@ -198,10 +198,18 @@ body.degauss #degaussFx{animation:dgfx 1.6s ease-out}
 /* phones: lock the page in place (no pinch zoom, no pull-to-refresh, no bouncing) */
 html,body{position:fixed;top:0;right:0;bottom:0;left:0;width:100%;height:100%;overscroll-behavior:none;-webkit-text-size-adjust:100%;text-size-adjust:100%;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 #safe{position:fixed;top:0;right:0;bottom:0;left:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
-#pbar{position:fixed;left:50%;bottom:4%;transform:translate(-50%,20px);z-index:60;display:flex;gap:8px;padding:8px;border-radius:12px;background:rgba(6,14,60,.88);box-shadow:0 0 0 2px rgba(156,184,255,.6),0 6px 20px rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
+#pbar{position:fixed;left:50%;bottom:4%;transform:translate(-50%,20px);z-index:60;display:flex;padding:8px;border-radius:12px;background:rgba(6,14,60,.88);box-shadow:0 0 0 2px rgba(156,184,255,.6),0 6px 20px rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
 #pbar.on{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
 #pbar button{font:800 22px "Barlow Condensed",Arial,sans-serif;color:#fff;background:linear-gradient(180deg,#3a63d6,#1d3a9e);border:0;border-radius:8px;padding:10px 16px;min-width:74px;cursor:pointer;box-shadow:inset 0 0 0 2px rgba(255,255,255,.25)}
 #pbar button:hover,#pbar button:focus{background:linear-gradient(180deg,#fff1a0,#ffd23a 45%,#ffb000);color:#1a1300;outline:0}
+/* older TV browsers don't know flex "gap": spacing with margins instead */
+#eas .t>*+*{margin-left:10px}
+#notice .nb>*+*{margin-left:10px}
+.b-row>*+*{margin-left:10px}
+.gr .gcn>*+*{margin-left:8px}.gr .gcn b{flex:none}.gr .gcn span{min-width:0;flex:1 1 auto}
+#sbug .tm>*+*{margin-left:.35em}
+#pbar>*+*{margin-left:8px}
+.gr .gcn em{flex:none}
 </style>
 </head>
 <body><div id="safe"></div><div id="sbug"></div><div id="degaussFx"></div><canvas id="fx" style="position:fixed;left:0;top:0;width:100%;height:100%;z-index:55;pointer-events:none;display:none"></canvas>

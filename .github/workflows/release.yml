@@ -53,7 +53,7 @@ jobs:
         run: |
           mkdir -p pkg out
           git archive --format=tar HEAD | tar -x -C pkg
-          rm -rf pkg/android pkg/.github
+          rm -rf pkg/android pkg/.github pkg/tizen pkg/signing pkg/package.json
           (cd pkg && zip -qr "../out/KNAS-${{ steps.v.outputs.version }}-update.zip" .)
           python3 -m py_compile pkg/server.py pkg/app/*.py
 
@@ -87,6 +87,29 @@ jobs:
           cp android/app/build/outputs/apk/release/*.apk "out/KNAS-42-${{ steps.v.outputs.version }}.apk"
           keytool -printcert -jarfile out/*.apk | grep -i "owner" || true
           ls -la out
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # The Samsung TV app: tizen/ signed with the app's author certificate (signing/tizen-author.p12, kept in the
+      # repo so every version installs over the last) using tizen.js, by the TizenBrew author. No Tizen Studio needed.
+      - name: Build the Samsung TV app
+        run: |
+          git clone --depth 1 https://github.com/reisxd/tizen.js "$RUNNER_TEMP/tizenjs"
+          (cd "$RUNNER_TEMP/tizenjs" && npm install --silent)
+          # tizen.js bug fix: pack the author's own key into new certificates (not the issuing CA's)
+          sed -i 's/toPkcs12Asn1(developerPrivateKey,/toPkcs12Asn1(key.privateKey,/' "$RUNNER_TEMP/tizenjs/src/tizenCertificateCreator.js"
+          mkdir -p "$RUNNER_TEMP/tvapp"
+          cp tizen/config.xml tizen/index.html tizen/app.js tizen/style.css tizen/icon.png "$RUNNER_TEMP/tvapp/"
+          sed -i 's/\(<widget[^>]* version="\)[^"]*"/\1${{ steps.v.outputs.version }}"/' "$RUNNER_TEMP/tvapp/config.xml"
+          grep -o '<widget[^>]*version="[^"]*"' "$RUNNER_TEMP/tvapp/config.xml"
+          cd "$RUNNER_TEMP/tvapp"
+          node "$RUNNER_TEMP/tizenjs/cli.js" build . -t wgt -o "$GITHUB_WORKSPACE/out/KNAS-42-Samsung-${{ steps.v.outputs.version }}.wgt" \
+            --author "$GITHUB_WORKSPACE/signing/tizen-author.p12" --authorPwd knas42author -p public
+          cd "$GITHUB_WORKSPACE" && unzip -l out/*.wgt
+          pip install --quiet lxml cryptography
+          python3 .github/scripts/verify-wgt-signature.py out/*.wgt      # stop if the TV would reject the signature
 
       # With a RELEASE_TOKEN secret (a token from your own GitHub account), the release shows as made by you.
       # If the token is missing or can't publish, it falls back to "github-actions" so the release still goes out.

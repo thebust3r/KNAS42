@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">KNAS 42</string>
+    <string name="home_button_label">KNAS 42 Home button</string>
+    <string name="home_button_description">Opens KNAS 42 whenever the TV\'s home screen comes up, so KNAS is your home screen. Only watches for the home screen app; it doesn\'t read anything on your screen.</string>
 </resources>

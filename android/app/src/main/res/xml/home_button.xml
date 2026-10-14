@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Only the TV's own home screen apps are watched; nothing on screen is read. -->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/home_button_description"
+    android:accessibilityEventTypes="typeWindowStateChanged"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:accessibilityFlags="flagDefault"
+    android:canRetrieveWindowContent="false"
+    android:notificationTimeout="100"
+    android:packageNames="com.google.android.apps.tv.launcherx,com.google.android.tvlauncher,com.google.android.leanbacklauncher,com.android.tv.launcher,com.amazon.tv.launcher,com.android.launcher3" />

@@ -12,7 +12,7 @@ import securecert, ws, throw, livecam, voice, duck, fun, flick, stream
 from datetime import datetime, timedelta, timezone
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 
-VERSION = "1.1.3"
+VERSION = "1.1.4"
 HERE = os.path.dirname(os.path.abspath(__file__))       # the app folder
 ROOT = os.path.dirname(HERE)                            # your KNAS folder
 DATA = os.path.join(ROOT, "data")                       # caches and logs

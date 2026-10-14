@@ -138,17 +138,24 @@ In the app:
 
 **Open when the TV turns on:** turn it on in the app's Settings and KNAS opens by itself whenever the TV (or the box) wakes up. Newer Android asks you to allow **Display over other apps** for KNAS 42 the first time; the app takes you to that setting. If your box doesn't open it, find it under Settings → Apps → Special app access → Display over other apps.
 
-**Use KNAS as the home screen** (so the TV turns on straight to KNAS, with no home screen first): in the app, hold **Back** → **Use KNAS as the home screen** → on. Your other apps (Netflix, YouTube, settings) are always under hold **Back** → **Other apps**. Turn the setting off any time to go back to normal.
-- **Most Android TV boxes and phones:** press **Home**. When it asks which home screen to use, pick **KNAS 42** → **Always**.
-- **Google TV boxes (Onn, Chromecast with Google TV):** they don't ask, so it takes a one-time step from a computer:
-  1. On the TV: **Settings → System → About**, then click **Android TV OS build** 7 times until it says you're a developer. Go back to **Settings → System → Developer options** and turn on **USB debugging**. Write down the TV's IP address (**Settings → Network & Internet →** your Wi-Fi).
-  2. On a computer: download **SDK Platform-Tools** from developer.android.com/tools/releases/platform-tools and unzip it. Open a command window in that folder (on Windows: click the address bar of the folder, type `cmd`, press Enter).
-  3. Type `adb connect TV_IP` (your TV's IP). The TV asks to allow it: pick **Always allow**, then type the same command again.
-  4. Type `adb shell cmd package set-home-activity io.github.thebust3r.knas42/.Home` and press Enter.
-  5. Press **Home** on the remote: it goes to KNAS. If a TV update ever puts the old home screen back, do step 4 again.
+**Use KNAS as the home screen** (so the Home button and waking the TV go straight to KNAS): in the app, hold **Back** → **Use KNAS as the home screen** → on. On Google TV boxes (Onn, Chromecast with Google TV) the app then asks you to turn on **KNAS 42 Home button** in **Settings → System → Accessibility**; it takes you there. That helper only watches for the TV's home screen and opens KNAS in its place. It doesn't read anything on your screen. Your other apps (Netflix, YouTube, settings) are always under hold **Back** → **Other apps**, which lists everything installed. Turn the setting off any time to go back to normal.
+- **Regular Android TV boxes and phones:** you can also press **Home** and pick **KNAS 42** → **Always** when it asks.
 - **Fire TV:** Amazon doesn't allow other home screens. Use **Open when the TV turns on** instead.
 
+**TV off but the box keeps playing (Bluetooth speakers)?** That's a box setting: on the box, **Settings → Display & Sound → HDMI-CEC** (or **System → Power & Energy**), turn on **HDMI-CEC control** and **Auto device power off**, and on the TV turn on its HDMI-CEC (Samsung: **Anynet+**, LG: **SimpLink**, Sony: **Bravia Sync**). Then the box sleeps with the TV, and KNAS picks up where it left off when you turn them back on.
+
 **Rather use a browser?** Fully Kiosk Browser works too: set its Start URL to `http://SERVER_IP:8642/tv` and turn on **Autoplay Videos**, **Launch on Boot** and **Keep Screen On**.
+
+### Samsung TV
+
+The **KNAS 42 Samsung app** opens straight to the cable box, full screen, with the whole remote working (channel up/down, numbers, guide, info, back, PRE-CH, CH LIST).
+
+1. Put the TV in **Developer Mode**: on the TV, open **Apps**, press **1 2 3 4 5** on the remote, turn **Developer mode** on, type your PC's IP address as the **Host PC IP**, then restart the TV.
+2. On your PC, get **TizenBrew Installer** (from its GitHub releases page) and connect it to the TV.
+3. Download **KNAS-42-Samsung-<version>.wgt** from the KNAS GitHub **Releases** page, and in TizenBrew Installer choose to install it from a file.
+4. Open **KNAS 42** on the TV and type your NAS's address (like `192.168.1.50`).
+
+To change the address later, press the red **A** button while it says "Tuning in…". For a new version, install the new `.wgt` the same way; it goes right over the old one and keeps your address. (Tizen Studio works too: `tizen install -n KNAS-42-Samsung-<version>.wgt`.)
 
 ### Other devices
 
