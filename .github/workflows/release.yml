@@ -88,9 +88,11 @@ jobs:
           keytool -printcert -jarfile out/*.apk | grep -i "owner" || true
           ls -la out
 
+      # With a RELEASE_TOKEN secret (a token from your own GitHub account), the release shows as made by you.
+      # Without one, it's made by "github-actions".
       - name: Publish the release
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
           tag="${{ steps.v.outputs.tag }}"
           if gh release view "$tag" >/dev/null 2>&1; then
