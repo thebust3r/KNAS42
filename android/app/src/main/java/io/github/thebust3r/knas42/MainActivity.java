@@ -5,7 +5,11 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.provider.Settings;
+import android.content.ComponentName;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import java.util.List;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -46,6 +50,7 @@ public class MainActivity extends Activity {
     private long backDownAt = 0;
     private boolean backHeld = false;
     private boolean stopped = false;
+    private long stoppedAt = 0;
 
     @Override
     protected void onCreate(Bundle saved) {
@@ -287,9 +292,12 @@ public class MainActivity extends Activity {
     private void showMenu() {
         if (dialog != null && dialog.isShowing()) dialog.dismiss();
         final boolean auto = WakeService.enabled(this);
+        final boolean home = isHome();
         String[] items = {
                 "Change KNAS address",
                 "Open when the TV turns on: " + (auto ? "ON (press to turn off)" : "OFF (press to turn on)"),
+                "Use KNAS as the home screen: " + (home ? "ON (press to turn off)" : "OFF (press to turn on)"),
+                "Other apps (the TV's normal home screen)",
                 "Reload KNAS"
         };
         dialog = new AlertDialog.Builder(this)
@@ -299,12 +307,65 @@ public class MainActivity extends Activity {
                     public void onClick(DialogInterface d, int which) {
                         if (which == 0) askAddress(true);
                         else if (which == 1) setAutoStart(!auto);
+                        else if (which == 2) setHome(!home);
+                        else if (which == 3) openOtherApps();
                         else web.reload();
                     }
                 })
                 .setNegativeButton("Close", null)
                 .create();
         dialog.show();
+    }
+
+    // ---- "Use KNAS as the home screen": KNAS becomes the screen the TV turns on to (and where Home goes) ----
+
+    private ComponentName homeAlias() {
+        return new ComponentName(this, getPackageName() + ".Home");
+    }
+
+    private boolean isHome() {
+        return getPackageManager().getComponentEnabledSetting(homeAlias()) == PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
+    }
+
+    private void setHome(boolean on) {
+        getPackageManager().setComponentEnabledSetting(homeAlias(),
+                on ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                PackageManager.DONT_KILL_APP);
+        if (!on) {
+            Toast.makeText(this, "KNAS isn't the home screen anymore", Toast.LENGTH_LONG).show();
+            openOtherApps();
+            return;
+        }
+        dialog = new AlertDialog.Builder(this)
+                .setTitle("Make KNAS the home screen")
+                .setMessage("Press the remote's Home button. If the TV asks which home screen to use, pick KNAS 42, then Always.\n\n"
+                        + "Google TV boxes (like Onn) don't ask. They need a one-time step from a computer, explained in the KNAS setup guide "
+                        + "under \"Use KNAS as the home screen\".\n\nYour other apps are always under Settings (hold Back) → Other apps.")
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface d, int w) {
+                        try { startActivity(new Intent(Settings.ACTION_HOME_SETTINGS)); } catch (Exception ignored) { }
+                    }
+                })
+                .create();
+        dialog.show();
+    }
+
+    /** The TV's own home screen (for Netflix, YouTube, settings...), even when KNAS is the home screen. */
+    private void openOtherApps() {
+        Intent h = new Intent(Intent.ACTION_MAIN);
+        h.addCategory(Intent.CATEGORY_HOME);
+        List<ResolveInfo> all = getPackageManager().queryIntentActivities(h, 0);
+        for (ResolveInfo r : all) {
+            if (r.activityInfo == null || getPackageName().equals(r.activityInfo.packageName)) continue;
+            if ("com.android.tv.settings".equals(r.activityInfo.packageName) || r.activityInfo.packageName.contains("fallbackhome")) continue;
+            Intent i = new Intent(Intent.ACTION_MAIN);
+            i.addCategory(Intent.CATEGORY_HOME);
+            i.setClassName(r.activityInfo.packageName, r.activityInfo.name);
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            try { startActivity(i); return; } catch (Exception ignored) { }
+        }
+        try { startActivity(new Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); } catch (Exception ignored) { }
     }
 
     private void setAutoStart(boolean on) {
@@ -368,11 +429,12 @@ public class MainActivity extends Activity {
             public void onReceiveValue(Boolean used) {
                 if (used) return;                              // KNAS closed something (the guide, a banner...)
                 if (isFinishing() || (dialog != null && dialog.isShowing())) return;
+                final boolean home = isHome();
                 dialog = new AlertDialog.Builder(MainActivity.this)
                         .setTitle("Leave KNAS?")
-                        .setPositiveButton("Exit", new DialogInterface.OnClickListener() {
+                        .setPositiveButton(home ? "Other apps" : "Exit", new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(DialogInterface d, int w) { finish(); }
+                            public void onClick(DialogInterface d, int w) { if (home) openOtherApps(); else finish(); }
                         })
                         .setNeutralButton("Settings", new DialogInterface.OnClickListener() {
                             @Override
@@ -399,6 +461,7 @@ public class MainActivity extends Activity {
     protected void onStop() {
         super.onStop();
         stopped = true;
+        stoppedAt = SystemClock.elapsedRealtime();
         web.evaluateJavascript("try{document.querySelectorAll('video,audio').forEach(function(v){v.pause()})}catch(e){}", null);
         web.onPause();
         web.pauseTimers();
@@ -407,12 +470,18 @@ public class MainActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-        if (stopped) {                                    // back from the home screen: tune back in fresh
+        if (stopped) {                                    // back on: pick up right where it was, no reloading
             stopped = false;
             web.onResume();
             web.resumeTimers();
-            String url = prefs.getString(KEY_URL, null);
-            if (url != null) web.reload();
+            if (prefs.getString(KEY_URL, null) == null) return;
+            if (SystemClock.elapsedRealtime() - stoppedAt > 6 * 3600 * 1000L) {
+                web.reload();                             // off for hours: start fresh
+            } else {
+                web.evaluateJavascript("try{if(typeof SLEEP!=='undefined'&&SLEEP&&typeof wake==='function')wake();"
+                        + "else if(window.CH&&CH.length&&typeof tune==='function')tune(cur<0?0:cur,{now:true});"
+                        + "else location.reload()}catch(e){location.reload()}", null);
+            }
         }
     }
 
