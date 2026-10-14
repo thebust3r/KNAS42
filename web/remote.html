@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#090c2b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="KNAS Remote">
+<title>KNAS Remote</title>
+<link rel="icon" href="/remote-icon-192.png">
+<link rel="apple-touch-icon" href="/remote-icon-180.png">
+<link rel="manifest" href="/remote.webmanifest">
+<style>
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-600.woff) format("woff");font-weight:600;font-display:swap}
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-700.woff) format("woff");font-weight:700;font-display:swap}
+@font-face{font-family:"KNAS Head";src:url(/fonts/classic-800i.woff) format("woff");font-weight:800;font-style:italic;font-display:swap}
+:root{--bg:#090c2b;--card:#131b4f;--card2:#18225e;--line:rgba(156,184,255,.18);--line2:rgba(156,184,255,.35);--text:#eef2ff;--muted:#a3b0dd;
+  --gold:#ffd23a;--gold2:#ffb000;--ink:#1a1300;--red:#e3261b;--ok:#7dff9e;--head:"KNAS Head","Arial Narrow",Arial,sans-serif;--ui:"KNAS UI","Segoe UI",Roboto,Arial,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{font:600 15px/1.35 var(--ui);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;user-select:none;-webkit-user-select:none;
+  background:radial-gradient(900px 500px at 80% -10%,rgba(90,47,134,.5),transparent 60%),var(--bg) fixed;
+  padding:max(12px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom))}
+.hidden{display:none!important}
+.wrap{max-width:440px;margin:0 auto}
+header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.logo{width:40px;height:40px;border-radius:9px;background:linear-gradient(160deg,#2c3fb0,#16207a);box-shadow:0 0 0 2px #9cb8ff inset;display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none}
+.logo b{font:800 italic 19px/1 var(--head);color:#fff}.logo span{font:700 7px var(--ui);color:#fff;background:var(--red);padding:0 3px;border-radius:2px;margin-top:1px}
+header h1{font:800 italic 22px var(--head);color:var(--gold)}
+header .sp{flex:1}
+.tvs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:10px;scrollbar-width:none}
+.tvs::-webkit-scrollbar{display:none}
+.tvs button{flex:none;font:700 13.5px var(--ui);color:var(--text);background:rgba(255,255,255,.06);border:1px solid var(--line2);border-radius:999px;padding:6px 12px;cursor:pointer}
+.tvs button.on{background:linear-gradient(180deg,#ffe680,var(--gold) 50%,var(--gold2));color:var(--ink);border-color:transparent}
+.tvs button.off{opacity:.5}
+.now{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:14px}
+.num{min-width:62px;height:56px;padding:0 8px;border-radius:10px;background:linear-gradient(160deg,#2c3fb0,#16207a);box-shadow:0 0 0 2px #9cb8ff inset;display:flex;align-items:center;justify-content:center;font:800 italic 28px var(--head)}
+.now .t{flex:1;min-width:0}.now .t b{display:block;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.now .t small{display:block;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.icon{background:none;border:0;color:var(--muted);font-size:18px;padding:6px;cursor:pointer;border-radius:8px}
+.k{font:700 15px var(--ui);color:var(--text);background:linear-gradient(180deg,#2a3898,#1b2672);border:0;border-radius:12px;box-shadow:0 0 0 1px var(--line2) inset,0 3px 0 #0a0f3a;padding:14px 6px;cursor:pointer;touch-action:manipulation}
+.k:active,.k.hit{transform:translateY(2px);box-shadow:0 0 0 1px var(--line2) inset,0 1px 0 #0a0f3a;filter:brightness(1.25)}
+.k.gold{background:linear-gradient(180deg,#ffe680,var(--gold) 50%,var(--gold2));color:var(--ink);box-shadow:0 3px 0 #8a6200}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.pad{position:relative;width:min(78vw,280px);aspect-ratio:1;margin:6px auto 16px;border-radius:50%;background:radial-gradient(circle,#1c276f 0 58%,#141d58 59%);box-shadow:0 0 0 2px var(--line2) inset,0 8px 24px rgba(0,0,0,.35)}
+.pad .k{position:absolute;border-radius:14px;font-size:22px;padding:0}
+.pad .u{left:35%;top:4%;width:30%;height:27%}.pad .d{left:35%;bottom:4%;width:30%;height:27%}
+.pad .l{left:4%;top:35%;width:27%;height:30%}.pad .r{right:4%;top:35%;width:27%;height:30%}
+.pad .ok{left:33%;top:33%;width:34%;height:34%;border-radius:50%;font-size:18px}
+.hint{text-align:center;color:var(--muted);font-size:12.5px;margin:-6px 0 14px}
+.digits{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.digits .k{font-size:20px;padding:12px 0}
+.tabs{display:flex;gap:6px;margin:4px 0 12px;background:rgba(255,255,255,.04);border-radius:12px;padding:4px}
+.tabs button{flex:1;font:700 14px var(--ui);color:var(--muted);background:none;border:0;border-radius:9px;padding:9px;cursor:pointer}
+.tabs button.on{background:var(--card2);color:var(--gold)}
+.list{display:flex;flex-direction:column;gap:6px}
+.ch{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 10px;cursor:pointer}
+.ch.cur{border-color:var(--gold)}
+.ch .n{min-width:42px;font:800 italic 18px var(--head);color:var(--gold);text-align:center}
+.ch .nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch.hid{opacity:.45}
+.ch input{width:22px;height:22px;accent-color:var(--gold);flex:none}
+.note{color:var(--muted);font-size:13px;line-height:1.5}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.card h2{font:800 italic 20px var(--head);color:var(--gold);margin-bottom:6px}
+.bar{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.bar .sp{flex:1}
+.btn{font:700 13.5px var(--ui);color:var(--text);background:rgba(255,255,255,.06);border:1px solid var(--line2);border-radius:8px;padding:7px 11px;cursor:pointer}
+.btn.gold{background:linear-gradient(180deg,#ffe680,var(--gold) 50%,var(--gold2));color:var(--ink);border-color:transparent}
+.mic{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;font:700 16px var(--ui);color:var(--text);background:linear-gradient(180deg,#2a3898,#1b2672);border:0;border-radius:14px;box-shadow:0 0 0 1px var(--line2) inset,0 3px 0 #0a0f3a;padding:13px;margin:-4px 0 12px;cursor:pointer;touch-action:manipulation}
+.mic.on{background:linear-gradient(180deg,#ff6b5e,var(--red));box-shadow:0 0 0 3px rgba(227,38,27,.35),0 3px 0 #5a0a05;animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{filter:brightness(1.2)}}
+.heard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:-4px 0 12px;font-size:14px}
+.heard i{display:block;color:var(--muted);font-style:normal;font-size:13px}
+.icon.menu{position:relative;font-size:22px;color:var(--text)}
+.icon .dot{position:absolute;right:4px;top:5px;width:8px;height:8px;border-radius:50%;background:var(--gold)}
+.sheet{position:fixed;inset:0;z-index:20;background:rgba(3,5,20,.6);display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .15s}
+.sheetBox{width:100%;max-width:480px;background:var(--card);border:1px solid var(--line2);border-bottom:0;border-radius:20px 20px 0 0;padding:14px 16px max(18px,env(safe-area-inset-bottom));animation:up .2s ease-out}
+.sheetTop{display:flex;align-items:center;margin-bottom:10px}.sheetTop b{flex:1;font:800 italic 20px var(--head);color:var(--gold)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{display:flex;flex-direction:column;gap:3px;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:12px;text-decoration:none;color:var(--text);min-height:92px}
+.tile:active{border-color:var(--gold)}
+.tile i{font-style:normal;font-size:26px;line-height:1}.tile b{font-size:15px}.tile small{color:var(--muted);font-size:12px}
+@keyframes up{from{transform:translateY(40px);opacity:.4}}@keyframes fadeIn{from{opacity:0}}
+.volrow{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 8px 8px 12px}
+.volrow .vi{font-size:18px;width:22px;text-align:center}
+.volrow b{min-width:30px;text-align:right;font-size:14px;color:var(--muted)}
+.volrow .k{padding:10px 12px;font-size:13px}
+.volrow input{flex:1;-webkit-appearance:none;appearance:none;height:30px;background:transparent}
+.volrow input::-webkit-slider-runnable-track{height:8px;border-radius:4px;background:linear-gradient(90deg,var(--gold) var(--p,100%),rgba(255,255,255,.12) var(--p,100%))}
+.volrow input::-moz-range-track{height:8px;border-radius:4px;background:rgba(255,255,255,.12)}
+.volrow input::-moz-range-progress{height:8px;border-radius:4px;background:var(--gold)}
+.volrow input::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;margin-top:-9px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+.volrow input::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:#fff;border:0}
+.volrow.muted input{opacity:.4}
+.alloff{display:block;width:100%;margin-top:12px;font:700 15px var(--ui);color:var(--text);background:rgba(255,255,255,.05);border:1px solid var(--line2);border-radius:12px;padding:13px}
+.ch .nm small{display:block;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.ch .nm small b{color:var(--text);font-weight:700}
+.ch .pb{display:block;height:3px;border-radius:2px;background:rgba(255,255,255,.1);margin-top:4px;overflow:hidden}.ch .pb i{display:block;height:100%;background:var(--gold)}
+.toast{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%);background:#000c;color:#fff;font-size:13.5px;padding:8px 14px;border-radius:999px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><div class="logo"><b>42</b><span>KNAS</span></div><h1>Remote</h1><div class="sp"></div><button class="icon" id="numBtn" title="Number pad" aria-label="Number pad">🔢</button><button class="icon menu" id="menuBtn" title="More" aria-label="More">☰<i class="dot hidden" id="menuDot"></i></button></header>
+  <div class="sheet hidden" id="sheet"><div class="sheetBox">
+    <div class="sheetTop"><b>More</b><button class="icon" id="sheetX" aria-label="Close">✕</button></div>
+    <div class="tiles">
+      <a class="tile hidden" id="funLink" href="/fun"><i>🍅</i><b>Screen fun</b><small>Splat, confetti, draw</small></a>
+      <a class="tile hidden" id="throwLink" href="/throw"><i>📤</i><b>Throw it</b><small>Photo or video to TV</small></a>
+      <a class="tile hidden" id="camLink" href="/cam"><i>📹</i><b>Live Cam</b><small>Phone camera on TV</small></a>
+      <a class="tile hidden" id="streamLink" href="/streams"><i>📡</i><b>Stream</b><small>Play a live stream link</small></a>
+      <a class="tile hidden" id="jukeLink" href="/jukebox"><i>🎵</i><b>Jukebox</b><small>Add music videos</small></a>
+      <a class="tile hidden" id="gameLink" href="/play"><i>🎮</i><b>Party games</b><small>Trivia and more</small></a>
+      <a class="tile hidden" id="flickLink" href="/flick"><i>🎯</i><b>Flick games</b><small>Darts, hoops, bowling</small></a>
+      <a class="tile hidden" id="duckLink" href="/zapper"><i>🦆</i><b>Duck Season</b><small>Your phone is the gun</small></a>
+      <a class="tile hidden" id="histLink" href="/history"><i>📊</i><b>History</b><small>What we watched</small></a>
+      <a class="tile hidden" id="rateLink" href="/ratings"><i>📈</i><b>Ratings</b><small>This week's top channels</small></a>
+    </div>
+    <button type="button" class="alloff" id="degaussBtn">🧲 Degauss this TV</button>
+    <button type="button" class="alloff" id="allOff">🌙 Turn off all TVs</button></div></div>
+
+  <div class="card hidden" id="none">
+    <h2>No TVs on right now</h2>
+    <div class="note">Open the cable box on a TV (<code id="tvUrl">/tv</code>) and it shows up here in a few seconds. Every TV, computer or phone with the cable box open can be controlled from this page.</div>
+  </div>
+
+  <div id="ui" class="hidden">
+    <div class="tvs" id="tvs"></div>
+    <div class="now"><div class="num" id="nNum">–</div><div class="t"><b id="nName">…</b><small id="nShow"></small></div><button class="icon" id="renameBtn" title="Rename this TV" aria-label="Rename this TV">✏️</button></div>
+
+    <button class="mic hidden" id="mic" type="button">🎤 <span id="micT">Tap and say a channel or show</span></button>
+    <div class="heard hidden" id="heard"></div>
+    <div class="card hidden" id="micSecure"><h2>Voice needs the secure remote</h2><div class="note">Phones only let a page use the microphone when it's secure. Open the secure remote below. The first time, your phone says the connection isn't private: that's KNAS's own certificate, so tap <b>Show details → visit this website</b> (iPhone) or <b>Advanced → Proceed</b> (Android). Then add that page to your home screen.</div>
+      <div class="bar" style="margin:10px 0 0"><div class="sp"></div><a class="btn gold" id="micGo" href="#" style="text-decoration:none">Open the secure remote</a></div></div>
+    <div class="tabs"><button type="button" class="on" data-tab="pad">Remote</button><button type="button" data-tab="chs">What's on</button></div>
+
+    <div id="tab-pad">
+      <div class="digits hidden" id="digits"></div>
+      <div class="row3"><button class="k" data-k="guide">GUIDE</button><button class="k" data-k="info">INFO</button><button class="k" data-k="back">BACK</button></div>
+      <div class="pad">
+        <button class="k u" data-k="up" aria-label="Up">▲</button><button class="k d" data-k="down" aria-label="Down">▼</button>
+        <button class="k l" data-k="left" aria-label="Left">◀</button><button class="k r" data-k="right" aria-label="Right">▶</button>
+        <button class="k ok gold" data-k="ok">OK</button>
+      </div>
+      <div class="hint">▲▼ change channel · ◀ last channel · OK opens the guide</div>
+      <div class="volrow"><span class="vi" id="volIcon">🔊</span><input type="range" id="vol" min="0" max="100" step="1" value="100" aria-label="Volume"><b id="volN">100</b><button class="k" data-k="mute" id="muteK">MUTE</button></div>
+    </div>
+
+    <div id="tab-chs" class="hidden">
+      <div class="bar"><div class="note" id="chNote">Tap a channel to watch it.</div><div class="sp"></div><button class="btn" id="editBtn" type="button">Choose channels</button></div>
+      <div class="list" id="chs"></div>
+      <div class="card hidden" id="editHelp" style="margin-top:12px"><div class="note">Untick channels to hide them on <b id="editTv">this TV</b> only. They disappear from its guide and from flipping through. Other TVs keep all their channels.</div>
+        <div class="bar" style="margin:10px 0 0"><button class="btn" type="button" id="allBtn">Show all</button><div class="sp"></div><button class="btn gold" type="button" id="doneBtn">Done</button></div></div>
+      <div class="note" style="margin-top:14px">Old TVs you don't use any more can be removed here: <button class="btn" type="button" id="forgetBtn" style="margin-top:6px">Forget this TV</button></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+var $=function(id){return document.getElementById(id)};
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function post(u,o){return fetch(u,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(o)}).then(function(r){return r.json()})}
+var TVS=[],SEL=null,EDIT=false,toastT=0;
+try{SEL=localStorage.getItem("knas_remote_tv")}catch(e){}
+$("tvUrl").textContent=location.origin+"/tv";
+function toast(t){var el=$("toast");el.textContent=t;el.classList.add("on");clearTimeout(toastT);toastT=setTimeout(function(){el.classList.remove("on")},1800)}
+function tv(){return TVS.find(function(t){return t.id===SEL})}
+function pick(id){SEL=id;try{localStorage.setItem("knas_remote_tv",id)}catch(e){}EDIT=false;VDRAG=false;paint();onNow(true)}
+
+function refresh(){return fetch("/api/remote/tvs",{cache:"no-store"}).then(function(r){if(r.status===403)throw new Error("home");return r.json()}).then(function(j){
+  TVS=j.tvs||[];var on=TVS.filter(function(t){return t.on});
+  if(!tv()||(!tv().on&&on.length))SEL=on.length?on[0].id:(TVS[0]&&TVS[0].id);
+  paint()}).catch(function(e){if(e.message==="home"){$("none").classList.remove("hidden");$("none").querySelector("h2").textContent="Home network only";$("none").querySelector(".note").textContent="The remote only works on the same network as KNAS (or over Tailscale).";$("ui").classList.add("hidden")}})}
+
+function paint(){var on=TVS.filter(function(t){return t.on});
+  $("none").classList.toggle("hidden",on.length>0||(tv()&&TVS.length>0));$("ui").classList.toggle("hidden",!tv());
+  if(!tv())return;var t=tv();
+  $("tvs").classList.toggle("hidden",TVS.length<2);
+  $("tvs").innerHTML=TVS.map(function(x){return'<button type="button" class="'+(x.id===SEL?"on ":"")+(x.on?"":"off")+'" data-tv="'+esc(x.id)+'">'+(x.on?"📺 ":"💤 ")+esc(x.name)+'</button>'}).join("");
+  $("nNum").textContent=t.asleep?"💤":(t.ch||"–");$("nName").textContent=t.on?(t.asleep?t.name+" is turned off":(t.chname||"…")):t.name+" is off";
+  $("nShow").textContent=t.on?(t.asleep?"Press any button to turn it back on.":(t.show||"")):"Open the cable box on it to control it.";
+  if(!VDRAG&&t.vol!==""&&t.vol!=null){VLAST=+t.vol;volShow(+t.vol,t.muted)}
+  $("editTv").textContent=t.name;
+  var cur=t.ch;
+  $("chNote").textContent=EDIT?"Pick the channels for "+t.name+":":"Tap a channel to watch it.";
+  $("editBtn").classList.toggle("hidden",EDIT);$("editHelp").classList.toggle("hidden",!EDIT);
+  if(!t.list.length){$("chs").innerHTML='<div class="note">'+(t.on?"Loading channels…":"Turn this TV on to see its channels.")+'</div>';return}
+  $("chs").innerHTML=t.list.map(function(c){var hid=t.hidden.indexOf(c[0])>=0;if(!EDIT&&hid)return"";
+    var info="",o=!EDIT&&ONNOW.tv===t.id&&ONNOW.ch[c[0]];
+    if(o&&o.now&&o.now.t){var pct=o.now.e?Math.max(0,Math.min(100,(Date.now()/1000-o.now.s)/(o.now.e-o.now.s)*100)):0;
+      info='<small><b>'+esc(o.now.t)+'</b>'+(o.now.st?" · "+esc(o.now.st):"")+(o.now.e?" · "+Math.max(1,Math.round((o.now.e-Date.now()/1000)/60))+" min left":"")+'</small>'+
+        (o.next?'<small>Next: '+esc(o.next.t)+' at '+hm(o.next.s)+'</small>':"")+(o.now.e?'<span class="pb"><i style="width:'+pct.toFixed(0)+'%"></i></span>':"")}
+    return'<div class="ch'+(c[0]===cur?" cur":"")+(hid?" hid":"")+'" data-ch="'+esc(c[0])+'">'+(EDIT?'<input type="checkbox"'+(hid?"":" checked")+' tabindex="-1">':"")+'<span class="n">'+esc(c[0])+'</span><span class="nm">'+esc(c[1])+info+'</span>'+(c[0]===cur&&!EDIT?'<span>▶</span>':"")+'</div>'}).join("")}
+function hm(s){return new Date(s*1000).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}
+/* ---------- What's on: what's playing on each channel right now, and what's next ---------- */
+var ONNOW={tv:"",ch:{},at:0};
+function onNow(force){var t=tv();if(!t||!t.on||$("tab-chs").classList.contains("hidden"))return;if(!force&&ONNOW.tv===t.id&&Date.now()-ONNOW.at<55000)return;
+  fetch("/api/remote/onnow?id="+encodeURIComponent(t.id),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(!j.ok)return;ONNOW={tv:t.id,ch:j.channels||{},at:Date.now()};paint()}).catch(function(){})}
+setInterval(function(){if(!document.hidden)onNow()},15000);
+/* ---------- the volume slider ---------- */
+var VDRAG=false,VSEND=0,VLAST=-1;
+function volShow(v,muted){var r=$("vol");r.value=v;r.style.setProperty("--p",v+"%");$("volN").textContent=muted?"–":v;$("volIcon").textContent=muted?"🔇":(v==0?"🔈":(v<50?"🔉":"🔊"));
+  r.closest(".volrow").classList.toggle("muted",!!muted);$("muteK").textContent=muted?"UNMUTE":"MUTE"}
+function volSend(){var t=tv();if(!t||!t.on)return;var v=+$("vol").value;if(v===VLAST)return;VLAST=v;post("/api/remote/send",{id:t.id,vol:v}).catch(function(){toast("Couldn't reach KNAS")})}
+$("vol").addEventListener("input",function(){VDRAG=true;volShow(+this.value,false);var now=Date.now();if(now-VSEND>120){VSEND=now;volSend()}});
+$("vol").addEventListener("change",function(){volSend();setTimeout(function(){VDRAG=false},1500)});
+
+function press(k,el){var t=tv();if(!t)return;if(!t.on){toast(t.name+" is off");return}
+  if(navigator.vibrate)try{navigator.vibrate(12)}catch(e){}
+  if(el){el.classList.add("hit");setTimeout(function(){el.classList.remove("hit")},120)}
+  post("/api/remote/send",{id:t.id,key:k}).then(function(){setTimeout(refresh,700)}).catch(function(){toast("Couldn't reach KNAS")})}
+document.addEventListener("click",function(e){var b=e.target.closest("[data-k]");if(b){e.preventDefault();press(b.dataset.k,b);return}
+  var tb=e.target.closest("[data-tv]");if(tb){pick(tb.dataset.tv);return}
+  var tab=e.target.closest("[data-tab]");if(tab){document.querySelectorAll("[data-tab]").forEach(function(x){x.classList.toggle("on",x===tab)});$("tab-pad").classList.toggle("hidden",tab.dataset.tab!=="pad");$("tab-chs").classList.toggle("hidden",tab.dataset.tab!=="chs");EDIT=false;paint();onNow(true);return}
+  var ch=e.target.closest("[data-ch]");if(ch){var t=tv();if(!t)return;
+    if(EDIT){var n=ch.dataset.ch,h=t.hidden.slice(),i=h.indexOf(n);if(i>=0)h.splice(i,1);else{if(t.list.length-h.length<=1){toast("Keep at least one channel");return}h.push(n)}
+      t.hidden=h;paint();post("/api/remote/prefs",{id:t.id,hidden:h}).catch(function(){toast("Couldn't save")});return}
+    if(!t.on){toast(t.name+" is off");return}
+    if(navigator.vibrate)try{navigator.vibrate(12)}catch(err){}
+    post("/api/remote/send",{id:t.id,tune:ch.dataset.ch}).then(function(){toast("Channel "+ch.dataset.ch);setTimeout(refresh,800)});return}});
+$("editBtn").onclick=function(){EDIT=true;paint()};$("doneBtn").onclick=function(){EDIT=false;paint();toast("Saved")};
+$("allBtn").onclick=function(){var t=tv();if(!t)return;t.hidden=[];paint();post("/api/remote/prefs",{id:t.id,hidden:[]})};
+$("renameBtn").onclick=function(){var t=tv();if(!t)return;var n=prompt("Name this TV (like Living room or Bedroom):",t.named?t.name:"");if(n==null)return;
+  post("/api/remote/prefs",{id:t.id,name:n}).then(function(j){TVS=j.tvs||TVS;paint();toast("Renamed")})};
+$("forgetBtn").onclick=function(){var t=tv();if(!t)return;if(!confirm("Forget "+t.name+"? Its channel choices are removed. If it's turned on again it shows up as a new TV."))return;
+  post("/api/remote/forget",{id:t.id}).then(function(j){TVS=j.tvs||[];SEL=null;refresh()})};
+(function(){var d=$("digits"),h="";[1,2,3,4,5,6,7,8,9,"",0,""].forEach(function(n){h+=n===""?"<span></span>":'<button class="k" data-k="d'+n+'">'+n+'</button>'});d.innerHTML=h})();
+$("menuBtn").onclick=function(){$("sheet").classList.remove("hidden")};
+$("sheetX").onclick=function(){$("sheet").classList.add("hidden")};
+$("degaussBtn").onclick=function(){$("sheet").classList.add("hidden");press("degauss")};
+$("allOff").onclick=function(){if(!confirm("Turn off every TV? They go to a good-night screen with the sound off. Press any button on a TV (or here) to turn it back on."))return;
+  post("/api/remote/alloff",{}).then(function(j){$("sheet").classList.add("hidden");toast(j.message||"Good night!");setTimeout(refresh,800)}).catch(function(){toast("Couldn't reach KNAS")})};
+$("sheet").onclick=function(e){if(e.target===this)this.classList.add("hidden")};
+$("numBtn").onclick=function(){$("digits").classList.toggle("hidden");try{localStorage.setItem("knas_remote_digits",$("digits").classList.contains("hidden")?"0":"1")}catch(e){}};
+try{if(localStorage.getItem("knas_remote_digits")==="1")$("digits").classList.remove("hidden")}catch(e){}
+fetch("/api/trivia",{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.channel&&j.channel!=="0")$("gameLink").classList.remove("hidden")}).catch(function(){});
+fetch("/api/party",{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.channel&&j.channel!=="0")$("jukeLink").classList.remove("hidden")}).catch(function(){});
+/* ---------- extras: throw, live cam, duck season, voice (setup page → Experimental) ---------- */
+var FEAT={},SR=window.SpeechRecognition||window.webkitSpeechRecognition,REC=null,heardT=0;
+fetch("/api/remote/features",{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){FEAT=j||{};
+  $("throwLink").classList.toggle("hidden",!j.throw);$("funLink").classList.toggle("hidden",!j.fun);$("flickLink").classList.toggle("hidden",!j.flick);$("streamLink").classList.toggle("hidden",!j.stream);$("histLink").classList.toggle("hidden",!j.history);$("rateLink").classList.toggle("hidden",!j.history);
+  if(j.cam){$("camLink").classList.remove("hidden");if(j.secure&&!window.isSecureContext)$("camLink").href=j.secure+"/cam"}
+  if(j.duck){$("duckLink").classList.remove("hidden");if(j.secure&&!window.isSecureContext)$("duckLink").href=j.secure+"/zapper"}
+  if(j.voice&&(SR||!window.isSecureContext))$("mic").classList.remove("hidden")}).catch(function(){});
+function heard(h){var el=$("heard");el.innerHTML=h;el.classList.remove("hidden");clearTimeout(heardT);heardT=setTimeout(function(){el.classList.add("hidden")},7000)}
+$("mic").onclick=function(){var t=tv();
+  if(!window.isSecureContext){if(FEAT.secure){$("micGo").href=FEAT.secure+"/remote";$("micSecure").classList.toggle("hidden")}else toast("The secure address is off");return}
+  if(!SR){toast("This browser can't do voice. Try Safari or Chrome.");return}
+  if(REC){try{REC.stop()}catch(e){}return}
+  if(!t||!t.on){toast("Pick a TV that's on");return}
+  var r=new SR();REC=r;r.lang=navigator.language||"en-US";r.interimResults=true;r.maxAlternatives=4;r.continuous=false;
+  $("mic").classList.add("on");$("micT").textContent="Listening…";if(navigator.vibrate)try{navigator.vibrate(15)}catch(e){}
+  var done=false;
+  r.onresult=function(e){var res=e.results[e.results.length-1],txt=res[0].transcript;heard("<i>You said</i>“"+esc(txt)+"”");
+    if(res.isFinal&&!done){done=true;var alts=[];for(var i=1;i<res.length;i++)alts.push(res[i].transcript);
+      post("/api/remote/voice",{id:t.id,text:txt,alts:alts}).then(function(j){heard("<i>“"+esc(j.heard||txt)+"”</i>"+esc(j.say||""));setTimeout(refresh,700)}).catch(function(){heard("Couldn't reach KNAS")})}};
+  r.onerror=function(e){if(e.error==="not-allowed"||e.error==="service-not-allowed")heard("The microphone is blocked. Allow it for this page in your browser settings"+(/iPhone|iPad/.test(navigator.userAgent)?" (and turn on Siri &amp; Dictation in Settings)":"")+".");
+    else if(e.error==="no-speech")heard("Didn't hear anything. Tap and try again.");else if(e.error!=="aborted")heard("Voice didn't work ("+esc(e.error)+").")};
+  r.onend=function(){REC=null;$("mic").classList.remove("on");$("micT").textContent="Tap and say a channel or show"};
+  try{r.start()}catch(e){REC=null;$("mic").classList.remove("on")}};
+refresh();setInterval(function(){if(!document.hidden)refresh()},2500);
+document.addEventListener("visibilitychange",function(){if(!document.hidden)refresh()});
+</script>
+</body>
+</html>

@@ -10,13 +10,38 @@ It runs on your home server in Docker. Watch it on any TV, computer, phone or ol
 
 ## What you get
 
-- 📺 **A cable box:** a 90s TV guide, channel banners and static between channels. Works with a TV remote, a game controller, a mouse or swipes on a phone.
+**The cable box**
+- 📺 **A 90s cable box:** a retro TV guide, channel banners and static between channels. Works with a TV remote, a game controller, a keyboard and mouse, or swipes on a phone. Volume and mute built in.
 - ⛅ **A weather channel:** your local forecast, a moving radar map, news headlines and smooth jazz, like the 90s weather channel.
-- 🏈 **A sports channel:** live scores for your teams, play-by-play, and a cheer when your team scores.
+- 🏈 **A sports channel:** live scores for your teams, play-by-play, a cheer when your team scores, and a radio station to go with it.
 - ⏸️ **A "We'll be right back" screen:** trivia, fun facts and what's coming up next.
-- 🎬 **Your own shows (optional):** if you use [ErsatzTV](https://ersatztv.org), your shows and movies become channels in the guide.
 - 🎃 **Holiday looks:** snow at Christmas, bats at Halloween, fireworks on the Fourth, and more.
-- 🎨 **Make it yours:** 10 color themes, 18 fonts, 4 guide styles and your own logos.
+- 🎨 **Make it yours:** 10 color themes, 18 fonts, 5 guide styles (one color-codes sports, movies and kids shows), your own logos, and screens that fit any TV shape.
+
+**Your own shows (optional)**
+- 🎬 **ErsatzTV channels:** if you use [ErsatzTV](https://ersatztv.org), your shows and movies become channels in the guide.
+- 📼 **Break clips:** KNAS makes short "we'll be right back" clips for ErsatzTV's filler, so shows start on the :00 and :30.
+- ✂️ **Commercial breaks in your episodes:** the Tools page finds the act breaks in your shows (one episode or a whole library) so ErsatzTV can play commercials mid-episode, like real TV. If you use Jellyfin, KNAS tells it about the new breaks for you.
+
+**Around the house**
+- 📺 **An Android and Android TV app:** KNAS full screen on your TV box or phone, works with the TV remote, and can open by itself when the TV turns on.
+- 📱 **Your phone as a remote:** open `/remote` to control any TV in the house: channels, guide, number pad and a volume slider, plus a **What's on** list of every channel with what's playing now and next. Name each TV, pick which channels it shows, or turn off every TV at once.
+- 📊 **Viewing history** at `/history`: what each TV watched, top channels and shows, and when you watch. Turn it off any time in Setup → Channels.
+- 🏆 **The Ratings** at `/ratings`: Nielsen-style weekly rankings of your house's top channels and shows, with ▲▼ arrows vs last week.
+- 🎁 **KNAS Wrapped** at `/wrapped`: your year in TV, Spotify Wrapped style, with your top shows, biggest binge and TV personality.
+
+**Experimental (hidden until you type a code on the setup page, all off until you turn them on)**
+- 🎵 **Jukebox channel:** guests scan a QR code on the TV, search for songs (or paste YouTube links) and the music videos play one after another. The NAS downloads them first, so official music videos play too, with no ads. 🎤 **Karaoke mode** finds karaoke versions with the words on screen.
+- 🎮 **Party games channel:** everyone plays on their phone: **Trivia**, **Name That Tune** (songs from your jukebox, sound only), **Word Race** (everyone solves the same five-letter word), **Bluff** (fake answers to strange-but-true facts), **Wheel Puzzle** (spin, call letters, solve) and **Draw It** (draw on your phone, everyone guesses). Leaderboard and podium.
+- ⚠️ **Severe weather alerts (US):** National Weather Service warnings crawl across every TV, emergency-broadcast style, with the tones.
+- 🏆 **Game time:** before your team plays, a heads-up box on the TVs, a phone alert, or the TVs switch to the game by themselves.
+- 🍅 **Screen fun:** from your phone, flick a tomato (or pie, egg, snowball) and it splats on the TV; shake for confetti and fireworks; float emojis; or draw over the picture like a football telestrator.
+- 🎯 **Flick games channel:** darts, hoops, bowling and cup pong for up to 6 players. Flick on your phone and it flies on the TV.
+- 📡 **Stream channel:** paste a live stream link (YouTube live, Twitch, news streams) on your phone and it plays on its own channel, with favorites.
+- 📤 **Throw it to the TV:** pick a photo or video on your phone, flick it up, and it flies onto the TV.
+- 📹 **Live Cam channel:** any phone's camera becomes a live channel with a news-style "LIVE • KITCHEN" banner (up to 4 at once).
+- 🎤 **Voice remote:** a mic button on the phone remote. "Put on King of the Hill", "channel 42", "volume up", "play Thriller on the jukebox".
+- 🦆 **Duck Season:** a light-gun game where your phone is the gun. Zapper mode works like the old NES light guns (the screen flashes and the phone's camera checks your aim), so you really have to aim. Tilt mode is the easy one. Up to 4 players.
 
 | | |
 |:---:|:---:|
@@ -40,7 +65,7 @@ Click the green **Code** button at the top of this page, then **Download ZIP**. 
 2. **Project name:** type the folder's name in lowercase, like `knas-retro-tv` (or `knas42`). Docker only accepts lowercase letters, numbers and dashes here.
 3. **Storage path / location:** pick the KNAS folder you copied in step 1.
 4. **Compose file:** choose the option to use the file that's already on your NAS, and pick the **`docker-compose.yml`** inside the KNAS folder. Some apps find it on their own once you pick the folder. Don't change anything in it.
-5. Click **Deploy** (or **Build** / **Done**). The first time takes 5 to 10 minutes while it downloads everything. After that it starts in seconds.
+5. Click **Deploy** (or **Build** / **Done**). The first time takes a minute or two while it downloads KNAS. After that it starts in seconds.
 
 <details>
 <summary>On Synology, Portainer or the command line?</summary>
@@ -50,7 +75,7 @@ Click the green **Code** button at the top of this page, then **Download ZIP**. 
 - **Command line:**
   ```sh
   cd /path/to/the/knas/folder
-  docker compose up -d --build
+  docker compose up -d
   ```
 </details>
 
@@ -66,14 +91,19 @@ You should see the KNAS cable box with the weather channel on. Press **Enter** (
 
 > **What's my NAS's IP?** It's your NAS's address on your home network, like `192.168.1.50`. It's in your NAS's network settings. The KNAS log in the Docker app also prints the exact links when it starts.
 
-### Step 4: Bookmark these two pages
+### Step 4: Bookmark these pages
 
 | Page | Address | What it's for |
 |---|---|---|
 | **TV** | `http://YOUR-NAS-IP:8642/tv` | Watching. Open this on every TV, computer and phone. |
 | **Setup** | `http://YOUR-NAS-IP:8642/setup` | Changing settings. Open it on any device at home. |
+| **Remote** (optional) | `http://YOUR-NAS-IP:8642/remote` | On your phone: control any TV that has the cable box open. Add it to your home screen. |
+| **Jukebox** (optional) | `http://YOUR-NAS-IP:8642/jukebox` | For guests: add YouTube videos to the jukebox channel. Turn the channel on in Setup → Channels & screen first. |
+| **History** (optional) | `http://YOUR-NAS-IP:8642/history` | What each TV watched. |
 
-**On a TV:** open the TV link in the TV's web browser and bookmark it. On an Android TV box (Onn, Chromecast, Fire TV), [Fully Kiosk Browser](https://www.fully-kiosk.com/) works best: set the TV link as its start page and it opens straight to KNAS.
+**On an Android TV box (Onn, Chromecast with Google TV, Fire TV) or Android phone:** get the **KNAS 42 app** (the `.apk` on the [Releases](../../releases) page). It opens straight to the cable box, full screen, the TV remote just works, and it can open by itself when the TV turns on. [How to install it](docs/SETUP-GUIDE.md#android-tv-box-onn-chromecast-with-google-tv-fire-tv-and-android-phones).
+
+**On other TVs:** open the TV link in the TV's web browser and bookmark it.
 
 **KNAS already works at this point.** It figures out your town for the weather by itself. Everything in the next step is optional.
 
@@ -81,7 +111,7 @@ You should see the KNAS cable box with the weather channel on. Press **Enter** (
 
 ## Step 5: The setup page (all optional)
 
-Open your **Setup** bookmark. The menu down the side has every section, and the **Find a setting** box jumps straight to anything. Change what you want, then press **Save & Start** at the bottom. KNAS restarts with your changes in a few seconds. Refresh any screen that was already open.
+Open your **Setup** bookmark. The menu down the side has every section, and the **Find a setting** box jumps straight to anything. Rarely needed technical options are tucked away until you tick **Show advanced settings** at the bottom of the menu. Change what you want, then press **Save & Start** at the bottom. KNAS restarts with your changes in a few seconds. Refresh any screen that was already open.
 
 | Section | What to do there |
 |---|---|
@@ -91,10 +121,9 @@ Open your **Setup** bookmark. The menu down the side has every section, and the 
 | **Sports** | Pick a sport, type your team's name, and click it. Add as many teams as you like. |
 | **News** | Your local news station's website or your town's name, one per line. Press **Check** to test it. |
 | **Facts & trivia** | Your own facts and trivia questions, plus topics to pull more from the internet. |
-| **ErsatzTV** | Only if you use ErsatzTV: type its address and press **Test**. Your channels then appear in the guide. |
-| **Colors, Fonts, Guide style, Names & logos** | Make it look how you want. There's a live preview, and you can upload your own logos. |
+| **ErsatzTV & Jellyfin** | Only if you use ErsatzTV: type its address and press **Test**. Your channels then appear in the guide. If ErsatzTV gets your shows from Jellyfin or Emby, add that too so new commercial breaks show up by themselves. |
+| **Look** | Colors, fonts, the guide's style, names, your own logos and holiday looks, all on one page with a live preview. |
 | **Sound** | The volume leveler, so channels don't jump in loudness. |
-| **Holidays** | Holiday looks turn on by themselves by the calendar, or pick one, or turn them off. |
 | **Breaks & clips** | What the break screen shows, and short clips for ErsatzTV so shows start on the :00 and :30. |
 
 ![Setup page](docs/images/setup.jpg)
@@ -134,6 +163,7 @@ The guide covers everything in detail: installing on each type of NAS, watching 
 | 8642 | The web pages and the setup page |
 | 8643 | The weather channel as live video for ErsatzTV (off unless you turn it on) |
 | 8644 | The break screen recorder (only runs while making break clips) |
+| 8645 | The secure (https) address, for Live Cam, Duck Season and the voice remote |
 
 **Your files:** settings are in `settings.txt`, your own facts and trivia are in `facts.txt` and `trivia.txt`, and your teams are in `teams.txt`. Updates never overwrite them.
 

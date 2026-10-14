@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#090c2b">
+<title>KNAS Ratings</title>
+<link rel="icon" href="/remote-icon-192.png">
+<style>
+@font-face{font-family:"KNAS Head";src:url(/fonts/classic-800i.woff) format("woff");font-weight:800;font-style:italic;font-display:swap}
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-700.woff) format("woff");font-weight:700;font-display:swap}
+:root{--gold:#ffd23a;--edge:#9cb8ff;--muted:#a3b0dd;--up:#7dff9e;--down:#ff8a80}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:#070a24}
+body{font:700 15px/1.35 "KNAS UI","Segoe UI",Arial,sans-serif;color:#eef2ff;min-height:100vh;padding:max(14px,env(safe-area-inset-top)) 14px 24px;
+  background:radial-gradient(1000px 600px at 50% -10%,#1f2c86,transparent 70%),#070a24}
+body:after{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 2px,transparent 2px 4px)}
+.wrap{max-width:820px;margin:0 auto}
+header{text-align:center;margin:6px 0 18px}
+header .k{display:inline-block;font:800 italic 15px "KNAS Head",Arial,sans-serif;letter-spacing:3px;background:#e3261b;padding:2px 12px;border-radius:3px}
+header h1{font:800 italic clamp(34px,7vw,58px)/1 "KNAS Head",Arial,sans-serif;color:var(--gold);text-shadow:3px 3px 0 #000;margin-top:8px}
+header p{color:var(--muted);margin-top:6px}
+.box{background:linear-gradient(180deg,#22409f,#142a76);border-radius:12px;box-shadow:inset 0 0 0 3px var(--edge),inset 0 0 0 5px #0a1552,5px 6px 0 rgba(0,0,0,.5);padding:14px 16px 10px;margin-bottom:18px}
+.box h2{font:800 italic 22px "KNAS Head",Arial,sans-serif;color:var(--gold);margin-bottom:8px}
+table{width:100%;border-collapse:collapse}
+th{font-size:12px;color:#cfe0ff;text-align:left;padding:4px 6px;border-bottom:2px solid rgba(255,255,255,.2);text-transform:uppercase;letter-spacing:1px}
+td{padding:8px 6px;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:middle}
+td.r{font:800 italic 26px "KNAS Head",Arial,sans-serif;color:var(--gold);width:42px;text-align:center}
+td.n b{display:block;font-size:16px}td.n small{display:block;color:var(--muted);font-size:12.5px}
+td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.bar{height:8px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:4px;min-width:60px}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#ff9a3a)}
+.tr{font-size:13px;white-space:nowrap}.tr.up{color:var(--up)}.tr.down{color:var(--down)}.tr.new{color:var(--gold)}.tr.same{color:var(--muted)}
+.live{color:var(--up)}
+.empty{color:var(--muted);text-align:center;padding:18px}
+.foot{text-align:center;color:var(--muted);font-size:12.5px}
+.foot a{color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><span class="k" id="st">KNAS 42</span><h1>THE RATINGS</h1><p id="wk">This week's most-watched in your house</p></header>
+  <div class="box"><h2>📺 Top channels</h2><table><thead><tr><th>#</th><th>Channel</th><th style="text-align:right">Share</th><th style="text-align:right">Hours</th><th style="text-align:right">Last wk</th></tr></thead><tbody id="ch"></tbody></table></div>
+  <div class="box"><h2>⭐ Top shows</h2><table><thead><tr><th>#</th><th>Show</th><th style="text-align:right">Hours</th><th style="text-align:right">Last wk</th></tr></thead><tbody id="sh"></tbody></table></div>
+  <div class="foot">Share = the channel's slice of all the TV your house watched in the last 7 days. ▲▼ = up or down from last week's rank. <a href="/history">Full history</a></div>
+</div>
+<script>
+"use strict";
+var NOW={};
+var $=function(id){return document.getElementById(id)};
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function trend(r){if(r.last==null)return'<span class="tr new">NEW</span>';var d=r.last-r.rank;return d>0?'<span class="tr up">▲ '+d+'</span>':(d<0?'<span class="tr down">▼ '+(-d)+'</span>':'<span class="tr same">—</span>')}
+function d(t){return new Date(t*1000).toLocaleDateString([],{month:"short",day:"numeric"})}
+fetch("/api/ratings",{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){$("st").textContent=j.station||"KNAS 42";NOW=j.now||{};
+  $("wk").textContent=d(j.from)+" to "+d(j.to)+" · "+j.hours+" hours watched";
+  if(!j.enabled){$("ch").innerHTML='<tr><td colspan="5" class="empty">Viewing history is off, so there are no ratings. Turn it on in Setup → Channels → Viewing history.</td></tr>';$("sh").innerHTML="";return}
+  $("ch").innerHTML=(j.channels||[]).map(function(c){return'<tr><td class="r">'+c.rank+'</td><td class="n"><b>'+esc(c.name||("Channel "+c.ch))+'</b><small>Channel '+esc(c.ch)+(c.tvs>1?" · on "+c.tvs+" TVs this week":"")+(NOW[c.ch]?' · <span class="live">👁 '+NOW[c.ch]+' watching now</span>':"")+'</small><div class="bar"><i style="width:'+Math.max(2,c.share)+'%"></i></div></td><td class="num">'+c.share+'%</td><td class="num">'+c.hours+'</td><td class="num">'+trend(c)+'</td></tr>'}).join("")||'<tr><td colspan="5" class="empty">Nothing watched this week yet.</td></tr>';
+  $("sh").innerHTML=(j.shows||[]).map(function(c){return'<tr><td class="r">'+c.rank+'</td><td class="n"><b>'+esc(c.show)+'</b><small>'+esc(c.ch)+'</small></td><td class="num">'+c.hours+'</td><td class="num">'+trend(c)+'</td></tr>'}).join("")||'<tr><td colspan="4" class="empty">No shows yet.</td></tr>'}).catch(function(){});
+</script>
+</body>
+</html>

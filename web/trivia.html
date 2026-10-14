@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KNAS Games</title>
+<style>
+@font-face{font-family:"KNAS Head";src:url(/fonts/classic-800i.woff) format("woff");font-weight:800;font-style:italic;font-display:swap}
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-700.woff) format("woff");font-weight:700;font-display:swap}
+:root{--gold:#ffd23a;--gold2:#ffb000;--edge:#9cb8ff;--navy:#0a1552;--u:min(1vw,1.78vh);
+  --a:#d7263d;--b:#1f6fd1;--c:#d39a00;--d:#2a9d3a;--g:#3aa856;--y:#d4a017;--x:#3a3f5c}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#000}
+body{font:700 calc(var(--u)*2.2) "KNAS UI","Barlow Condensed","Arial Narrow",Arial,sans-serif;color:#fff;
+  background:linear-gradient(180deg,#0b0b3a 0%,#1b1460 45%,#3a1c5e 75%,#5e1f3a 100%);display:flex;flex-direction:column}
+body:after{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 2px,transparent 2px 4px)}
+.sh{text-shadow:2px 2px 0 #000,0 0 2px #000}
+.hidden{display:none!important}
+header{display:flex;align-items:center;gap:calc(var(--u)*1.4);padding:calc(var(--u)*1.4) calc(var(--u)*2.4) calc(var(--u)*.6)}
+.logo{height:calc(var(--u)*5);padding:0 calc(var(--u)*1.4);border-radius:calc(var(--u)*.7);display:flex;align-items:center;gap:calc(var(--u)*.8);
+  font:800 italic calc(var(--u)*3.2) "KNAS Head",Arial,sans-serif;background:linear-gradient(160deg,#5d8bff,#1d3db8 55%,#0b1a66);box-shadow:inset 0 0 0 2px #cfe0ff,2px 2px 0 #000}
+.logo b{background:#e3261b;padding:0 calc(var(--u)*.8);border-radius:3px;font-style:normal;font-size:calc(var(--u)*2.4)}
+#name{flex:1;font:800 italic calc(var(--u)*4) "KNAS Head",Arial,sans-serif;color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#prog{font:800 italic calc(var(--u)*3) "KNAS Head",Arial,sans-serif;white-space:nowrap}
+main{flex:1;min-height:0;position:relative}
+.panel{border-radius:calc(var(--u)*.9);background:linear-gradient(180deg,#2c55c8,#1d3a9e 50%,#112673);box-shadow:inset 0 0 0 3px var(--edge),inset 0 0 0 5px var(--navy),4px 5px 0 rgba(0,0,0,.55)}
+.view{position:absolute;inset:calc(var(--u)*.6) calc(var(--u)*2.4) calc(var(--u)*2);display:flex;gap:calc(var(--u)*2)}
+.col{flex-direction:column}
+h2{font:800 italic calc(var(--u)*3.6) "KNAS Head",Arial,sans-serif;color:var(--gold);margin-bottom:calc(var(--u)*1.2)}
+.big{font:800 italic calc(var(--u)*5) "KNAS Head",Arial,sans-serif;color:var(--gold)}
+/* timer */
+.foot{display:flex;align-items:center;gap:calc(var(--u)*1.6)}
+.timer{flex:none;width:calc(var(--u)*7);height:calc(var(--u)*7);border-radius:50%;background:var(--navy);box-shadow:inset 0 0 0 3px var(--edge);display:flex;align-items:center;justify-content:center;font:800 italic calc(var(--u)*3.4) "KNAS Head",Arial,sans-serif}
+.tbar{flex:1;height:calc(var(--u)*1.4);background:rgba(0,0,0,.35);border-radius:99px;overflow:hidden}
+.tbar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold2),var(--gold));width:100%}
+.count{font-size:calc(var(--u)*2.4);color:#dfe7ff;white-space:nowrap}
+/* lobby */
+#lobby .join{flex:0 0 38%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u)*1.2);padding:calc(var(--u)*2);text-align:center}
+#lobby .join b{font:800 italic calc(var(--u)*4.4) "KNAS Head",Arial,sans-serif;color:var(--gold)}
+.qr{width:calc(var(--u)*22);height:calc(var(--u)*22);background:#fff;border-radius:8px;padding:5px;box-shadow:3px 3px 0 rgba(0,0,0,.5)}
+.qr img{width:100%;height:100%;display:block;image-rendering:pixelated}
+#lobby code{font:700 calc(var(--u)*3) "KNAS UI",monospace;background:rgba(0,0,0,.35);padding:calc(var(--u)*.3) calc(var(--u)*1.2);border-radius:6px}
+#lobby .who{flex:1;min-width:0;padding:calc(var(--u)*2);display:flex;flex-direction:column}
+#gameName{font:800 italic calc(var(--u)*4.4) "KNAS Head",Arial,sans-serif}
+#gameAbout{color:#dfe7ff;margin:calc(var(--u)*.4) 0 calc(var(--u)*1.6)}
+#chips{flex:1;min-height:0;overflow:hidden;display:flex;flex-wrap:wrap;align-content:flex-start;gap:calc(var(--u)*1)}
+#chips span{background:rgba(0,0,40,.4);border-radius:999px;padding:calc(var(--u)*.6) calc(var(--u)*1.6);font-size:calc(var(--u)*2.6);animation:pop .35s ease-out}
+#chips span.host:after{content:" 👑"}
+@keyframes pop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+#lobbyMsg{font-size:calc(var(--u)*2.4);color:#dfe7ff;margin-top:calc(var(--u)*1)}
+/* quiz */
+#qbox{padding:calc(var(--u)*2.2) calc(var(--u)*3);text-align:center;font-size:calc(var(--u)*4);line-height:1.2;min-height:calc(var(--u)*14);display:flex;align-items:center;justify-content:center;gap:calc(var(--u)*2)}
+#eq{display:none;align-items:flex-end;gap:calc(var(--u)*.5);height:calc(var(--u)*6)}
+#eq i{width:calc(var(--u)*1.2);background:var(--gold);border-radius:2px;animation:eq .9s ease-in-out infinite}
+#eq i:nth-child(2){animation-delay:.15s}#eq i:nth-child(3){animation-delay:.3s}#eq i:nth-child(4){animation-delay:.45s}#eq i:nth-child(5){animation-delay:.6s}
+@keyframes eq{0%,100%{height:20%}50%{height:100%}}
+.playing #eq{display:flex}
+#ready{height:calc(var(--u)*1.2);background:rgba(0,0,0,.35);border-radius:99px;overflow:hidden}
+#ready i{display:block;height:100%;background:var(--gold);width:0}
+#grid{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:calc(var(--u)*1.4)}
+.ch{position:relative;border-radius:calc(var(--u)*.9);display:flex;align-items:center;gap:calc(var(--u)*1.4);padding:0 calc(var(--u)*2);font-size:calc(var(--u)*3);line-height:1.15;box-shadow:inset 0 -5px 0 rgba(0,0,0,.25),3px 4px 0 rgba(0,0,0,.45);transition:opacity .3s,transform .3s}
+.ch i{font:800 italic calc(var(--u)*4.4) "KNAS Head",Arial,sans-serif;min-width:calc(var(--u)*5);height:calc(var(--u)*5);border-radius:50%;background:rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;flex:none}
+.ch span{flex:1}
+.ch em{font-style:normal;font-size:calc(var(--u)*2.6);background:rgba(0,0,0,.35);border-radius:99px;padding:0 calc(var(--u)*1.1)}
+.c0{background:var(--a)}.c1{background:var(--b)}.c2{background:var(--c)}.c3{background:var(--d)}
+.ch.no{opacity:.25}.ch.yes{transform:scale(1.03);box-shadow:0 0 0 calc(var(--u)*.6) #fff,3px 4px 0 rgba(0,0,0,.45)}
+.ch.yes span:after{content:" ✓"}
+/* word race */
+#wgrid{flex:1;min-height:0;display:flex;flex-wrap:wrap;gap:calc(var(--u)*1.6);align-content:flex-start;justify-content:center;padding:calc(var(--u)*1)}
+.wp{background:rgba(0,0,40,.35);border-radius:10px;padding:calc(var(--u)*1);text-align:center;width:calc(var(--u)*17)}
+.wp b{display:block;font-size:calc(var(--u)*2.1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:calc(var(--u)*.6)}
+.wp .rows{display:grid;grid-template-rows:repeat(6,1fr);gap:3px}
+.wp .r{display:grid;grid-template-columns:repeat(5,1fr);gap:3px}
+.wp .r i{height:calc(var(--u)*2.2);border-radius:3px;background:rgba(255,255,255,.12)}
+.wp.won{box-shadow:0 0 0 3px var(--g)}
+.tg{background:var(--g)!important}.ty{background:var(--y)!important}.tx{background:var(--x)!important}
+.tiles{display:flex;gap:calc(var(--u)*1);justify-content:center}
+.tiles i{width:calc(var(--u)*8);height:calc(var(--u)*8);border-radius:6px;display:flex;align-items:center;justify-content:center;font:800 calc(var(--u)*5) "KNAS UI",Arial,sans-serif;font-style:normal;background:var(--g)}
+/* bluff */
+.prompt{padding:calc(var(--u)*2.6) calc(var(--u)*3);text-align:center;font-size:calc(var(--u)*4.2);line-height:1.25}
+.prompt u{text-decoration:none;border-bottom:4px solid var(--gold);padding:0 calc(var(--u)*3)}
+.opts{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:calc(var(--u)*1.2);align-content:center}
+.opt{background:rgba(0,0,40,.45);border-radius:10px;padding:calc(var(--u)*1.4) calc(var(--u)*2);font-size:calc(var(--u)*3);display:flex;flex-direction:column;gap:calc(var(--u)*.6)}
+.opt.truth{background:var(--g);box-shadow:0 0 0 4px #fff}
+.opt small{font-size:calc(var(--u)*2);color:#dfe7ff}
+.opt.truth small{color:#fff}
+.names{display:flex;flex-wrap:wrap;gap:calc(var(--u)*.8);justify-content:center}
+.names span{background:rgba(0,0,40,.4);border-radius:999px;padding:calc(var(--u)*.4) calc(var(--u)*1.2)}
+/* wheel */
+#wheelV .left{flex:1;min-width:0;display:flex;flex-direction:column;gap:calc(var(--u)*1.4)}
+#wcat{text-align:center;font:800 italic calc(var(--u)*3.4) "KNAS Head",Arial,sans-serif;color:var(--gold)}
+#wboard{flex:1;min-height:0;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:calc(var(--u)*1.2) calc(var(--u)*3);padding:calc(var(--u)*2)}
+.word{display:flex;gap:calc(var(--u)*.5)}
+.word i{width:calc(var(--u)*5.4);height:calc(var(--u)*7);background:#f5f7ff;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#111;font:800 calc(var(--u)*4.4) "KNAS UI",Arial,sans-serif;font-style:normal;box-shadow:inset 0 -4px 0 rgba(0,0,0,.15)}
+.word i.blank{background:#2fae74;color:transparent}
+.word i.new{animation:flip .6s}
+@keyframes flip{0%{transform:rotateY(90deg)}100%{transform:none}}
+#wlast{text-align:center;font-size:calc(var(--u)*3)}
+#wused{text-align:center;font-size:calc(var(--u)*2.2);color:#cfe0ff;letter-spacing:.3em}
+#wheelV .right{flex:0 0 32%;display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*1.4)}
+#wheelBox{position:relative;width:calc(var(--u)*30);height:calc(var(--u)*30)}
+#wheelDisc{width:100%;height:100%;border-radius:50%;box-shadow:0 0 0 6px #fff,0 0 0 10px #c79400,4px 6px 0 10px rgba(0,0,0,.4);transition:transform 3.5s cubic-bezier(.12,.6,.15,1)}
+#wheelDisc span{position:absolute;left:50%;top:50%;transform-origin:0 0;font:800 calc(var(--u)*1.5) "KNAS UI",Arial,sans-serif;white-space:nowrap;color:#fff;text-shadow:1px 1px 0 #000}
+#pointer{position:absolute;left:50%;top:calc(var(--u)*-2.2);transform:translateX(-50%);width:0;height:0;border-left:calc(var(--u)*1.6) solid transparent;border-right:calc(var(--u)*1.6) solid transparent;border-top:calc(var(--u)*3) solid #fff;filter:drop-shadow(2px 2px 0 #000);z-index:2}
+#wturn{font:800 italic calc(var(--u)*3) "KNAS Head",Arial,sans-serif;text-align:center}
+#banks{width:100%;display:flex;flex-direction:column;gap:calc(var(--u)*.6)}
+#banks div{display:flex;justify-content:space-between;background:rgba(0,0,40,.4);border-radius:8px;padding:calc(var(--u)*.6) calc(var(--u)*1.2);font-size:calc(var(--u)*2.3)}
+#banks div.on{background:var(--gold);color:#1a1300}
+/* draw */
+#drawV .left{flex:1;min-width:0;display:flex;flex-direction:column;gap:calc(var(--u)*1.2)}
+#cwrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+#canvas{background:#fff;border-radius:8px;box-shadow:4px 5px 0 rgba(0,0,0,.5);max-width:100%;max-height:100%;aspect-ratio:4/3;height:100%}
+#mask{text-align:center;font:800 calc(var(--u)*4) "KNAS UI",monospace;letter-spacing:.35em}
+#drawV .right{flex:0 0 26%;display:flex;flex-direction:column;gap:calc(var(--u)*1);padding:calc(var(--u)*1.6);min-width:0}
+#feed{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;gap:calc(var(--u)*.6)}
+#feed div{font-size:calc(var(--u)*2.2);background:rgba(0,0,40,.35);border-radius:6px;padding:calc(var(--u)*.4) calc(var(--u)*1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#feed div.ok{background:var(--g)}
+#feed div.close{background:#8a5a00}
+/* board / final */
+.board{flex:1;padding:calc(var(--u)*2) calc(var(--u)*3);display:flex;flex-direction:column}
+.row{display:flex;align-items:center;gap:calc(var(--u)*1.4);background:rgba(0,0,40,.35);border-radius:8px;padding:calc(var(--u)*.8) calc(var(--u)*1.4);margin-bottom:calc(var(--u)*.9);font-size:calc(var(--u)*2.8)}
+.row i{font:800 italic calc(var(--u)*3) "KNAS Head",Arial,sans-serif;color:var(--gold);min-width:calc(var(--u)*4)}
+.row b{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row small{color:#9dff9d;font-size:calc(var(--u)*2.2)}
+#podium{display:flex;align-items:flex-end;justify-content:center;gap:calc(var(--u)*2);flex:1;min-height:0;padding-top:calc(var(--u)*2)}
+#podium div{width:calc(var(--u)*20);text-align:center;display:flex;flex-direction:column;justify-content:flex-end}
+#podium b{font-size:calc(var(--u)*3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#podium small{font-size:calc(var(--u)*2.2);color:#dfe7ff}
+#podium span{display:block;margin-top:calc(var(--u)*.8);border-radius:8px 8px 0 0;font:800 italic calc(var(--u)*6) "KNAS Head",Arial,sans-serif;padding-top:calc(var(--u)*1)}
+#podium .p1 span{height:calc(var(--u)*24);background:linear-gradient(180deg,#ffe680,var(--gold2));color:#3a2600}
+#podium .p2 span{height:calc(var(--u)*17);background:linear-gradient(180deg,#e9eef7,#9aa7bb);color:#222}
+#podium .p3 span{height:calc(var(--u)*12);background:linear-gradient(180deg,#f0b27a,#a0522d);color:#2a1300}
+.center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u)*2);text-align:center;padding:calc(var(--u)*3)}
+.spin{width:calc(var(--u)*7);height:calc(var(--u)*7);border-radius:50%;border:calc(var(--u)*.8) solid rgba(255,210,58,.25);border-top-color:var(--gold);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (max-aspect-ratio:1/1){#lobby,#wheelV,#drawV{flex-direction:column}#lobby .join,#wheelV .right,#drawV .right{flex:0 0 auto}#grid,.opts{grid-template-columns:1fr}:root{--u:min(1.6vw,1vh)}}
+</style>
+</head>
+<body>
+<header><div class="logo sh">KNAS<b>TV</b></div><div id="name" class="sh">KNAS Games</div><div id="prog" class="sh"></div></header>
+<main>
+  <div id="lobby" class="view">
+    <div class="join panel"><b class="sh">Scan to play!</b><span class="qr"><img id="qr" alt=""></span><span>or go to</span><code id="url"></code></div>
+    <div class="who panel"><div id="gameName" class="sh"></div><div id="gameAbout"></div><h2 class="sh" id="pcount">Players</h2><div id="chips"></div><div id="lobbyMsg"></div></div>
+  </div>
+  <div id="wait" class="view hidden"><div class="center panel"><div class="spin"></div><b class="big sh" id="waitT">Getting ready…</b></div></div>
+
+  <div id="quiz" class="view col hidden">
+    <div id="qbox" class="panel sh"><div id="eq"><i></i><i></i><i></i><i></i><i></i></div><span id="qtext"></span></div>
+    <div id="ready"><i></i></div>
+    <div id="grid"></div>
+    <div class="foot" id="qfoot"><div class="timer" id="qtimer"></div><div class="tbar"><i id="qbar"></i></div><div class="count" id="qcount"></div></div>
+  </div>
+
+  <div id="wordV" class="view col hidden">
+    <div class="panel prompt sh" id="wtitle" style="padding:calc(var(--u)*1.4)">Solve the five-letter word on your phone!</div>
+    <div id="wgrid"></div>
+    <div class="foot"><div class="timer" id="wtimer"></div><div class="tbar"><i id="wbar"></i></div><div class="count" id="wcount"></div></div>
+  </div>
+
+  <div id="bluffV" class="view col hidden">
+    <div class="panel prompt sh" id="bprompt"></div>
+    <div id="bbody" class="opts"></div>
+    <div class="foot"><div class="timer" id="btimer"></div><div class="tbar"><i id="bbar"></i></div><div class="count" id="bcount"></div></div>
+  </div>
+
+  <div id="wheelV" class="view hidden">
+    <div class="left"><div class="panel" style="flex:1;display:flex;flex-direction:column;padding:calc(var(--u)*1.4)"><div id="wcat" class="sh"></div><div id="wboard"></div><div id="wused"></div></div>
+      <div id="wlast" class="sh"></div></div>
+    <div class="right"><div id="wheelBox"><div id="pointer"></div><div id="wheelDisc"></div></div><div id="wturn" class="sh"></div><div id="banks"></div>
+      <div class="foot" style="width:100%"><div class="timer" id="htimer"></div><div class="tbar"><i id="hbar"></i></div></div></div>
+  </div>
+
+  <div id="drawV" class="view hidden">
+    <div class="left"><div id="cwrap"><canvas id="canvas" width="1000" height="750"></canvas></div><div id="mask" class="sh"></div>
+      <div class="foot"><div class="timer" id="dtimer"></div><div class="tbar"><i id="dbar"></i></div><div class="count" id="dcount"></div></div></div>
+    <div class="right panel"><h2 class="sh" id="dwho" style="font-size:calc(var(--u)*2.8)"></h2><div id="feed"></div></div>
+  </div>
+
+  <div id="msgV" class="view hidden"><div class="center panel" id="msgBody"></div></div>
+  <div id="board" class="view hidden"><div class="board panel"><h2 class="sh">Leaderboard</h2><div id="rows"></div></div></div>
+  <div id="final" class="view col hidden"><div class="board panel"><h2 class="sh" style="text-align:center">🏆 Final scores</h2><div id="podium"></div><div id="finalMsg" style="text-align:center;color:#dfe7ff;margin-top:calc(var(--u)*1.2)"></div></div></div>
+</main>
+<audio id="tune" preload="auto"></audio>
+<script>
+(function(){
+"use strict";
+var $=function(i){return document.getElementById(i)},S=null,GOT=0,LET=["A","B","C","D"],VIEWS=["lobby","wait","quiz","wordV","bluffV","wheelV","drawV","msgV","board","final"];
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function n(x){return Number(x||0).toLocaleString()}
+function ord(i){return i+(i%10===1&&i!==11?"st":i%10===2&&i!==12?"nd":i%10===3&&i!==13?"rd":"th")}
+function show(id){VIEWS.forEach(function(v){$(v).classList.toggle("hidden",v!==id)})}
+var join=location.origin+"/p";$("qr").src="/qr.svg?t="+encodeURIComponent(join);$("url").textContent=join.replace(/^https?:\/\//,"");
+function msg(html){show("msgV");$("msgBody").innerHTML=html}
+function timer(t,bar,total){var left=Math.max(0,(S.left||0)-(Date.now()-GOT)/1000);$(t).textContent=Math.ceil(left);if(bar)$(bar).style.width=Math.min(100,left/Math.max(1,total)*100)+"%"}
+/* ---------- Name That Tune: sound only, from the NAS's saved jukebox videos ---------- */
+var A=$("tune"),aKey="",aStop=0;
+function tuneAudio(r,ph){if(!r||!r.audio){if(!A.paused){A.pause()}aKey="";return}
+  var key=S.n+"|"+r.audio.src;
+  if(ph==="question"&&r.choices.length&&aKey!==key){aKey=key;A.src=r.audio.src;A.volume=1;
+    var go=function(){var t=r.audio.start;if(A.duration&&t>A.duration-5)t=Math.max(0,A.duration*.3);try{A.currentTime=t}catch(e){}A.play().catch(function(){})};
+    if(A.readyState>0)go();else A.onloadedmetadata=go;
+    clearTimeout(aStop);aStop=setTimeout(function(){fade()},(r.clip||12)*1000)}
+  if(ph==="reveal"&&aKey===key&&A.paused){A.play().catch(function(){});clearTimeout(aStop);aStop=setTimeout(fade,5000)}}
+function fade(){var v=A.volume,t=setInterval(function(){v-=.1;if(v<=0){clearInterval(t);A.pause();A.volume=1}else A.volume=v},80)}
+/* ---------- the wheel ---------- */
+var WB="",WSPINS=-1,WCOL=["#d7263d","#1f6fd1","#d39a00","#2a9d3a","#7b2cbf","#e8590c","#0b7285","#c2255c"];
+function drawWheel(r){if(WB)return;var k=r.wedges.length,stops=[];r.wedges.forEach(function(w,i){var c=w==="BANKRUPT"?"#111":w==="LOSE A TURN"?"#f1f3f5":WCOL[i%WCOL.length];stops.push(c+" "+(i*360/k)+"deg "+((i+1)*360/k)+"deg")});
+  var d=$("wheelDisc");d.style.background="conic-gradient("+stops.join(",")+")";
+  d.innerHTML=r.wedges.map(function(w,i){var a=(i+.5)*360/k-90;return'<span style="transform:rotate('+a+'deg) translate(calc(var(--u)*4.2),-50%);'+(w==="LOSE A TURN"?"color:#111;text-shadow:none":"")+'">'+esc(w==="LOSE A TURN"?"LOSE TURN":w)+"</span>"}).join("");WB="1"}
+var WROT=0;
+function spinTo(r){if(r.spins===WSPINS||r.wedge<0)return;var first=WSPINS<0;WSPINS=r.spins;var k=r.wedges.length,target=360-((r.wedge+.5)*360/k);
+  WROT=WROT-(WROT%360)+(first?0:360*4)+target;$("wheelDisc").style.transform="rotate("+WROT+"deg)"}
+var lastBoard="";
+function wheelBoard(r){var b=r.board,words=b.split(" "),prev=lastBoard;lastBoard=b;var idx=0;
+  $("wboard").innerHTML=words.map(function(w){var h='<div class="word">'+w.split("").map(function(c){var i=idx++,was=prev.charAt(i);var cls=c==="_"?"blank":(was==="_"?"new":"");return'<i class="'+cls+'">'+(c==="_"?"":esc(c))+"</i>"}).join("")+"</div>";idx++;return h}).join("")}
+/* ---------- the drawing ---------- */
+var CV=$("canvas"),CX=CV.getContext("2d"),DN=0,DKEY="",LASTP={},DPOLL=0;
+function clearCanvas(){CX.fillStyle="#fff";CX.fillRect(0,0,1000,750);LASTP={}}
+function applyOps(ops){ops.forEach(function(o){if(o[0]==="C"){clearCanvas();return}var s=o[0],p=LASTP[s];CX.strokeStyle=o[1];CX.lineWidth=o[2];CX.lineCap="round";CX.lineJoin="round";
+  var x=o[3],y=o[4]*.75;CX.beginPath();if(p){CX.moveTo(p[0],p[1])}else{CX.moveTo(x,y)}CX.lineTo(x+(p?0:.01),y);CX.stroke();LASTP[s]=[x,y]})}
+function pollInk(){fetch("/api/trivia/strokes?from="+DN,{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j.ops&&j.ops.length){applyOps(j.ops);DN=j.n}}).catch(function(){})}
+
+function paint(){var s=S;if(!s)return;$("name").textContent=s.name||"KNAS Games";var ph=s.phase,r=s.round||{};
+  $("prog").textContent=(ph!=="lobby"&&ph!=="loading"&&ph!=="final"&&s.total)?s.mode_icon+" "+s.mode_name+" · "+s.n+" of "+s.total:"";
+  if(ph!=="question"&&ph!=="reveal")tuneAudio(null);
+  if(ph==="lobby"){show("lobby");$("gameName").textContent=s.mode_icon+" "+s.mode_name;var m=(s.modes||[]).find(function(x){return x.key===s.mode})||{};$("gameAbout").textContent=m.about||"";
+    var hn=s.host_name;$("pcount").textContent="Players ("+s.players.length+")";
+    $("chips").innerHTML=s.players.length?s.players.map(function(p){return'<span class="'+(p.name===hn?"host":"")+'">'+esc(p.name)+'</span>'}).join(""):'<span style="animation:none;background:none;color:#cfe0ff">Nobody yet. Be the first!</span>';
+    $("lobbyMsg").textContent=s.message||(s.players.length?"Waiting for "+hn+" (the host) to pick a game and press Start.":"The first one to join is the host and picks the game.");return}
+  if(ph==="loading"){show("wait");$("waitT").textContent=s.message||"Getting ready…";return}
+  if(ph==="final"){show("final");var b=s.board,order=[1,0,2];
+    $("podium").innerHTML=order.map(function(i){var p=b[i];if(!p)return"<div></div>";return'<div class="p'+(i+1)+'"><b class="sh">'+esc(p.name)+'</b><small>'+n(p.score)+' pts</small><span>'+(i+1)+'</span></div>'}).join("");
+    $("finalMsg").textContent=b.length>3?b.slice(3).map(function(p,i){return ord(i+4)+" "+p.name+" ("+n(p.score)+")"}).join(" · "):(s.host_name?s.host_name+" can press Play again.":"");return}
+  if(ph==="board"){show("board");
+    $("rows").innerHTML=s.board.slice(0,7).map(function(p,i){return'<div class="row"><i>'+(i+1)+'</i><b>'+esc(p.name)+(p.streak>1?" 🔥"+p.streak:"")+'</b>'+(p.gain?'<small>+'+n(p.gain)+'</small>':"")+'<span>'+n(p.score)+'</span></div>'}).join("");return}
+  if(ph==="question"||ph==="reveal")return quiz(s,r,ph);
+  if(ph==="wordle"||ph==="wreveal")return word(s,r,ph);
+  if(ph==="bwrite"||ph==="bvote"||ph==="breveal")return bluff(s,r,ph);
+  if(ph==="wheel"||ph==="wsolved")return wheel(s,r,ph);
+  if(ph==="dpick"||ph==="draw"||ph==="dreveal")return draw(s,r,ph)}
+var lastKey="";
+function quiz(s,r,ph){show("quiz");var key=s.n+"|"+ph+"|"+(r.choices||[]).length;$("qtext").textContent=r.text||"";$("qbox").classList.toggle("playing",!!r.audio&&ph==="question");
+  if(key!==lastKey){lastKey=key;$("grid").innerHTML=(r.choices||[]).map(function(c,i){return'<div class="ch c'+i+'"><i>'+LET[i]+'</i><span>'+esc(c)+'</span><em class="hidden"></em></div>'}).join("")}
+  $("ready").style.visibility=r.reading>0?"visible":"hidden";
+  if(ph==="reveal")[].forEach.call($("grid").children,function(el,i){el.classList.toggle("yes",i===r.right);el.classList.toggle("no",i!==r.right);var em=el.querySelector("em");em.classList.remove("hidden");em.textContent=(r.counts||[])[i]||0});
+  $("qcount").textContent=ph==="reveal"?s.board.filter(function(p){return p.right}).length+" of "+r.of+" got it":r.answered+" of "+r.of+" answered";
+  $("qtimer").style.visibility=$("qbar").parentNode.style.visibility=ph==="reveal"?"hidden":"visible";tuneAudio(r,ph)}
+function word(s,r,ph){show("wordV");$("wtitle").innerHTML=ph==="wreveal"?'The word was <div class="tiles" style="margin-top:calc(var(--u)*1)">'+r.word.split("").map(function(c){return"<i>"+esc(c)+"</i>"}).join("")+"</div>":"Solve the five-letter word on your phone! 🟩 right spot · 🟨 wrong spot";
+  $("wgrid").innerHTML=(r.players||[]).map(function(p){var rows="";for(var i=0;i<6;i++){var c=p.cols[i]||"";rows+='<div class="r">'+[0,1,2,3,4].map(function(j){var k=c.charAt(j);return'<i class="'+(k?"t"+k:"")+'"></i>'}).join("")+"</div>"}
+    return'<div class="wp'+(p.won?" won":"")+'"><b>'+esc(p.name)+(p.won?" ✓":(p.done?" ✗":""))+'</b><div class="rows">'+rows+"</div></div>"}).join("");
+  var solved=(r.players||[]).filter(function(p){return p.won}).length;$("wcount").textContent=solved+" of "+(r.players||[]).length+" solved";$("wtimer").parentNode.style.visibility=ph==="wordle"?"visible":"hidden"}
+function bluff(s,r,ph){show("bluffV");$("bprompt").innerHTML=esc(r.prompt||"").replace("___","<u>"+(ph==="breveal"?"":"&nbsp;")+"</u>");
+  if(ph==="bwrite"){$("bbody").style.display="flex";$("bbody").style.flexDirection="column";$("bbody").style.alignItems="center";$("bbody").style.justifyContent="center";
+    $("bbody").innerHTML='<div class="big sh" style="font-size:calc(var(--u)*3.6)">Write a fake answer on your phone!</div><div style="color:#dfe7ff;margin:calc(var(--u)*1) 0">Something that sounds true enough to fool everyone.</div><div class="names">'+(r.wrote||[]).map(function(x){return"<span>✓ "+esc(x)+"</span>"}).join("")+"</div>";
+    $("bcount").textContent=(r.wrote||[]).length+" of "+r.of+" written"}
+  else{$("bbody").style.display="grid";$("bbody").style.flexDirection="";$("bbody").style.alignItems="";$("bbody").style.justifyContent="";
+    $("bbody").innerHTML=(r.options||[]).map(function(o,i){var extra="";if(ph==="breveal"){extra='<small>'+(o.truth?"✅ THE TRUTH":"🤥 "+esc(o.by.join(" & "))+"'s lie")+(o.votes.length?" · picked by "+esc(o.votes.join(", ")):"")+"</small>"}
+      return'<div class="opt'+(ph==="breveal"&&o.truth?" truth":"")+'"><span>'+esc(o.text)+"</span>"+extra+"</div>"}).join("");
+    $("bcount").textContent=ph==="bvote"?(r.voted||[]).length+" of "+r.of+" voted · pick the real answer on your phone":""}
+  $("btimer").parentNode.style.visibility=ph==="breveal"?"hidden":"visible"}
+function wheel(s,r,ph){show("wheelV");drawWheel(r);spinTo(r);$("wcat").textContent=r.cat;wheelBoard(r);$("wused").textContent=(r.used||[]).join(" ");
+  $("wlast").textContent=ph==="wsolved"?(r.winner?"🎉 "+r.winner+" solved it!":"Nobody solved it."):r.last||"";
+  $("wturn").textContent=ph==="wsolved"?"":"🎯 "+r.turn+"'s turn"+(r.step==="letter"?" · pick a consonant":r.step==="vowel"?" · buying a vowel":r.step==="solve"?" · solving…":"");
+  $("banks").innerHTML=(r.banks||[]).map(function(b){return'<div class="'+(b.turn&&ph==="wheel"?"on":"")+'"><span>'+esc(b.name)+"</span><b>$"+n(b.bank)+"</b></div>"}).join("")}
+function draw(s,r,ph){show("drawV");var key=s.n+"";if(key!==DKEY){DKEY=key;DN=0;clearCanvas()}
+  $("dwho").textContent=ph==="dpick"?"🎨 "+r.drawer+" is picking a word…":"🎨 "+r.drawer+" is drawing";
+  $("mask").style.letterSpacing=ph==="dreveal"?"normal":"";$("mask").style.fontFamily=ph==="dreveal"?'"KNAS Head",Arial,sans-serif':"";
+  $("mask").innerHTML=ph==="dreveal"?"The word was <span style='color:var(--gold)'>"+esc((r.word||"").toUpperCase())+"</span>":(ph==="draw"?esc(r.mask||"").replace(/ /g,"&nbsp;&nbsp;"):"");
+  $("feed").innerHTML=(r.feed||[]).map(function(f){return f.ok?'<div class="ok">✅ '+esc(f.who)+" got it!</div>":f.close?'<div class="close">🔥 '+esc(f.who)+" is close!</div>":"<div><b>"+esc(f.who)+":</b> "+esc(f.text)+"</div>"}).join("");
+  $("dcount").textContent=ph==="draw"?(r.guessed||[]).length+" of "+r.of+" guessed":"";$("dtimer").parentNode.style.visibility=ph==="draw"?"visible":"hidden";
+  clearInterval(DPOLL);if(ph==="draw"||ph==="dreveal"){pollInk();DPOLL=setInterval(pollInk,250)}}
+function tick(){if(!S)return;var ph=S.phase,r=S.round||{};
+  if(ph==="question"&&r.secs){var el=(Date.now()-GOT)/1000,rd=Math.max(0,r.reading-el);$("ready").querySelector("i").style.width=rd>0?(100-rd/4*100)+"%":"100%";
+    var tl=rd>0?r.secs:Math.max(0,S.left-el);$("qtimer").textContent=Math.ceil(tl);$("qbar").style.width=(tl/r.secs*100)+"%"}
+  if(ph==="wordle")timer("wtimer","wbar",r.secs);if(ph==="bwrite")timer("btimer","bbar",60);if(ph==="bvote")timer("btimer","bbar",30);
+  if(ph==="wheel")timer("htimer","hbar",25);if(ph==="draw")timer("dtimer","dbar",r.secs)}
+setInterval(tick,200);
+function poll(){fetch("/api/trivia",{cache:"no-store"}).then(function(r){return r.json()}).then(function(s){if(!s||!s.ok)return;var was=S&&S.rev;S=s;GOT=Date.now();if(was!==s.rev||s.phase==="question")paint()}).catch(function(){})}
+poll();setInterval(poll,700);
+})();
+</script>
+</body>
+</html>

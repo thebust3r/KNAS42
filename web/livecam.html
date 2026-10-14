@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KNAS Live Cam</title>
+<style>
+@font-face{font-family:"KNAS Head";src:url(/fonts/classic-800i.woff) format("woff");font-weight:800;font-style:italic;font-display:swap}
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-700.woff) format("woff");font-weight:700;font-display:swap}
+:root{--gold:#ffd23a;--edge:#9cb8ff;--navy:#0a1552;--red:#d71a12;--u:min(1vw,1.33vh)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#000}
+body{font:700 calc(var(--u)*2.2) "KNAS UI","Barlow Condensed","Arial Narrow",Arial,sans-serif;color:#fff}
+#grid{position:absolute;inset:0;display:grid;gap:3px;background:#000}
+.cam{position:relative;overflow:hidden;background:#000}
+.cam img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.g1 .cam img{object-fit:contain}
+.lt{position:absolute;left:3%;bottom:6%;display:flex;align-items:stretch;max-width:94%;filter:drop-shadow(3px 3px 0 rgba(0,0,0,.7))}
+.lt .lv{background:linear-gradient(180deg,#ff3b2e,var(--red) 60%,#a50f09);font:800 calc(var(--u)*3) "KNAS UI",Arial,sans-serif;letter-spacing:2px;padding:calc(var(--u)*.5) calc(var(--u)*1.4);display:flex;align-items:center;gap:calc(var(--u)*.8)}
+.lt .lv i{width:calc(var(--u)*1.3);height:calc(var(--u)*1.3);border-radius:50%;background:#fff;animation:b 1s steps(2) infinite}
+.lt .nm{background:linear-gradient(180deg,#2c55c8,#13287a);font:800 italic calc(var(--u)*3.4) "KNAS Head",Arial,sans-serif;padding:calc(var(--u)*.4) calc(var(--u)*1.8);color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:inset 0 -3px 0 var(--gold)}
+.g3 .lt .lv,.g4 .lt .lv{font-size:calc(var(--u)*2.2)}.g3 .lt .nm,.g4 .lt .nm,.g2 .lt .nm{font-size:calc(var(--u)*2.5)}
+@keyframes b{50%{opacity:.15}}
+#bug{position:absolute;right:3%;top:4%;font:800 italic calc(var(--u)*3) "KNAS Head",Arial,sans-serif;opacity:.75;text-shadow:2px 2px 0 #000;z-index:2}
+#clk{position:absolute;right:3%;top:calc(4% + var(--u)*4.4);font:800 calc(var(--u)*2.6) "KNAS UI",Arial,sans-serif;opacity:.75;text-shadow:2px 2px 0 #000;z-index:2}
+#idle{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:calc(var(--u)*2);padding:6%;
+  background:linear-gradient(90deg,#c0c0c0 0 14.28%,#c0c000 0 28.56%,#00c0c0 0 42.84%,#00c000 0 57.12%,#c000c0 0 71.4%,#c00000 0 85.68%,#0000c0 0)}
+#idle .box{background:rgba(5,10,50,.9);border-radius:10px;box-shadow:inset 0 0 0 3px var(--edge),6px 6px 0 rgba(0,0,0,.6);padding:calc(var(--u)*3) calc(var(--u)*4);display:flex;gap:calc(var(--u)*3);align-items:center;max-width:92%}
+#idle b{display:block;font:800 italic calc(var(--u)*5.4) "KNAS Head",Arial,sans-serif;color:var(--gold)}
+#idle span{display:block;font-size:calc(var(--u)*2.6);color:#dfe7ff;margin-top:calc(var(--u)*1)}
+#idle code{font:700 calc(var(--u)*2.6) "KNAS UI",monospace;color:#fff;background:rgba(0,0,0,.4);padding:2px 10px;border-radius:5px;word-break:break-all}
+#idle img{width:calc(var(--u)*20);height:calc(var(--u)*20);background:#fff;padding:calc(var(--u)*1);border-radius:6px;flex:none}
+body:after{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.03) 0 2px,transparent 2px 4px);z-index:5}
+</style>
+</head>
+<body>
+<div id="grid"></div>
+<div id="bug"></div><div id="clk"></div>
+<div id="idle"><div class="box"><img id="qr" alt=""><div><b>PLEASE STAND BY</b><span>No cameras are live right now.</span><span>Scan the code, or on a phone go to<br><code id="url"></code><br>and press <b style="display:inline;font-size:inherit;color:#fff">Go live</b>.</span></div></div></div>
+<script>
+"use strict";
+var $=function(id){return document.getElementById(id)};
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+var SHOWN=null,INFO={};
+function clock(){var d=new Date();$("clk").textContent=d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}
+function paint(list){var key=list.filter(function(c){return c.ready}).map(function(c){return c.id+":"+c.name}).join("|");if(key===SHOWN)return;SHOWN=key;
+  var live=list.filter(function(c){return c.ready}).slice(0,4),g=$("grid");
+  $("idle").style.display=live.length?"none":"flex";
+  g.className="g"+live.length;
+  g.style.gridTemplateColumns=live.length>1?"1fr 1fr":"1fr";g.style.gridTemplateRows=live.length>2?"1fr 1fr":"1fr";
+  /* keep pictures that are already playing; only add or drop the ones that changed */
+  var have={};[].forEach.call(g.children,function(el){have[el.dataset.id]=el});
+  live.forEach(function(c,i){var el=have[c.id];
+    if(!el){el=document.createElement("div");el.className="cam";el.dataset.id=c.id;
+      el.innerHTML='<img alt=""><div class="lt"><div class="lv"><i></i>LIVE</div><div class="nm"></div></div>';
+      var img=el.querySelector("img");img.onerror=function(){setTimeout(poll,500)};img.src="/livecam/"+c.id+".mjpg?t="+Date.now()}
+    el.querySelector(".nm").textContent=c.name;if(live.length===3&&i===0)el.style.gridRow="span 2";else el.style.gridRow="";
+    g.appendChild(el);delete have[c.id]});
+  Object.keys(have).forEach(function(k){var img=have[k].querySelector("img");if(img)img.src="";have[k].remove()})}
+function poll(){fetch("/api/cam",{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){INFO=j;
+    $("bug").textContent=j.station||"";var u=(j.secure||location.origin)+"/cam";$("url").textContent=u.replace(/^http:\/\//,"");$("qr").src="/qr.svg?t="+encodeURIComponent(u);
+    paint(j.cams||[])}).catch(function(){})}
+poll();setInterval(poll,2000);clock();setInterval(clock,10000);
+</script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KNAS Stream</title>
+<style>
+@font-face{font-family:"KNAS Head";src:url(/fonts/classic-800i.woff) format("woff");font-weight:800;font-style:italic;font-display:swap}
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-700.woff) format("woff");font-weight:700;font-display:swap}
+:root{--gold:#ffd23a;--edge:#9cb8ff;--u:min(1vw,1.33vh)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#000}
+body{font:700 calc(var(--u)*2.2) "KNAS UI","Arial Narrow",Arial,sans-serif;color:#fff}
+video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
+#bug{position:absolute;left:3%;bottom:5%;display:none;align-items:stretch;max-width:80%;filter:drop-shadow(3px 3px 0 rgba(0,0,0,.6));transition:opacity 1s}
+#bug .lv{background:linear-gradient(180deg,#ff3b2e,#d71a12 60%,#a50f09);font:800 calc(var(--u)*2.4) "KNAS UI",Arial,sans-serif;letter-spacing:2px;padding:calc(var(--u)*.4) calc(var(--u)*1.2);display:flex;align-items:center}
+#bug .nm{background:linear-gradient(180deg,#2c55c8,#13287a);padding:calc(var(--u)*.35) calc(var(--u)*1.6);box-shadow:inset 0 -3px 0 var(--gold);min-width:0}
+#bug .nm b{display:block;font:800 italic calc(var(--u)*2.8) "KNAS Head",Arial,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#bug .nm small{display:block;font-size:calc(var(--u)*1.7);color:#cfe0ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#card{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:6%;background:radial-gradient(circle at 50% 40%,#1d2a7a,#060a2a 75%)}
+#card .box{display:flex;gap:calc(var(--u)*3);align-items:center;background:rgba(5,10,50,.85);border-radius:12px;box-shadow:inset 0 0 0 3px var(--edge),6px 6px 0 rgba(0,0,0,.6);padding:calc(var(--u)*3) calc(var(--u)*4);max-width:94%}
+#card img{width:calc(var(--u)*19);height:calc(var(--u)*19);background:#fff;padding:calc(var(--u)*1);border-radius:8px;flex:none}
+#card b{display:block;font:800 italic calc(var(--u)*5) "KNAS Head",Arial,sans-serif;color:var(--gold)}
+#card span{display:block;font-size:calc(var(--u)*2.5);color:#dfe7ff;margin-top:calc(var(--u)*1)}
+#card code{font:700 calc(var(--u)*2.5) "KNAS UI",monospace;background:rgba(0,0,0,.4);padding:2px 10px;border-radius:5px}
+#card i{display:block;width:calc(var(--u)*6);height:calc(var(--u)*6);border-radius:50%;border:calc(var(--u)*.7) solid rgba(255,210,58,.25);border-top-color:var(--gold);animation:spin 1s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+body:after{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 2px,transparent 2px 4px)}
+</style>
+<script src="/vendor/hls.min.js"></script>
+</head>
+<body>
+<video id="v" playsinline autoplay></video>
+<div id="bug"><div class="lv">LIVE</div><div class="nm"><b id="bt"></b><small id="bs"></small></div></div>
+<div id="card"><div class="box"><img id="qr" alt=""><i id="spin" style="display:none"></i><div><b id="ct">NOTHING STREAMING</b><span id="cs"></span></div></div></div>
+<script>
+"use strict";
+var $=function(id){return document.getElementById(id)},V=$("v"),HLS=null,REV=-1,FEED="",VOL=1,MUTED=false,bugT=0,stall=0;
+function card(title,sub,spin,qr){$("card").style.display="flex";$("ct").textContent=title;$("cs").innerHTML=sub;$("spin").style.display=spin?"block":"none";$("qr").style.display=qr?"block":"none"}
+function stopVideo(){if(HLS){try{HLS.destroy()}catch(e){}HLS=null}try{V.pause();V.removeAttribute("src");V.load()}catch(e){}FEED=""}
+function vol(){try{V.volume=MUTED?0:VOL;V.muted=MUTED}catch(e){}}
+addEventListener("message",function(e){if(e.origin===location.origin&&e.data&&e.data.knas==="vol"){VOL=+e.data.v||0;MUTED=!!e.data.muted;vol()}if(e.data&&e.data.knas==="unmute"){V.muted=MUTED;V.play().catch(function(){})}});
+function failed(){fetch("/api/stream/failed",{method:"POST",headers:{"Content-Type":"application/json"},body:"{}"}).catch(function(){})}
+function start(s){stopVideo();FEED=s.feed;$("card").style.display="none";
+  if(s.kind==="hls"&&window.Hls&&Hls.isSupported()){HLS=new Hls({liveSyncDurationCount:3,maxBufferLength:30,enableWorker:true});HLS.loadSource(s.feed);HLS.attachMedia(V);
+    HLS.on(Hls.Events.ERROR,function(ev,d){if(!d.fatal)return;if(d.type===Hls.ErrorTypes.MEDIA_ERROR){try{HLS.recoverMediaError()}catch(e){}return}card("RECONNECTING…","Finding the stream again.",true,false);failed()})}
+  else V.src=s.feed;   /* iPhone/iPad and Safari play these links by themselves */
+  vol();var p=V.play();if(p&&p.catch)p.catch(function(){V.muted=true;V.play().catch(function(){})});
+  $("bt").textContent=s.title||"Live stream";$("bs").textContent=s.by||"";$("bug").querySelector(".lv").textContent=s.live?"LIVE":"NOW PLAYING";
+  $("bug").style.display="flex";$("bug").style.opacity=1;clearTimeout(bugT);bugT=setTimeout(function(){$("bug").style.opacity=0},12000)}
+V.addEventListener("error",function(){if(FEED){card("RECONNECTING…","Finding the stream again.",true,false);failed()}});
+V.addEventListener("waiting",function(){stall=Date.now()});V.addEventListener("playing",function(){stall=0;$("card").style.display="none"});
+setInterval(function(){if(stall&&Date.now()-stall>20000&&FEED){stall=0;failed()}},5000);   /* stuck for 20 s: the link may have expired */
+function poll(){fetch("/api/stream",{cache:"no-store"}).then(function(r){return r.json()}).then(function(s){var u=location.origin+"/streams";$("qr").src="/qr.svg?t="+encodeURIComponent(u);
+    if(s.rev===REV)return;REV=s.rev;
+    if(!s.url){stopVideo();$("bug").style.display="none";card("NOTHING STREAMING","Paste a live stream link on a phone at<br><code>"+u.replace(/^https?:\/\//,"")+"</code><br>(or ☰ → Stream on the remote).",false,true);return}
+    if(s.error){stopVideo();$("bug").style.display="none";card("CAN'T PLAY THAT ONE",s.error+"<br>Try another link from a phone.",false,true);return}
+    if(!s.ready){stopVideo();card("TUNING IN…",(s.title?s.title+"<br>":"")+"Finding the stream.",true,false);return}
+    if(s.feed!==FEED)start(s)}).catch(function(){})}
+poll();setInterval(poll,4000);
+</script>
+</body>
+</html>

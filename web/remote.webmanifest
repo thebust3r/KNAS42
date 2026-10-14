@@ -1,0 +1,14 @@
+{
+  "name": "KNAS Remote",
+  "short_name": "KNAS Remote",
+  "start_url": "/remote",
+  "scope": "/remote",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#090c2b",
+  "theme_color": "#090c2b",
+  "icons": [
+    {"src": "/remote-icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "/remote-icon-512.png", "sizes": "512x512", "type": "image/png"}
+  ]
+}

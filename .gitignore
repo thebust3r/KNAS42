@@ -1,0 +1,16 @@
+music/*
+!music/.keep
+break-videos/*
+!break-videos/.keep
+break-clips/
+updates/*
+!updates/README.txt
+data/
+__pycache__/
+*.pyc
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+*.jks
+*.keystore

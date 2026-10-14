@@ -1,0 +1,47 @@
+plugins {
+    id 'com.android.application'
+}
+
+// The app's version follows KNAS's version (passed in by the GitHub build, like -PknasVersion=2.21.2).
+def knasVersion = (project.findProperty('knasVersion') ?: '0.0.0').toString()
+def parts = (knasVersion.tokenize('.') + ['0', '0', '0']).take(3).collect { (it.replaceAll('[^0-9]', '') ?: '0') as int }
+def knasCode = Math.max(1, parts[0] * 10000 + parts[1] * 100 + parts[2])     // 2.21.2 -> 22102, always goes up
+
+android {
+    namespace 'io.github.thebust3r.knas42'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'io.github.thebust3r.knas42'
+        minSdk 21
+        targetSdk 34
+        versionCode knasCode
+        versionName knasVersion
+    }
+
+    // The GitHub build signs the app with the same key every time (kept in the repo's secrets),
+    // so a new version installs right over the old one. Without the key it falls back to a test key.
+    signingConfigs {
+        release {
+            def ks = System.getenv('KNAS_KEYSTORE')
+            if (ks) {
+                storeFile file(ks)
+                storePassword System.getenv('KNAS_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('KNAS_KEY_ALIAS') ?: 'knas'
+                keyPassword System.getenv('KNAS_KEY_PASSWORD') ?: System.getenv('KNAS_KEYSTORE_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig System.getenv('KNAS_KEYSTORE') ? signingConfigs.release : signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}

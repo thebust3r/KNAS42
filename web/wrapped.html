@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#090c2b">
+<title>KNAS Wrapped</title>
+<link rel="icon" href="/remote-icon-192.png">
+<style>
+@font-face{font-family:"KNAS Head";src:url(/fonts/classic-800i.woff) format("woff");font-weight:800;font-style:italic;font-display:swap}
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-700.woff) format("woff");font-weight:700;font-display:swap}
+:root{--gold:#ffd23a;--gold2:#ffb000;--u:min(1vw,1.78vh)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#000}
+body{font:700 calc(var(--u)*2.4) "KNAS UI","Barlow Condensed",Arial,sans-serif;color:#fff;cursor:pointer;user-select:none;-webkit-user-select:none}
+body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:9;background:repeating-linear-gradient(0deg,rgba(255,255,255,.03) 0 2px,transparent 2px 4px)}
+.sh{text-shadow:3px 3px 0 rgba(0,0,0,.45)}
+.hidden{display:none!important}
+#bars{position:fixed;left:calc(var(--u)*2);right:calc(var(--u)*2);top:calc(var(--u)*1.6);display:flex;gap:6px;z-index:8}
+#bars i{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.3);overflow:hidden}
+#bars i b{display:block;height:100%;width:0;background:#fff}
+#brand{position:fixed;left:calc(var(--u)*2.4);top:calc(var(--u)*3.6);z-index:8;font:800 italic calc(var(--u)*2.6) "KNAS Head",Arial,sans-serif;opacity:.85}
+.slide{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:calc(var(--u)*10) calc(var(--u)*6) calc(var(--u)*6);gap:calc(var(--u)*2)}
+.slide .k{font:800 italic calc(var(--u)*3.4) "KNAS Head",Arial,sans-serif;opacity:.9;letter-spacing:.5px}
+.slide .n{font:800 italic calc(var(--u)*16) "KNAS Head",Arial,sans-serif;line-height:.9;color:var(--gold)}
+.slide .n small{font-size:.38em}
+.slide .t{font:800 italic calc(var(--u)*7) "KNAS Head",Arial,sans-serif;line-height:1.02;max-width:90%}
+.slide .s{font-size:calc(var(--u)*3);max-width:80%;line-height:1.3;opacity:.95}
+.in>*{animation:rise .7s both}
+.in>*:nth-child(2){animation-delay:.25s}.in>*:nth-child(3){animation-delay:.5s}.in>*:nth-child(4){animation-delay:.75s}.in>*:nth-child(5){animation-delay:1s}
+@keyframes rise{from{opacity:0;transform:translateY(calc(var(--u)*4))}to{opacity:1;transform:none}}
+.list{width:min(90%,calc(var(--u)*90));display:flex;flex-direction:column;gap:calc(var(--u)*1.2);text-align:left}
+.list div{display:flex;align-items:center;gap:calc(var(--u)*1.6);background:rgba(0,0,0,.25);border-radius:10px;padding:calc(var(--u)*1.1) calc(var(--u)*1.8);font-size:calc(var(--u)*3.2)}
+.list i{font:800 italic calc(var(--u)*4.4) "KNAS Head",Arial,sans-serif;color:var(--gold);min-width:calc(var(--u)*4);font-style:italic}
+.list b{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list span{opacity:.85;font-size:calc(var(--u)*2.6);white-space:nowrap}
+.chart{display:flex;align-items:flex-end;gap:calc(var(--u)*.5);height:calc(var(--u)*24);width:min(90%,calc(var(--u)*110))}
+.chart div{flex:1;background:rgba(255,255,255,.85);border-radius:4px 4px 0 0;min-height:3px;position:relative}
+.chart div.top{background:var(--gold)}
+.chart div em{position:absolute;bottom:calc(var(--u)*-3.4);left:50%;transform:translateX(-50%);font-style:normal;font-size:calc(var(--u)*1.8);opacity:.8}
+.card{background:rgba(0,0,0,.28);border:3px solid rgba(255,255,255,.5);border-radius:16px;padding:calc(var(--u)*3) calc(var(--u)*4);width:min(92%,calc(var(--u)*100))}
+.card .grid{display:grid;grid-template-columns:1fr 1fr;gap:calc(var(--u)*1.6) calc(var(--u)*3);text-align:left;margin-top:calc(var(--u)*2)}
+.card .grid small{display:block;opacity:.75;font-size:calc(var(--u)*2)}
+.card .grid b{font-size:calc(var(--u)*3);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pick{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u)*2);background:radial-gradient(circle at 50% 30%,#3b1d8f,#0b0b3a 70%);cursor:default}
+#pick h1{font:800 italic calc(var(--u)*9) "KNAS Head",Arial,sans-serif;color:var(--gold)}
+#pick select,#pick button{font:700 calc(var(--u)*2.8) "KNAS UI",Arial,sans-serif;color:#fff;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.4);border-radius:999px;padding:calc(var(--u)*1) calc(var(--u)*3)}
+#pick button{background:linear-gradient(180deg,#ffe680,var(--gold) 50%,var(--gold2));color:#1a1300;border:0;cursor:pointer;font-size:calc(var(--u)*3.4);padding:calc(var(--u)*1.4) calc(var(--u)*5)}
+#pick .row{display:flex;gap:calc(var(--u)*2);flex-wrap:wrap;justify-content:center}
+#pick p{opacity:.85;max-width:80%;text-align:center}
+#nav{position:fixed;bottom:calc(var(--u)*2);left:0;right:0;text-align:center;font-size:calc(var(--u)*1.8);opacity:.6;z-index:8}
+@media (max-aspect-ratio:1/1){:root{--u:min(1.7vw,1vh)}.slide .n{font-size:calc(var(--u)*13)}.slide .t{font-size:calc(var(--u)*5.6)}.list b{white-space:normal;line-height:1.15}.list span{font-size:calc(var(--u)*2.2)}}
+</style>
+</head>
+<body>
+<div id="pick">
+  <h1 class="sh">KNAS Wrapped</h1>
+  <p id="pickMsg">Your year on KNAS: what you watched, when, and how much.</p>
+  <div class="row"><select id="year" aria-label="Year"></select><select id="tv" aria-label="Which TV"><option value="">Every TV</option></select></div>
+  <button type="button" id="go">▶ Play</button>
+</div>
+<div id="bars" class="hidden"></div>
+<div id="brand" class="sh hidden"></div>
+<div id="stage"></div>
+<div id="nav" class="hidden">Tap or → for next · ← back</div>
+<script>
+(function(){
+"use strict";
+var $=function(i){return document.getElementById(i)},Q=new URLSearchParams(location.search),D=null,SL=[],cur=0,T=0,START=0,DUR=8000,AUTO=Q.has("auto")||window.parent!==window;
+var BG=["linear-gradient(160deg,#ff2d75,#7a1fa2)","linear-gradient(160deg,#1f6fd1,#0b0b3a)","linear-gradient(160deg,#2a9d3a,#0b3a2a)","linear-gradient(160deg,#ff8a00,#c2185b)",
+  "linear-gradient(160deg,#5b2cff,#15104a)","linear-gradient(160deg,#00a6a6,#08334a)","linear-gradient(160deg,#d7263d,#3a0d1e)","linear-gradient(160deg,#ffb000,#8a3b00)"];
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function hrs(s){var h=s/3600;return h>=10?Math.round(h).toLocaleString():(Math.round(h*10)/10).toLocaleString()}
+function dur(s){s=Math.round(s||0);var m=Math.round(s/60);if(m<60)return m+" min";var h=Math.floor(m/60);m=m%60;return h+"h"+(m?" "+m+"m":"")}
+function day(k){var p=k.split("-");return new Date(+p[0],p[1]-1,+p[2]).toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"})}
+function hourName(h){return(h%12||12)+(h<12?" AM":" PM")}
+var WD=["Mondays","Tuesdays","Wednesdays","Thursdays","Fridays","Saturdays","Sundays"],MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+var MONL=["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+function build(d){var s=[],yr=d.year?String(d.year):"all time",who=d.tv?(d.all_tvs.find(function(t){return t.id===d.tv})||{}).name:"";
+  s.push('<div class="k">'+esc(d.station||"KNAS 42")+'</div><div class="t sh">Your '+(d.year?esc(yr)+" ":"")+'in TV'+(d.year?"":" so far")+'</div><div class="s">'+(who?esc(who)+"'s "+(d.year?"year":"story"):"Let's look back at everything you watched")+'</div>');
+  var h=d.total/3600;
+  s.push('<div class="k">You watched</div><div class="n sh">'+hrs(d.total)+'<small> hours</small></div><div class="s">'+(h>=48?"That's "+(Math.round(h/24*10)/10)+" days of nonstop TV.":h>=3?"That's about "+Math.round(h/1.5)+" movies' worth.":"A light year. The TV missed you.")+'</div>');
+  var wi=d.weekdays.indexOf(Math.max.apply(null,d.weekdays));
+  s.push('<div class="k">You tuned in on</div><div class="n sh">'+d.days+'<small> days</small></div><div class="s">Your favorite TV night: <b>'+WD[wi]+'</b></div>');
+  if(d.channels&&d.channels[0]){var c=d.channels[0];s.push('<div class="k">Your #1 channel</div><div class="t sh">'+esc(c.ch)+" · "+esc(c.name)+'</div><div class="s">'+dur(c.secs)+" on it · "+Math.round(c.secs/d.total*100)+"% of all your watching</div>")}
+  if(d.shows&&d.shows.length>1){s.push('<div class="k">Your top shows</div><div class="list">'+d.shows.map(function(x,i){return"<div><i>"+(i+1)+"</i><b>"+esc(x.show)+"</b><span>"+dur(x.secs)+"</span></div>"}).join("")+"</div>")}
+  if(d.shows&&d.shows[0]){var t=d.shows[0];s.push('<div class="k">Your #1 show</div><div class="t sh">'+esc(t.show)+'</div><div class="s">'+dur(t.secs)+' on '+esc(t.ch)+'. Nothing else came close.</div>')}
+  if(d.binge&&d.binge.secs>=3600)s.push('<div class="k">Your biggest binge</div><div class="n sh" style="font-size:calc(var(--u)*12)">'+dur(d.binge.secs)+'</div><div class="s">of <b>'+esc(d.binge.show)+'</b> on '+esc(new Date(d.binge.start*1000).toLocaleDateString([],{month:"long",day:"numeric"}))+(d.tvs&&d.tvs.length>1?" ("+esc(d.binge.tv)+")":"")+'. No regrets.</div>');
+  s.push('<div class="k">Your biggest TV day</div><div class="t sh">'+esc(day(d.busiest.day))+'</div><div class="s">'+dur(d.busiest.secs)+' of TV in one day</div>');
+  var hm=Math.max.apply(null,d.hours.concat([1]));
+  s.push('<div class="k">When you watch</div><div class="chart">'+d.hours.map(function(v,i){return'<div class="'+(i===d.peak_hour?"top":"")+'" style="height:'+Math.max(2,v/hm*100)+'%">'+(i%6===0?"<em>"+hourName(i).replace(" ","").toLowerCase()+"</em>":"")+"</div>"}).join("")+'</div><div class="s" style="margin-top:calc(var(--u)*3)">Prime time at your house: <b>'+hourName(d.peak_hour)+"</b></div>");
+  if(!d.year||d.months.filter(function(x){return x}).length>1){var mm=Math.max.apply(null,d.months.concat([1])),mi=d.months.indexOf(mm);
+    s.push('<div class="k">Month by month</div><div class="chart">'+d.months.map(function(v,i){return'<div class="'+(i===mi?"top":"")+'" style="height:'+Math.max(2,v/mm*100)+'%"><em>'+MON[i]+"</em></div>"}).join("")+'</div><div class="s" style="margin-top:calc(var(--u)*3)">Your biggest month: <b>'+MONL[mi]+"</b></div>")}
+  if(d.tvs&&d.tvs.length>1&&!d.tv)s.push('<div class="k">The hardest-working TV</div><div class="t sh">'+esc(d.tvs[0].name)+'</div><div class="list">'+d.tvs.map(function(x,i){return"<div><i>"+(i+1)+"</i><b>"+esc(x.name)+"</b><span>"+Math.round(x.secs/d.total*100)+"%</span></div>"}).join("")+"</div>");
+  if(d.flips>=10)s.push('<div class="k">You flipped channels</div><div class="n sh">'+d.flips.toLocaleString()+'<small> times</small></div><div class="s">'+(d.flips>500?"Those remote buttons have seen things.":"Just checking what else is on.")+"</div>");
+  if(d.songs&&d.songs.length)s.push('<div class="k">Jukebox anthem</div><div class="t sh">'+esc(d.songs[0].song)+'</div><div class="s">Played '+d.songs[0].times+(d.songs[0].times===1?" time":" times")+(d.songs[1]?" · runner-up: "+esc(d.songs[1].song):"")+"</div>");
+  var p=d.persona||{};
+  s.push('<div class="k">Your TV personality</div><div class="card"><div class="t sh" style="color:var(--gold);max-width:none">'+esc(p.title)+'</div><div class="s" style="max-width:none;margin:calc(var(--u)*1) auto 0">'+esc(p.line)+'</div><div class="grid">'+
+    "<div><small>Hours watched</small><b>"+hrs(d.total)+"</b></div><div><small>Top channel</small><b>"+esc(d.channels[0]?d.channels[0].name:"–")+"</b></div>"+
+    "<div><small>Top show</small><b>"+esc(d.shows[0]?d.shows[0].show:"–")+"</b></div><div><small>Prime time</small><b>"+hourName(d.peak_hour)+"</b></div></div></div>");
+  s.push('<div class="t sh">That\'s a wrap!</div><div class="s">Thanks for watching '+esc(d.station||"KNAS 42")+'. See you next year.</div><div class="s" style="opacity:.7">📺</div>');
+  return s}
+
+function render(){var st=$("stage");st.innerHTML=SL.map(function(h,i){return'<div class="slide" data-i="'+i+'" style="background:'+BG[i%BG.length]+';display:none">'+h+"</div>"}).join("");
+  $("bars").innerHTML=SL.map(function(){return"<i><b></b></i>"}).join("");go(0)}
+function go(i){cur=Math.max(0,Math.min(SL.length-1,i));
+  [].forEach.call(document.querySelectorAll(".slide"),function(el,j){el.style.display=j===cur?"flex":"none";el.classList.toggle("in",j===cur)});
+  [].forEach.call($("bars").children,function(b,j){b.firstChild.style.width=j<cur?"100%":"0"});START=performance.now()}
+function loop(now){if(SL.length){var p=Math.min(1,(now-START)/DUR),b=$("bars").children[cur];if(b)b.firstChild.style.width=(p*100)+"%";
+    if(p>=1){if(cur<SL.length-1)go(cur+1);else if(AUTO)go(0);else START=now-DUR}}
+  T=requestAnimationFrame(loop)}
+function next(){if(cur<SL.length-1)go(cur+1);else if(AUTO)go(0)}
+function prev(){go(cur-1)}
+document.addEventListener("click",function(e){if($("pick").contains(e.target)||!SL.length)return;if(e.clientX<innerWidth/3)prev();else next()});
+addEventListener("keydown",function(e){if(!SL.length)return;if(e.key==="ArrowRight"||e.key==="Enter"||e.key===" ")next();else if(e.key==="ArrowLeft"||e.key==="Backspace")prev()});
+
+function load(year,tv){return fetch("/api/wrapped?year="+encodeURIComponent(year)+"&tv="+encodeURIComponent(tv||""),{cache:"no-store"}).then(function(r){return r.json()})}
+function start(){var y=$("year").value,tv=$("tv").value;$("go").disabled=true;
+  load(y,tv).then(function(d){$("go").disabled=false;if(!d.ok){$("pickMsg").textContent=d.message||"Couldn't load it.";return}
+    if(!d.sessions||!d.total){$("pickMsg").textContent="Nothing watched"+(d.year?" in "+d.year:"")+" yet"+(d.tv?" on that TV":"")+". Viewing history needs to be on (Setup → Channels → Viewing history), and then just watch some TV!";return}
+    D=d;SL=build(d);$("pick").classList.add("hidden");["bars","brand","nav"].forEach(function(k){$(k).classList.remove("hidden")});
+    $("brand").textContent=(d.station||"KNAS 42")+" Wrapped"+(d.year?" "+d.year:"");if(AUTO)$("nav").classList.add("hidden");render()}).catch(function(){$("go").disabled=false;$("pickMsg").textContent="Couldn't reach KNAS."})}
+$("go").onclick=start;
+load(-1,"").then(function(d){var ys=(d.years||[]).slice();if(ys.indexOf(new Date().getFullYear())<0)ys.unshift(new Date().getFullYear());
+  $("year").innerHTML=ys.map(function(y){return'<option value="'+y+'">'+y+"</option>"}).join("")+'<option value="0">All time</option>';
+  $("tv").innerHTML='<option value="">Every TV</option>'+(d.all_tvs||[]).map(function(t){return'<option value="'+esc(t.id)+'">'+esc(t.name)+"</option>"}).join("");
+  if(Q.get("year"))$("year").value=Q.get("year");if(AUTO)start()}).catch(function(){$("pickMsg").textContent="Couldn't reach KNAS."});
+T=requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

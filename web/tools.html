@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KNAS Tools</title>
+<link rel="icon" href="/icon-192.png">
+<style>
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-500.woff) format("woff");font-weight:500;font-display:swap}
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-600.woff) format("woff");font-weight:600;font-display:swap}
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-700.woff) format("woff");font-weight:700;font-display:swap}
+@font-face{font-family:"KNAS Head";src:url(/fonts/classic-800i.woff) format("woff");font-weight:800;font-style:italic;font-display:swap}
+@font-face{font-family:"KNAS Head";src:url(/fonts/classic-700.woff) format("woff");font-weight:700;font-display:swap}
+:root{--bg:#090c2b;--side:#0d1340;--card:#131b4f;--card2:#18225e;--line:rgba(156,184,255,.18);--line2:rgba(156,184,255,.35);
+  --text:#eef2ff;--muted:#a3b0dd;--gold:#ffd23a;--gold2:#ffb000;--ink:#1a1300;--red:#e3261b;--ok:#7dff9e;--bad:#ff9a8a;--input:#0a1036;--hover:#1f2c76;--blue:#6fb7ff;
+  --head:"KNAS Head","Barlow Condensed","Arial Narrow",Arial,sans-serif;--ui:"KNAS UI",Barlow,"Segoe UI",Roboto,Arial,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg)}
+body{font:500 15px/1.4 var(--ui);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;
+  background:radial-gradient(1200px 600px at 80% -10%,rgba(90,47,134,.45),transparent 60%),var(--bg) fixed}
+a{color:var(--gold)}
+code{font:600 .95em var(--ui);color:var(--gold);background:rgba(255,210,58,.08);padding:0 4px;border-radius:3px}
+.hidden{display:none!important}
+button{font:700 14.5px var(--ui);color:var(--ink);background:linear-gradient(180deg,#ffe680,var(--gold) 50%,var(--gold2));border:0;border-radius:8px;padding:8px 14px;cursor:pointer;white-space:nowrap}
+button:hover{filter:brightness(1.07)}
+button:disabled{opacity:.45;cursor:default;filter:none}
+button.ghost{background:rgba(255,255,255,.06);color:var(--text);box-shadow:inset 0 0 0 1px var(--line2)}
+button.ghost:hover{background:var(--hover)}
+button.small{padding:5px 9px;font-size:13px;border-radius:6px}
+button.danger{background:rgba(255,90,70,.14);color:var(--bad);box-shadow:inset 0 0 0 1px rgba(255,120,100,.4)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+label.chk{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:14px;cursor:pointer}
+label.chk input{accent-color:var(--gold);width:16px;height:16px}
+
+/* ---------- layout ---------- */
+header{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--line);background:rgba(10,15,53,.85);position:sticky;top:0;z-index:30;backdrop-filter:blur(6px)}
+.logo{width:40px;height:40px;flex:none;border-radius:7px;position:relative;background:linear-gradient(160deg,#5d8bff,#1d3db8 55%,#0b1a66);box-shadow:inset 0 0 0 2px #cfe0ff,inset 0 0 0 4px #0b1a66}
+.logo b{position:absolute;top:1px;left:0;right:0;text-align:center;font:italic 800 23px/26px var(--head)}
+.logo span{position:absolute;bottom:4px;left:4px;right:4px;height:10px;background:var(--red);border-radius:2px;font:800 9px/10px var(--head);text-align:center;letter-spacing:1.4px}
+header h1{font:italic 800 24px/1 var(--head);color:var(--gold)}
+header small{display:block;font-size:12.5px;color:var(--muted);font-weight:600}
+header .sp{flex:1}
+.app{display:grid;grid-template-columns:320px minmax(0,1fr);min-height:calc(100vh - 65px)}
+#side{border-right:1px solid var(--line);background:linear-gradient(180deg,var(--side),#0a0f35);padding:14px 12px 30px;overflow-y:auto;max-height:calc(100vh - 65px);position:sticky;top:65px}
+main{padding:18px 22px 60px;min-width:0}
+.card{background:linear-gradient(180deg,var(--card),#10184a);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px}
+.card h2{font:italic 800 22px/1.1 var(--head);color:var(--gold);margin-bottom:6px}
+.muted{color:var(--muted)}
+.note{font-size:13.5px;color:var(--muted)}
+.msg{font-size:14px;font-weight:600;margin-top:8px}
+.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}
+pre.snip{background:var(--input);border:1px solid var(--line2);border-radius:8px;padding:10px 12px;margin:8px 0;font:600 13px/1.5 ui-monospace,Consolas,monospace;color:#dfe7ff;white-space:pre-wrap}
+
+/* ---------- folder browser ---------- */
+.crumbs{font-size:12.5px;color:var(--muted);margin:2px 2px 8px;word-break:break-all}
+.side-h{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.side-h h3{font:italic 800 19px var(--head);color:var(--gold);flex:1}
+.list{display:flex;flex-direction:column;gap:2px}
+.item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;line-height:1.25}
+.item:hover{background:var(--hover)}
+.item.on{background:rgba(255,210,58,.14);box-shadow:inset 3px 0 0 var(--gold)}
+.item .ic{flex:none;width:18px;text-align:center}
+.item .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{flex:none;font:700 11px/1 var(--ui);padding:4px 7px;border-radius:20px;background:rgba(255,255,255,.07);color:var(--muted);letter-spacing:.3px}
+.pill.ours{background:rgba(125,255,158,.14);color:var(--ok)}
+.pill.own{background:rgba(111,183,255,.15);color:var(--blue)}
+.pill.err{background:rgba(255,120,100,.15);color:var(--bad)}
+.folder-actions{margin:12px 2px 0;padding-top:12px;border-top:1px solid var(--line)}
+
+/* ---------- editor ---------- */
+.ep-head{scroll-margin-top:80px;display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.ep-head h2{font:italic 800 26px/1.1 var(--head);color:#fff;flex:1;min-width:0;word-break:break-word}
+.ep-head .sub{font-size:13.5px;color:var(--muted);font-weight:600;margin-top:2px}
+.player{position:relative;background:#000;border-radius:10px;overflow:hidden;box-shadow:0 0 0 1px var(--line2);max-width:960px}
+.player video{display:block;width:100%;max-height:56vh;background:#000;cursor:pointer}
+.busy{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(6,10,40,.92);padding:20px;text-align:center}
+.bar{width:min(420px,80%);height:10px;border-radius:6px;background:rgba(255,255,255,.1);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .3s}
+.controls{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:10px 0 8px;max-width:960px}
+.controls .time{font:700 16px ui-monospace,Consolas,monospace;margin-left:auto;color:#fff}
+.controls .time small{color:var(--muted)}
+#tl{position:relative;height:74px;max-width:960px;border-radius:9px;background:linear-gradient(180deg,#0b1240,#0a1036);box-shadow:inset 0 0 0 1px var(--line2);cursor:pointer;touch-action:none;user-select:none;margin-bottom:6px}
+#tl .tk{position:absolute;bottom:0;width:2px;margin-left:-1px;pointer-events:none}
+#tl .tk.cut{height:14px;background:rgba(160,180,255,.28)}
+#tl .tk.s6,#tl .tk.s5{height:44px;background:rgba(255,210,58,.75)}
+#tl .tk.s4{height:32px;background:rgba(111,183,255,.75)}
+#tl .tk.s2{height:22px;background:rgba(200,200,220,.5)}
+#tl .ph{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:#fff;box-shadow:0 0 6px #fff;pointer-events:none;z-index:3}
+#tl .mk{position:absolute;top:0;bottom:0;width:18px;margin-left:-9px;z-index:4;cursor:ew-resize;touch-action:none}
+#tl .mk:before{content:"";position:absolute;left:8px;top:0;bottom:0;width:3px;background:var(--red);box-shadow:0 0 0 1px rgba(0,0,0,.5)}
+#tl .mk b{position:absolute;left:3px;top:3px;width:13px;height:16px;background:var(--red);border-radius:3px;font:800 10px/16px var(--ui);color:#fff;text-align:center}
+#tl .mk.sel:before,#tl .mk.sel b{background:#fff;color:var(--red)}
+#tl .mk.sug:before{background:repeating-linear-gradient(180deg,var(--red) 0 6px,transparent 6px 10px)}
+#tl .hov{position:absolute;top:-24px;transform:translateX(-50%);font:700 12px var(--ui);background:#000;color:#fff;padding:2px 6px;border-radius:4px;pointer-events:none;white-space:nowrap;z-index:6}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-bottom:12px;max-width:960px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:4px 0 12px;max-width:960px}
+.acts .sp{flex:1}
+.breaks{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;max-width:960px}
+.brk{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px;cursor:pointer}
+.brk.sel{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.brk .top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.brk .n{width:22px;height:22px;border-radius:5px;background:var(--red);font:800 12px/22px var(--ui);text-align:center;flex:none}
+.brk .t{font:700 16px ui-monospace,Consolas,monospace}
+.brk .how{font-size:12px;color:var(--muted);font-weight:600;flex:1;text-align:right}
+.brk .pics{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.brk .pics div{position:relative;aspect-ratio:16/9;background:#000;border-radius:5px;overflow:hidden}
+.brk .pics img{width:100%;height:100%;object-fit:cover;display:block}
+.brk .pics span{position:absolute;left:4px;bottom:3px;font:700 10.5px var(--ui);background:rgba(0,0,0,.7);padding:1px 5px;border-radius:3px}
+.brk .row{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.empty{padding:40px 20px;text-align:center;color:var(--muted)}
+.empty b{display:block;font:italic 800 26px var(--head);color:var(--gold);margin-bottom:6px}
+.kbd{display:inline-block;font:700 11.5px ui-monospace,Consolas,monospace;padding:1px 5px;border-radius:4px;background:rgba(255,255,255,.08);box-shadow:inset 0 -1px 0 rgba(0,0,0,.4);color:#dfe7ff}
+.help{font-size:13px;color:var(--muted);margin-top:14px;max-width:960px;line-height:1.7}
+.dirty{color:var(--gold);font-weight:700;font-size:13.5px}
+/* dialog */
+.modal{position:fixed;left:0;right:0;top:0;bottom:0;background:rgba(3,5,20,.75);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal .card{width:min(640px,100%);max-height:88vh;overflow-y:auto;margin:0}
+.opts{display:flex;flex-direction:column;gap:9px;margin:12px 0}
+.report{margin-top:10px;font-size:13px;max-height:40vh;overflow-y:auto;border-top:1px solid var(--line)}
+.report div{padding:6px 0;border-bottom:1px solid var(--line);display:flex;gap:10px}
+.report div b{flex:none;max-width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.report div span{color:var(--muted)}
+.report div.good span{color:var(--ok)}
+.report div.click{cursor:pointer}.report div.click:hover b{color:var(--gold)}
+.report h4{margin:12px 0 4px;font-size:13px;color:var(--gold)}
+.plan{display:flex;flex-direction:column;gap:10px;margin:14px 0}
+.plan label{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:600;font-size:14px}
+.plan small{color:var(--muted);font-weight:600}
+.plan select{background:#0b1030;border:1px solid var(--line);color:#fff;border-radius:8px;padding:6px 8px;font:700 14px var(--ui)}
+.counts{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 2px}
+.counts span{background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:700}
+.runbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.libadd{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.libadd .row{display:flex;gap:6px}
+.libadd input,.bigadd input{flex:1;min-width:0;background:#0b1030;border:1px solid var(--line);color:var(--ink,#fff);border-radius:8px;padding:9px 10px;font:600 14px var(--ui)}
+.bigadd .row{display:flex;gap:8px;margin:12px 0 6px}
+.item .rm{margin-left:auto;background:none;border:0;color:var(--muted);font-size:15px;cursor:pointer;padding:2px 6px;border-radius:5px}
+.item .rm:hover{color:#fff;background:rgba(255,255,255,.08)}
+.item .loc{display:block;font-size:11.5px;color:var(--muted);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.howto{font-size:13px;color:var(--muted);line-height:1.6;margin-top:6px}
+.howto summary{cursor:pointer;color:var(--blue);font-weight:700}
+.howto ul{margin:6px 0 0 18px;padding:0}
+#batchBanner{display:block;margin:0 0 10px;padding:9px 11px;border-radius:9px;background:rgba(255,210,58,.12);border:1px solid rgba(255,210,58,.4);color:var(--gold);font-weight:700;font-size:13px;cursor:pointer}
+#batchBanner small{display:block;color:var(--muted);font-weight:600;margin-top:2px}
+@media (max-width:820px){
+  .app{grid-template-columns:1fr}
+  #side{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--line)}
+  main{padding:14px 12px 50px}
+  header{padding:10px 12px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><b>42</b><span>KNAS</span></div>
+  <div><h1>KNAS Tools</h1><small>Commercial breaks for your episodes</small></div>
+  <div class="sp"></div>
+  <a href="/setup"><button class="ghost small" type="button">Setup page</button></a>
+</header>
+
+<div class="app">
+  <aside id="side">
+    <div class="side-h"><h3>Your shows</h3><button class="ghost small hidden" id="upBtn" type="button">⬆ Up</button></div>
+    <div id="batchBanner" class="hidden"></div>
+    <div class="crumbs" id="crumbs"></div>
+    <div class="list" id="list"><div class="note">Loading…</div></div>
+    <div class="libadd hidden" id="libAdd">
+      <div style="font-weight:700;font-size:13.5px;margin-bottom:6px">＋ Add a library</div>
+      <div class="row"><input id="libText" placeholder="Paste a folder location" spellcheck="false" autocomplete="off"><button type="button" class="small" id="libBtn">Add</button></div>
+      <div class="msg" id="libMsg"></div>
+      <details class="howto"><summary>How do I copy a folder's location?</summary>
+        <ul>
+          <li><b>Windows:</b> open the folder in File Explorer, click the bar at the top that shows the folder's name, and copy. It looks like <code>\\192.168.1.50\Media\TV</code> or <code>Z:\TV</code>.</li>
+          <li><b>Mac:</b> in Finder, right-click the folder, hold <b>Option</b> and choose <b>Copy "TV" as Pathname</b>, or use its <code>smb://</code> address.</li>
+          <li><b>Your NAS's Files app:</b> open the folder's info or properties and copy its location, like <code>/volume1/Media/TV</code>.</li>
+        </ul>Add as many as you like: TV shows, cartoons, movies… Each one shows up here as its own library.</details>
+    </div>
+    <div class="libadd hidden" id="bkInfo"></div>
+    <div class="folder-actions hidden" id="folderActs">
+      <button type="button" id="autoBtn">⚡ Auto-mark this folder</button>
+      <button class="ghost" type="button" id="planBtn" style="margin-top:8px">⚙ Break plan</button>
+      <div class="note" style="margin-top:6px">Finds and adds breaks to every episode here and in every folder inside it, so you can pick your whole TV folder to do everything at once. You can check first without changing anything.</div>
+    </div>
+  </aside>
+
+  <main id="main">
+    <div class="card hidden" id="ffCard"><h2>Getting the video tools ready…</h2><div class="note" id="ffMsg">KNAS is installing ffmpeg, the free video tool it uses. This only happens once and takes a minute or two.</div></div>
+    <div class="card hidden" id="setupCard">
+      <h2>Add your shows</h2>
+      <div id="needMount" class="hidden">
+        <div class="msg bad" style="margin:6px 0 10px">KNAS can't see your NAS's drive yet. This takes one change, once:</div>
+        <ol style="margin:0 0 12px 20px;line-height:1.7">
+          <li>Open your NAS's <b>Docker</b> app → <b>Project</b> → your KNAS project → <b>Edit</b> (the <code>docker-compose.yml</code>).</li>
+          <li>Under <code>knas42:</code> → <code>volumes:</code>, add this line under <code>- ./:/knas</code>:
+            <pre class="snip">      - /volume1:/nas/volume1</pre>
+            That's for UGREEN and Synology. On QNAP use <code>- /share:/nas/share</code>, on Unraid <code>- /mnt/user:/nas/user</code>.</li>
+          <li>Save and <b>redeploy</b> the project, then refresh this page.</li>
+        </ol>
+      </div>
+      <div class="bigadd">
+        <div>Copy the location of the folder with your shows and paste it here. KNAS saves it as a library, and you can add as many as you want.</div>
+        <div class="row"><input id="libText2" placeholder="Like \\192.168.1.50\Media\TV or /volume1/Media/TV" spellcheck="false" autocomplete="off"><button type="button" id="libBtn2">Add library</button></div>
+        <div class="msg" id="libMsg2"></div>
+        <div class="howto"><b>How to copy a folder's location</b><ul>
+          <li><b>Windows:</b> open the folder in File Explorer, click the bar at the top that shows the folder's name, and copy (Ctrl+C).</li>
+          <li><b>Mac:</b> in Finder, right-click the folder, hold <b>Option</b> and choose <b>Copy as Pathname</b>, or use its <code>smb://</code> address.</li>
+          <li><b>Your NAS's Files app:</b> open the folder's info or properties and copy its location, like <code>/volume1/Media/TV</code>.</li>
+        </ul>KNAS only ever works inside the folders you add here.</div>
+      </div>
+    </div>
+
+    <div id="editor" class="hidden">
+      <div class="ep-head">
+        <div style="flex:1;min-width:0"><h2 id="epName"></h2><div class="sub" id="epSub"></div></div>
+        <span class="dirty hidden" id="dirty">● Not saved yet</span>
+      </div>
+      <div class="card hidden" id="ownWarn" style="padding:10px 14px;border-color:rgba(111,183,255,.5)"><b style="color:var(--blue)" id="ownHead">This file came with its own chapters</b> <span class="note" id="ownText"></span> <button class="ghost small hidden" type="button" id="ownSwap"></button></div>
+      <div class="player">
+        <video id="vid" preload="auto" playsinline></video>
+        <div class="busy hidden" id="busy"><div style="font-weight:700" id="busyMsg">Getting this episode ready…</div><div class="bar"><i id="busyBar"></i></div><div class="note">The first time you open an episode KNAS scans it for act breaks. Next time it opens instantly.</div></div>
+      </div>
+      <div class="controls">
+        <button class="ghost small" type="button" data-step="cutprev" title="Previous scene change (P)">⏮ Cut</button>
+        <button class="ghost small" type="button" data-step="-5" title="Back 5 seconds (Shift+←)">−5s</button>
+        <button class="ghost small" type="button" data-step="-1" title="Back 1 second (←)">−1s</button>
+        <button class="ghost small" type="button" data-step="-f" title="Back 1 frame (,)">−1 frame</button>
+        <button class="small" type="button" id="playBtn" title="Play / pause (Space)" style="min-width:70px">▶ Play</button>
+        <button class="ghost small" type="button" data-step="f" title="Forward 1 frame (.)">+1 frame</button>
+        <button class="ghost small" type="button" data-step="1" title="Forward 1 second (→)">+1s</button>
+        <button class="ghost small" type="button" data-step="5" title="Forward 5 seconds (Shift+→)">+5s</button>
+        <button class="ghost small" type="button" data-step="cutnext" title="Next scene change (N)">Cut ⏭</button>
+        <div class="time" id="time">0:00.0 <small>/ 0:00</small></div>
+      </div>
+      <div id="tl"></div>
+      <div class="legend">
+        <span><i style="background:var(--red)"></i>Break</span>
+        <span><i style="background:rgba(255,210,58,.75)"></i>Fade to black (best spots)</span>
+        <span><i style="background:rgba(111,183,255,.75)"></i>Scene change in a silence</span>
+        <span><i style="background:rgba(160,180,255,.35)"></i>Scene change</span>
+      </div>
+      <div class="acts">
+        <button type="button" id="addBtn" title="B">＋ Add break here</button>
+        <button class="ghost" type="button" id="sugBtn">Use KNAS's suggestions</button>
+        <button class="ghost" type="button" id="clearBtn">Remove all</button>
+        <button class="ghost" type="button" id="planBtn2">⚙ Break plan</button>
+        <span class="sp"></span>
+        <label class="chk"><input type="checkbox" id="backup"> Keep a backup of the original</label>
+        <button type="button" id="saveBtn">💾 Save breaks</button>
+        <button class="ghost" type="button" id="nextBtn">Next episode →</button>
+        <button class="ghost hidden" type="button" id="restoreBtn" title="Undo KNAS's changes to this episode">↩ Put the original back</button>
+      </div>
+      <div class="msg" id="saveMsg"></div>
+      <div class="breaks" id="breaks"></div>
+      <div class="help">
+        <b>How to use it:</b> the dashed red lines are KNAS's suggestions. Check each one with its before / after pictures, drag it on the timeline to move it,
+        or click it and press <span class="kbd">Delete</span>. To add one yourself, play or jump to the spot and press <b>Add break here</b>. Breaks snap to nearby scene changes while you drag (hold <span class="kbd">Alt</span> to stop that).
+        Then press <b>Save breaks</b>. Nothing is re-encoded: KNAS just adds the markers to the file, checks it, and keeps the same name.<br>
+        <b>Keys:</b> <span class="kbd">Space</span> play/pause · <span class="kbd">←</span><span class="kbd">→</span> 1 second · <span class="kbd">Shift</span>+<span class="kbd">←</span><span class="kbd">→</span> 5 seconds ·
+        <span class="kbd">,</span><span class="kbd">.</span> 1 frame · <span class="kbd">N</span>/<span class="kbd">P</span> next/previous scene change · <span class="kbd">B</span> add break · <span class="kbd">Delete</span> remove selected break · <span class="kbd">Ctrl</span>+<span class="kbd">S</span> save<br>
+        After saving, <b>rescan</b> this show's library in ErsatzTV so it sees the breaks, and use a <b>Mid-Roll</b> filler preset in your schedule.
+      </div>
+    </div>
+
+    <div id="welcome" class="card hidden">
+      <div class="empty"><b>Pick an episode</b>Choose a show on the left, then an episode. KNAS finds the act breaks for you to check, fix, and save.<br><br>
+      Or open a folder and press <strong>Auto-mark this folder</strong> to do a whole season, a whole show, or your whole TV folder at once.</div>
+    </div>
+  </main>
+</div>
+
+<div class="modal hidden" id="autoModal">
+  <div class="card">
+    <h2 id="autoTitle">Auto-mark this folder</h2>
+    <div class="note" id="autoWhere"></div>
+    <div id="autoForm">
+      <div class="opts">
+        <label class="chk"><input type="checkbox" id="optCheck" checked> Just check first (doesn't change any files)</label>
+        <label class="chk"><input type="checkbox" id="optGuess" checked> When there's no clean break, use the nearest scene change (best guess)</label>
+        <label class="chk"><input type="checkbox" id="optRedo"> Redo episodes KNAS already marked</label>
+        <label class="chk"><input type="checkbox" id="optBackup"> Keep backups of the originals (in a hidden folder your media apps skip; needs as much free space as the shows)</label>
+      </div>
+      <div class="note">Works with any video type. Files that can't hold breaks (.avi, .wmv, .ts, .mpg and so on) are saved as .mkv with the same picture and sound. Episodes whose own chapters already sit at the act breaks are left alone. Chapters that are junk (bunched at the start, doubled up) get replaced. <span id="planLine"></span> <a href="#" id="planLink">Change</a><br><br>
+      This runs on the NAS, not in your browser, so you can close this page or turn off your computer. It keeps going, and if the NAS restarts it carries on where it left off. A big library takes a while (often about a minute per episode), and it runs at low priority so the TV stays smooth.</div>
+      <div class="runbtns"><button type="button" id="autoGo">Start</button><button class="ghost" type="button" data-close>Cancel</button></div>
+    </div>
+    <div id="autoRun" class="hidden">
+      <div class="bar" style="width:100%;margin:14px 0 8px"><i id="autoBar"></i></div>
+      <div class="note" id="autoMsg">Starting…</div>
+      <div class="counts" id="autoCounts"></div>
+      <div class="report" id="autoReport"></div>
+      <div class="runbtns">
+        <button type="button" id="autoReal" class="hidden">Looks good: add these breaks</button>
+        <button type="button" id="autoResume" class="hidden">▶ Continue</button>
+        <button class="ghost hidden" type="button" id="autoStop">■ Stop</button>
+        <a id="autoDl" href="/api/tools/batch/report" class="hidden"><button class="ghost" type="button">⬇ Download the full report</button></a>
+        <button class="ghost hidden" type="button" id="autoNew">Start a new one</button>
+        <button class="ghost" type="button" data-close>Close</button>
+      </div>
+      <label class="chk hidden" id="realBackupWrap" style="margin-top:10px"><input type="checkbox" id="realBackup"> Keep backups of the originals</label>
+    </div>
+  </div>
+</div>
+
+<div class="modal hidden" id="planModal">
+  <div class="card">
+    <h2>Break plan</h2>
+    <div class="note">How many commercial breaks each length of show gets. KNAS spreads them out through the episode and puts each one on the nearest fade to black or scene change.</div>
+    <div class="plan">
+      <label><span>Short shows and 11-minute cartoons <small>(5–15 min)</small></span><select id="pShort"></select></label>
+      <label><span>Half-hour shows <small>(about 22 min)</small></span><select id="pHalf"></select></label>
+      <label><span>Hour shows <small>(about 44 min)</small></span><select id="pHour"></select></label>
+      <label><span>Movies and specials: one break every</span><select id="pEvery"></select></label>
+    </div>
+    <div class="opts">
+      <label class="chk"><input type="checkbox" id="pGentle"> Go easy on the NAS (uses about a quarter of the CPU; big jobs take longer)</label>
+      <label class="chk"><input type="checkbox" id="pJunk"> Replace chapters that came with a file when they aren't at the act breaks</label>
+    </div>
+    <div class="msg" id="planMsg"></div>
+    <div class="runbtns"><button type="button" id="planSave">Save</button><button class="ghost" type="button" id="planClose">Close</button></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+var $=function(id){return document.getElementById(id)};
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function fmt(t,dec){t=Math.max(0,t||0);var h=Math.floor(t/3600),m=Math.floor(t%3600/60),s=t%60;var ss=dec?s.toFixed(1):String(Math.floor(s));if(s<10)ss="0"+ss;return(h?h+":"+(m<10?"0":"")+m:m)+":"+ss}
+function api(u,body){var o=body?{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}:{cache:"no-store"};
+  return fetch(u,o).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.message||("Error "+r.status));return j})})}
+function q(p){return encodeURIComponent(p)}
+function poll(id,onStep){return new Promise(function(res,rej){(function go(){api("/api/tools/job?id="+id).then(function(j){if(onStep)onStep(j);
+  if(j.state==="done")res(j.result);else if(j.state==="error")rej(new Error(j.message));else if(j.state==="gone")rej(new Error("That job was lost (KNAS restarted?)."));else setTimeout(go,700)}).catch(rej)})()})}
+
+/* ---------- state ---------- */
+var FOLDER="",FILES=[],STATES={},EP=null,BR=[],SEL=-1,DIRTY=false,FRAME=1/30,vid=$("vid");
+
+/* ---------- status / first-time setup ---------- */
+function checkStatus(){return api("/api/tools/status").then(function(s){
+  $("ffCard").classList.toggle("hidden",s.ffmpeg);if(!s.ffmpeg){$("ffMsg").textContent=s.error||"KNAS is installing ffmpeg, the free video tool it uses. This only happens once and takes a minute or two.";setTimeout(checkStatus,4000)}
+  STATUS=s;$("setupCard").classList.toggle("hidden",s.any_root);$("needMount").classList.toggle("hidden",s.can_add);
+  if(!s.any_root){$("list").innerHTML='<div class="note">No libraries yet. Add your shows on the right.</div>';$("libAdd").classList.add("hidden");$("welcome").classList.add("hidden");return s}
+  return s})}
+var STATUS=null;
+function addLib(inp,msg){var t=$(inp).value.trim();if(!t){$(msg).className="msg bad";$(msg).textContent="Paste a folder location first.";return}
+  $(msg).className="msg";$(msg).textContent="Looking for it…";
+  api("/api/tools/library/add",{text:t}).then(function(r){$(inp).value="";$(msg).className="msg ok";$(msg).textContent="Added \u201c"+r.library.name+"\u201d.";
+    var first=!(STATUS&&STATUS.any_root);STATUS=r.status;$("setupCard").classList.add("hidden");
+    if(first){$("welcome").classList.remove("hidden");openFolder(r.library.path)}else openFolder("")})
+  .catch(function(e){$(msg).className="msg bad";$(msg).textContent=e.message})}
+$("libBtn").onclick=function(){addLib("libText","libMsg")};$("libBtn2").onclick=function(){addLib("libText2","libMsg2")};
+$("libText").addEventListener("keydown",function(e){if(e.key==="Enter")addLib("libText","libMsg")});
+$("libText2").addEventListener("keydown",function(e){if(e.key==="Enter")addLib("libText2","libMsg2")});
+function removeLib(p,name){if(!confirm("Remove the library \u201c"+name+"\u201d from KNAS? Your files aren't touched."))return;
+  api("/api/tools/library/remove",{path:p}).then(function(r){STATUS=r.status;if(!r.status.any_root){checkStatus()}else openFolder("")}).catch(function(e){alert(e.message)})}
+
+/* ---------- folder browser ---------- */
+function openFolder(p){
+  return api("/api/tools/browse?path="+q(p)).then(function(b){
+    FOLDER=b.path;FILES=b.files;
+    var libs=(STATUS&&STATUS.libraries)||[],lib=null;libs.forEach(function(l){if(b.path===l.path||b.path.indexOf(l.path+"/")===0)lib=l});
+    $("crumbs").textContent=b.path?(lib?lib.name+b.path.slice(lib.path.length).replace(/\//g," › ").replace(/^ › /," › "):b.path):"Your libraries";
+    $("upBtn").classList.toggle("hidden",!b.path);$("upBtn").textContent=b.up?"⬆ Up":"⬆ Libraries";$("upBtn").onclick=function(){openFolder(b.up||"")};
+    $("libAdd").classList.toggle("hidden",!!b.path);if(!b.path)paintBackups();else $("bkInfo").classList.add("hidden");
+    var h="";b.dirs.forEach(function(d){var L=null;if(d.lib)libs.forEach(function(l){if(l.path===d.path)L=l});
+      h+='<div class="item" data-dir="'+esc(d.path)+'"><span class="ic">'+(d.lib?"📺":"📁")+'</span><span class="nm">'+esc(d.name)+(L&&L.shown?'<span class="loc" title="'+esc(L.shown)+'">'+esc(L.shown)+'</span>':"")+'</span>'+
+        (L&&L.mine?'<button class="rm" type="button" title="Remove this library" data-rm="'+esc(d.path)+'" data-nm="'+esc(d.name)+'">✕</button>':"")+'</div>'});
+    b.files.forEach(function(f){h+='<div class="item'+(EP&&EP.path===f.path?" on":"")+'" data-file="'+esc(f.path)+'"><span class="ic">🎞️</span><span class="nm" title="'+esc(f.name)+'">'+esc(f.name)+'</span><span class="pill" data-pill="'+esc(f.path)+'">…</span></div>'});
+    if(!h)h='<div class="note">'+(b.path?"Nothing here.":"No libraries yet.")+'</div>';
+    if(b.path&&b.writable===false)h='<div class="msg bad" style="margin:0 2px 8px">KNAS can only read this folder, so it can\'t add breaks here. Remove <code>:ro</code> from this folder\'s line in docker-compose.yml.</div>'+h;
+    $("list").innerHTML=h;
+    $("folderActs").classList.toggle("hidden",!b.path);
+    try{localStorage.setItem("knas_tools_folder",b.path)}catch(e){}
+    if(b.files.length)refreshStates()}).catch(function(e){if(p)return openFolder("");$("list").innerHTML='<div class="msg bad">'+esc(e.message)+'</div>'})}
+function refreshStates(){return api("/api/tools/states?path="+q(FOLDER)).then(function(s){STATES=s;Object.keys(s).forEach(paintPill)}).catch(function(){})}
+function paintPill(p){var el=document.querySelector('[data-pill="'+CSS.escape(p)+'"]'),s=STATES[p];if(!el||!s)return;
+  el.className="pill"+(s.state==="ours"?" ours":s.state==="own"?" own":s.state==="error"?" err":"");
+  el.textContent=s.state==="ours"?(s.breaks+" break"+(s.breaks===1?"":"s")):s.state==="own"?"own chapters":s.state==="error"?"can't read":"no breaks"}
+$("list").addEventListener("click",function(e){var rm=e.target.closest("[data-rm]");if(rm){e.stopPropagation();return removeLib(rm.dataset.rm,rm.dataset.nm)}
+  var it=e.target.closest(".item");if(!it)return;
+  if(it.dataset.dir)return openFolder(it.dataset.dir);
+  if(it.dataset.file)openEpisode(it.dataset.file)});
+
+/* ---------- opening an episode ---------- */
+function leaveOk(){return !DIRTY||confirm("You have breaks that aren't saved yet. Leave this episode anyway?")}
+function openEpisode(p){
+  if(EP&&EP.path===p)return;if(!leaveOk())return;
+  document.querySelectorAll(".item.on").forEach(function(x){x.classList.remove("on")});var it=document.querySelector('[data-file="'+CSS.escape(p)+'"]');if(it)it.classList.add("on");
+  $("welcome").classList.add("hidden");$("editor").classList.remove("hidden");
+  $("epName").textContent=p.split("/").pop();$("epSub").textContent="";$("saveMsg").textContent="";$("ownWarn").classList.add("hidden");$("restoreBtn").classList.add("hidden");
+  EP={path:p,loading:true};BR=[];SEL=-1;setDirty(false);vid.removeAttribute("src");vid.load();drawTL();drawBreaks();
+  busy(true,"Getting this episode ready…",0);
+  stopOpening();
+  api("/api/tools/open?path="+q(p)).then(function(r){
+    if(r.ready)return r.data;
+    OPENJOB=r.job.id;
+    return poll(r.job.id,function(j){if(EP&&EP.path===p)busy(true,j.message||"Working…",j.progress||0)})}).then(function(d){
+    if(!EP||EP.path!==p)return;OPENJOB=null;loaded(d)}).catch(function(e){if(EP&&EP.path===p)busy(true,"Couldn't open this episode: "+e.message,0)})}
+/* getting an episode ready keeps the NAS busy: stop that work if you move on or close the page */
+var OPENJOB=null;
+function stopOpening(){if(!OPENJOB)return;var id=OPENJOB;OPENJOB=null;api("/api/tools/cancel",{id:id}).catch(function(){})}
+addEventListener("pagehide",function(){if(OPENJOB&&navigator.sendBeacon)navigator.sendBeacon("/api/tools/cancel",new Blob([JSON.stringify({id:OPENJOB})],{type:"application/json"}))});
+function loaded(d){
+  EP=d;EP.path=d.path;
+  var i=d.info||{};$("epSub").textContent=fmt(d.duration)+" long"+(i.width?" · "+i.width+"×"+i.height:"")+(i.vcodec?" · "+i.vcodec:"")+(d.direct?"":" · playing a preview copy (your file isn't changed)");
+  vid.src="/api/tools/preview?path="+q(d.path);busy(false);
+  $("restoreBtn").classList.toggle("hidden",!d.backup);
+  var ch=(i.chapters||[]).filter(function(c){return c.start>1}),n=d.plan_count;
+  $("epSub").textContent+=" · "+(n?n+" break"+(n>1?"s":"")+" planned for a show this long":"too short for breaks");
+  if(ch.length&&(i.ours||d.own_real)){useFile();if(!i.ours)ownNote(true,ch.length)}
+  else{useSuggestions(true);if(ch.length)ownNote(false,ch.length)}
+  SEL=BR.length?0:-1;drawTL();drawBreaks();updTime()}
+function useFile(){var i=EP.info||{};BR=(i.chapters||[]).filter(function(c){return c.start>1}).map(function(c){return{t:c.start,how:i.ours?"saved":"from the file",src:"file"}});SEL=BR.length?0:-1;setDirty(false);drawTL();drawBreaks()}
+function ownNote(real,n){$("ownWarn").classList.remove("hidden");
+  if(real){$("ownHead").textContent="This file came with its own chapters";$("ownText").textContent="They sit where breaks belong, so they're shown below. Saving replaces them with the breaks you set here.";
+    $("ownSwap").textContent="Use KNAS's suggestions instead";$("ownSwap").onclick=function(){useSuggestions(false)}}
+  else{$("ownHead").textContent="This file came with "+n+" chapter"+(n>1?"s":"")+" that aren't commercial breaks";$("ownText").textContent="(they're bunched up or nowhere near where breaks go). ErsatzTV would put commercials there, so KNAS's suggestions are shown instead. Saving replaces them.";
+    $("ownSwap").textContent="Show the file's chapters";$("ownSwap").onclick=function(){useFile()}}
+  $("ownSwap").classList.remove("hidden")}
+function useSuggestions(auto){BR=(EP.suggested||[]).map(function(c){return{t:c.t,how:c.how,src:"sug"}});SEL=BR.length?0:-1;
+  setDirty(BR.length>0||!auto);drawTL();drawBreaks();
+  if(auto&&!BR.length)$("saveMsg").innerHTML='<span class="msg">KNAS didn\'t find a clean break where breaks usually go in a show this long. Find the spots yourself with the timeline (the yellow and blue lines are fades and scene changes) and press <b>Add break here</b>.</span>'}
+function busy(on,msg,p){$("busy").classList.toggle("hidden",!on);if(on){$("busyMsg").textContent=msg;$("busyBar").style.width=Math.round((p||0)*100)+"%"}}
+function setDirty(v){DIRTY=v;$("dirty").classList.toggle("hidden",!v)}
+addEventListener("beforeunload",function(e){if(DIRTY){e.preventDefault();e.returnValue=""}});
+
+/* ---------- timeline ---------- */
+var tl=$("tl");
+function dur(){return(EP&&EP.duration)||vid.duration||1}
+function x2t(x){var r=tl.getBoundingClientRect();return Math.max(0,Math.min(dur(),(x-r.left)/r.width*dur()))}
+function pct(t){return(t/dur()*100).toFixed(3)+"%"}
+function drawTL(){var h="";
+  if(EP&&EP.cuts){EP.cuts.forEach(function(c){h+='<i class="tk cut" style="left:'+pct(c)+'"></i>'});
+    (EP.candidates||[]).forEach(function(c){h+='<i class="tk s'+c.score+'" style="left:'+pct(c.t)+'" title="'+esc(c.how)+'"></i>'})}
+  BR.forEach(function(b,i){h+='<div class="mk'+(i===SEL?" sel":"")+(b.src==="sug"?" sug":"")+'" data-i="'+i+'" style="left:'+pct(b.t)+'"><b>'+(i+1)+'</b></div>'});
+  h+='<i class="ph" id="ph" style="left:'+pct(vid.currentTime||0)+'"></i><div class="hov hidden" id="hov"></div>';
+  tl.innerHTML=h}
+function sortBR(){var sel=BR[SEL];BR.sort(function(a,b){return a.t-b.t});SEL=sel?BR.indexOf(sel):-1}
+function snap(t,alt){if(alt||!EP)return t;var best=t,bd=Math.max(1.2,dur()/tl.getBoundingClientRect().width*7);
+  (EP.candidates||[]).concat((EP.cuts||[]).map(function(c){return{t:c}})).forEach(function(c){var d=Math.abs(c.t-t);if(d<bd){bd=d;best=c.t}});return best}
+var drag=null;
+tl.addEventListener("pointerdown",function(e){if(!EP||EP.loading)return;var mk=e.target.closest(".mk");
+  if(mk){SEL=+mk.dataset.i;drag={i:SEL,moved:false};tl.setPointerCapture(e.pointerId);drawTL();drawBreaks();e.preventDefault();return}
+  scrub=true;tl.setPointerCapture(e.pointerId);seek(x2t(e.clientX));e.preventDefault()});
+var scrub=false,scrubT=0;
+tl.addEventListener("pointermove",function(e){var hv=$("hov");if(!EP||!hv)return;var t=x2t(e.clientX);
+  if(scrub){var now=Date.now();var ph=$("ph");if(ph)ph.style.left=pct(t);$("time").innerHTML=fmt(t,true)+' <small>/ '+fmt(dur())+'</small>';
+    if(now-scrubT>90){scrubT=now;if(vid.fastSeek&&!vid.paused)vid.fastSeek(t);else vid.currentTime=t}else seekSoon(t)}
+  if(drag){var b=BR[drag.i];b.t=snap(t,e.altKey);b.src=b.src==="file"?"moved":(b.src==="sug"?"moved":b.src);b.how="you moved it";drag.moved=true;setDirty(true);
+    var m=tl.querySelector('.mk[data-i="'+drag.i+'"]');if(m)m.style.left=pct(b.t);seekSoon(b.t)}
+  hv.classList.remove("hidden");hv.style.left=pct(drag?BR[drag.i].t:t);hv.textContent=fmt(drag?BR[drag.i].t:t,true)});
+tl.addEventListener("pointerleave",function(){var hv=$("hov");if(hv&&!drag)hv.classList.add("hidden")});
+tl.addEventListener("pointerup",function(e){if(scrub){scrub=false;seek(x2t(e.clientX))}if(drag){var moved=drag.moved;drag=null;if(moved){sortBR();drawTL();drawBreaks()}}});
+var seekT=0;function seekSoon(t){clearTimeout(seekT);seekT=setTimeout(function(){seek(t)},60)}
+function seek(t){if(!isFinite(t))return;vid.currentTime=Math.max(0,Math.min(dur()-0.05,t));updTime()}
+function updTime(){var t=vid.currentTime||0;$("time").innerHTML=fmt(t,true)+' <small>/ '+fmt(dur())+'</small>';var ph=$("ph");if(ph)ph.style.left=pct(t)}
+vid.addEventListener("timeupdate",updTime);vid.addEventListener("seeked",updTime);
+vid.addEventListener("play",function(){$("playBtn").textContent="⏸ Pause"});vid.addEventListener("pause",function(){$("playBtn").textContent="▶ Play"});
+vid.addEventListener("click",togglePlay);$("playBtn").onclick=togglePlay;
+vid.addEventListener("error",function(){if(EP&&!EP.loading&&vid.getAttribute("src"))$("saveMsg").innerHTML='<span class="msg bad">Your browser couldn\'t play the preview. Try Chrome or Edge.</span>'});
+function togglePlay(){if(!vid.src)return;if(vid.paused)vid.play().catch(function(){});else vid.pause()}
+(function tick(){if(!vid.paused)updTime();requestAnimationFrame(tick)})();
+function step(k){if(!EP||EP.loading)return;var t=vid.currentTime||0,cuts=(EP.cuts||[]).concat((EP.candidates||[]).map(function(c){return c.t})).sort(function(a,b){return a-b});
+  if(k==="cutnext"){var n=cuts.find(function(c){return c>t+0.08});if(n!=null)seek(n)}
+  else if(k==="cutprev"){var p=null;cuts.forEach(function(c){if(c<t-0.08)p=c});if(p!=null)seek(p)}
+  else if(k==="f"||k==="-f"){vid.pause();seek(t+(k==="f"?FRAME:-FRAME))}
+  else seek(t+(+k))}
+document.querySelectorAll("[data-step]").forEach(function(b){b.onclick=function(){step(b.dataset.step)}});
+
+/* ---------- the list of breaks ---------- */
+function drawBreaks(){var h="";
+  BR.forEach(function(b,i){var p=q(EP.path),a=Math.max(0,b.t-1.5).toFixed(2),z=(b.t+1.5).toFixed(2);
+    h+='<div class="brk'+(i===SEL?" sel":"")+'" data-i="'+i+'"><div class="top"><span class="n">'+(i+1)+'</span><span class="t">'+fmt(b.t,true)+'</span><span class="how">'+esc(b.src==="sug"?"suggested: "+b.how:b.how)+'</span></div>'+
+      '<div class="pics"><div><img loading="lazy" src="/api/tools/thumb?path='+p+'&t='+a+'&w=320" alt=""><span>before</span></div><div><img loading="lazy" src="/api/tools/thumb?path='+p+'&t='+z+'&w=320" alt=""><span>after</span></div></div>'+
+      '<div class="row"><button class="ghost small" type="button" data-act="go">▶ Watch it</button><button class="ghost small" type="button" data-act="-1">−1s</button><button class="ghost small" type="button" data-act="-0.2">−0.2s</button><button class="ghost small" type="button" data-act="0.2">+0.2s</button><button class="ghost small" type="button" data-act="1">+1s</button><button class="danger small" type="button" data-act="del">Remove</button></div></div>'});
+  if(EP&&!EP.loading&&!BR.length)h='<div class="note" style="padding:6px 2px">No breaks yet. Find a spot and press <b>Add break here</b>.</div>';
+  $("breaks").innerHTML=h}
+$("breaks").addEventListener("click",function(e){var c=e.target.closest(".brk");if(!c)return;var i=+c.dataset.i,b=BR[i],act=e.target.dataset.act;SEL=i;
+  if(act==="del"){BR.splice(i,1);SEL=Math.min(SEL,BR.length-1);setDirty(true)}
+  else if(act==="go"){seek(Math.max(0,b.t-4));vid.play().catch(function(){})}
+  else if(act){b.t=Math.max(1,Math.min(dur()-1,b.t+(+act)));b.how="you moved it";if(b.src!=="you")b.src="moved";sortBR();setDirty(true);seek(b.t)}
+  else seek(b.t);
+  drawTL();drawBreaks()});
+function addHere(){if(!EP||EP.loading)return;var t=vid.currentTime||0;if(t<1||t>dur()-1)return;
+  if(BR.some(function(b){return Math.abs(b.t-t)<2})){$("saveMsg").innerHTML='<span class="msg bad">There\'s already a break right there.</span>';return}
+  var b={t:t,how:"you added it",src:"you"};BR.push(b);sortBR();SEL=BR.indexOf(b);setDirty(true);drawTL();drawBreaks();$("saveMsg").textContent=""}
+$("addBtn").onclick=addHere;
+$("sugBtn").onclick=function(){if(EP&&!EP.loading)useSuggestions(false)};
+$("clearBtn").onclick=function(){if(!BR.length)return;if(!confirm("Remove all the breaks from this episode?"))return;BR=[];SEL=-1;setDirty(true);drawTL();drawBreaks()};
+
+/* ---------- saving ---------- */
+function save(){if(!EP||EP.loading)return;var btn=$("saveBtn"),p=EP.path;btn.disabled=true;$("saveMsg").innerHTML='<span class="msg">Saving… (nothing is re-encoded; KNAS adds the markers, checks the file, then swaps it in)</span>';
+  api("/api/tools/save",{path:p,breaks:BR.map(function(b){return b.t}),backup:$("backup").checked}).then(function(r){return poll(r.job.id)}).then(function(res){
+    btn.disabled=false;setDirty(false);BR.forEach(function(b){b.src="file";b.how="saved"});drawTL();drawBreaks();
+    var note=res.renamed?' Saved as <b>'+esc(res.path.split("/").pop())+'</b> (that file type can\'t hold breaks, so it was re-wrapped with nothing re-encoded).':'';
+    $("saveMsg").innerHTML='<span class="msg ok">✔ Saved '+res.breaks.length+' break'+(res.breaks.length===1?"":"s")+'.'+note+' Rescan this show in ErsatzTV so it sees them.</span>';
+    if(res.path!==p){EP.path=res.path;$("epName").textContent=res.path.split("/").pop();var at=vid.currentTime||0;vid.src="/api/tools/preview?path="+q(res.path);vid.addEventListener("loadedmetadata",function(){seek(at)},{once:true});openFolder(FOLDER).then(function(){var it=document.querySelector('[data-file="'+CSS.escape(res.path)+'"]');if(it)it.classList.add("on")})}
+    else refreshStates()}).catch(function(e){btn.disabled=false;$("saveMsg").innerHTML='<span class="msg bad">✖ '+esc(e.message)+'</span>'})}
+$("saveBtn").onclick=save;
+$("nextBtn").onclick=function(){if(!EP)return;var i=FILES.findIndex(function(f){return f.path===EP.path});var n=FILES[i+1];if(n)openEpisode(n.path);else $("saveMsg").innerHTML='<span class="msg">That was the last episode in this folder.</span>'};
+
+/* ---------- keys ---------- */
+addEventListener("keydown",function(e){if(e.target.tagName==="INPUT"||$("editor").classList.contains("hidden")||!$("autoModal").classList.contains("hidden"))return;
+  var k=e.key;
+  if((e.ctrlKey||e.metaKey)&&k.toLowerCase()==="s"){e.preventDefault();save();return}
+  if(e.ctrlKey||e.metaKey||e.altKey)return;
+  if(k===" "){e.preventDefault();togglePlay()}
+  else if(k==="ArrowRight"){e.preventDefault();step(e.shiftKey?"5":"1")}
+  else if(k==="ArrowLeft"){e.preventDefault();step(e.shiftKey?"-5":"-1")}
+  else if(k==="."){step("f")}else if(k===","){step("-f")}
+  else if(k==="n"||k==="N"){step("cutnext")}else if(k==="p"||k==="P"){step("cutprev")}
+  else if(k==="b"||k==="B"){addHere()}
+  else if((k==="Delete"||k==="Backspace")&&SEL>=0){e.preventDefault();BR.splice(SEL,1);SEL=Math.min(SEL,BR.length-1);setDirty(true);drawTL();drawBreaks()}});
+
+/* ---------- auto-mark a folder (runs on the NAS; this just shows how it's going) ---------- */
+var BT=null,BT_TIMER=null;
+var KINDS=[["good","✅","clean"],["guess","🤔","best guess"],["partial","◐","some breaks"],["none","✋","do by hand"],["error","⚠️","didn't work"],["skip","⏭","skipped"]];
+function left(s){return s<90?"less than 2 minutes left":"about "+human(s)+" left"}
+function human(s){if(s==null)return"";s=Math.round(s);var h=Math.floor(s/3600),m=Math.round(s%3600/60);if(m===60){h++;m=0}
+  return h?(h+" hour"+(h>1?"s":"")+(m?" "+m+" min":"")):(m+" minutes")}
+function showRun(){$("autoForm").classList.add("hidden");$("autoRun").classList.remove("hidden");$("autoModal").classList.remove("hidden")}
+$("autoBtn").onclick=function(){
+  if(BT&&(BT.state==="running"||BT.state==="stopping"||BT.state==="paused"||(BT.state==="stopped"&&BT.can_resume)||(BT.can_apply&&BT.folder===FOLDER))){showRun();pollBatch(true);return}
+  $("autoTitle").textContent="Auto-mark this folder";$("autoWhere").textContent=FOLDER;$("autoForm").classList.remove("hidden");$("autoRun").classList.add("hidden");$("autoModal").classList.remove("hidden")};
+document.querySelectorAll("[data-close]").forEach(function(b){b.onclick=function(){$("autoModal").classList.add("hidden");if(FOLDER)openFolder(FOLDER)}});
+$("batchBanner").onclick=function(){showRun();pollBatch(true)};
+function bpost(u,o){return api(u,o||{}).then(function(s){BT=s;paintBatch(true);pollBatch(true)}).catch(function(e){$("autoMsg").innerHTML='<span class="msg bad">'+esc(e.message)+'</span>'})}
+$("autoGo").onclick=function(){showRun();$("autoMsg").textContent="Starting…";$("autoReport").innerHTML="";$("autoCounts").innerHTML="";
+  bpost("/api/tools/automark",{path:FOLDER,check:$("optCheck").checked,guess:$("optGuess").checked,redo:$("optRedo").checked,backup:$("optBackup").checked})};
+$("autoReal").onclick=function(){if(!confirm("Add the breaks the check found? Your episodes will be updated."))return;bpost("/api/tools/batch/apply",{backup:$("realBackup").checked})};
+$("autoStop").onclick=function(){bpost("/api/tools/batch/stop")};
+$("autoResume").onclick=function(){bpost("/api/tools/batch/resume")};
+$("autoNew").onclick=function(){api("/api/tools/batch/clear",{}).then(function(){BT=null;paintBanner();$("autoBtn").onclick()}).catch(function(e){alert(e.message)})};
+function pollBatch(full){clearTimeout(BT_TIMER);
+  return api("/api/tools/batch"+(full||!$("autoModal").classList.contains("hidden")?"?full=1":"")).then(function(s){BT=s;paintBanner();
+    if(!$("autoModal").classList.contains("hidden"))paintBatch(true);
+    var live=s.state==="running"||s.state==="stopping";
+    BT_TIMER=setTimeout(pollBatch,live?(!$("autoModal").classList.contains("hidden")?2000:10000):30000)}).catch(function(){BT_TIMER=setTimeout(pollBatch,15000)})}
+function paintBanner(){var s=BT,el=$("batchBanner");
+  if(!s||s.state==="none"||s.state==="done"&&!s.total){el.classList.add("hidden");return}
+  var live=s.state==="running"||s.state==="stopping";
+  if(!live&&s.state!=="paused"){el.classList.add("hidden");return}
+  el.classList.remove("hidden");
+  el.innerHTML=(s.state==="paused"?"⏸ Auto-mark paused":"⚡ "+(s.mode==="check"?"Checking":"Auto-marking")+": "+s.pos.toLocaleString()+" of "+s.total.toLocaleString())+
+    '<small>'+(s.state==="paused"?"Tap to see why":(s.eta?left(s.eta).replace(/^./,function(c){return c.toUpperCase()})+" · ":"")+"tap to see how it's going")+'</small>'}
+function paintBatch(){var s=BT;if(!s||s.state==="none")return;
+  var live=s.state==="running"||s.state==="stopping",fin=s.state==="done";
+  $("autoTitle").textContent=s.mode==="check"?"Checking your episodes":"Adding commercial breaks";
+  $("autoWhere").textContent=s.folder||"";
+  $("autoBar").style.width=Math.round((s.progress||0)*100)+"%";
+  var m;
+  if(fin)m=s.mode==="check"?"Checked all "+s.total.toLocaleString()+" episodes. Nothing was changed yet.":"Finished all "+s.total.toLocaleString()+" episodes. Now rescan these shows in ErsatzTV.";
+  else if(live&&s.waiting)m='<span class="msg bad">'+esc(s.message)+'</span>';
+  else if(live)m=s.pos.toLocaleString()+" of "+s.total.toLocaleString()+" done"+(s.eta?", "+left(s.eta):"")+".<br>Now on: <b>"+esc(s.current||"…")+"</b>"+(s.step?" · "+esc(s.step):"")+(s.state==="stopping"?" (stopping after this one)":"")+"<br><small>You can close this page. It keeps going on the NAS.</small>";
+  else m=esc(s.message||"Stopped.")+" ("+s.pos.toLocaleString()+" of "+s.total.toLocaleString()+" done)";
+  $("autoMsg").innerHTML=m;
+  var c=s.counts||{};$("autoCounts").innerHTML=KINDS.filter(function(k){return c[k[0]]}).map(function(k){return"<span>"+k[1]+" "+c[k[0]].toLocaleString()+" "+k[2]+"</span>"}).join("");
+  var h="",needs=s.needs||[];
+  if(needs.length){h+="<h4>Worth a look (click one to open it)</h4>"+needs.map(row).join("")}
+  if(live&&s.recent&&s.recent.length){h+="<h4>Latest</h4>"+s.recent.map(row).join("")}
+  else if(!needs.length&&s.recent&&s.recent.length&&!live){h+="<h4>Latest</h4>"+s.recent.map(row).join("")}
+  $("autoReport").innerHTML=h;
+  $("autoReal").classList.toggle("hidden",!s.can_apply);$("realBackupWrap").classList.toggle("hidden",!s.can_apply);
+  $("autoResume").classList.toggle("hidden",!s.can_resume);
+  $("autoStop").classList.toggle("hidden",s.state!=="running");
+  $("autoDl").classList.toggle("hidden",!s.pos);
+  $("autoNew").classList.toggle("hidden",live)}
+function row(x){var good=x.kind==="good",click=x.path&&x.kind!=="skip";
+  return'<div class="'+(good?"good ":"")+(click?"click":"")+'"'+(click?' data-ep="'+esc(x.path)+'"':"")+'><b title="'+esc(x.name)+'">'+esc(x.name)+'</b><span>'+esc(x.result)+'</span></div>'}
+$("autoReport").addEventListener("click",function(e){var d=e.target.closest("[data-ep]");if(!d)return;var p=d.dataset.ep;
+  $("autoModal").classList.add("hidden");var dir=p.slice(0,p.lastIndexOf("/"));openFolder(dir).then(function(){openEpisode(p)})});
+
+/* ---------- backups of the originals ---------- */
+function gb(n){return n>=1e9?(n/1e9).toFixed(1)+" GB":Math.max(1,Math.round(n/1e6))+" MB"}
+function paintBackups(){api("/api/tools/backups").then(function(b){var el=$("bkInfo");
+  if(!b.count&&!b.moving){el.classList.add("hidden");return}
+  el.classList.remove("hidden");
+  el.innerHTML='<div style="font-weight:700;font-size:13.5px;margin-bottom:4px">🗂 Backups of your originals</div>'+
+    (b.moving?'<div class="note">Moving old backups out of your show folders…</div>':
+    '<div class="note">'+b.count+' episode'+(b.count===1?"":"s")+' · '+gb(b.bytes)+'. They\'re in a hidden <code>.knas-originals</code> folder your media apps skip. Open an episode to put its original back, or delete them all once you\'re happy.</div>'+
+    '<button class="ghost small" type="button" id="bkDel" style="margin-top:8px">Delete all backups</button>');
+  if(b.moving)setTimeout(paintBackups,4000);
+  var d=$("bkDel");if(d)d.onclick=function(){if(!confirm("Delete all "+b.count+" saved originals ("+gb(b.bytes)+")? Your episodes with breaks stay. This can't be undone."))return;
+    api("/api/tools/backups/delete",{}).then(function(){paintBackups()}).catch(function(e){alert(e.message)})}}).catch(function(){})}
+$("restoreBtn").onclick=function(){if(!EP||EP.loading)return;if(!confirm("Put the original file back? The breaks KNAS added to this episode are removed."))return;
+  var p=EP.path;api("/api/tools/restore",{path:p}).then(function(r){setDirty(false);EP=null;openFolder(FOLDER).then(function(){openEpisode(r.path)})}).catch(function(e){$("saveMsg").innerHTML='<span class="msg bad">'+esc(e.message)+'</span>'})};
+
+/* ---------- break plan ---------- */
+function opts(id,list,fmt){$(id).innerHTML=list.map(function(v){return'<option value="'+v+'">'+fmt(v)+'</option>'}).join("")}
+opts("pShort",[0,1,2,3],function(v){return v+" break"+(v===1?"":"s")});opts("pHalf",[1,2,3,4],function(v){return v+" break"+(v===1?"":"s")});
+opts("pHour",[2,3,4,5,6],function(v){return v+" breaks"});opts("pEvery",[10,12,15,20,25,30],function(v){return v+" minutes"});
+function planText(p){return "Right now: "+p.short+" break"+(p.short===1?"":"s")+" in an 11-minute show, "+p.half+" in a half-hour show, "+p.hour+" in an hour show."}
+function openPlan(){var p=(STATUS&&STATUS.plan)||{short:1,half:2,hour:4,every:15,gentle:true,replace_junk:true};
+  $("pShort").value=p.short;$("pHalf").value=p.half;$("pHour").value=p.hour;$("pEvery").value=p.every;$("pGentle").checked=p.gentle;$("pJunk").checked=p.replace_junk;$("planMsg").textContent="";$("planModal").classList.remove("hidden")}
+$("planBtn").onclick=openPlan;$("planBtn2").onclick=openPlan;$("planLink").onclick=function(e){e.preventDefault();openPlan()};
+$("planClose").onclick=function(){$("planModal").classList.add("hidden")};
+$("planSave").onclick=function(){api("/api/tools/plan",{short:+$("pShort").value,half:+$("pHalf").value,hour:+$("pHour").value,every:+$("pEvery").value,gentle:$("pGentle").checked,replace_junk:$("pJunk").checked}).then(function(r){
+  if(STATUS)STATUS.plan=r.plan;$("planLine").textContent=planText(r.plan);$("planModal").classList.add("hidden");
+  if(EP&&!EP.loading&&!DIRTY){var p=EP.path;EP=null;openEpisode(p)}}).catch(function(e){$("planMsg").className="msg bad";$("planMsg").textContent=e.message})};
+
+/* ---------- start ---------- */
+checkStatus().then(function(s){if(s&&s.plan)$("planLine").textContent=planText(s.plan);if(!s||!s.any_root)return;BT=s.batch;paintBanner();pollBatch();var last="";try{last=localStorage.getItem("knas_tools_folder")||""}catch(e){}
+  openFolder(last).catch(function(){openFolder("")});$("welcome").classList.remove("hidden")});
+</script>
+</body>
+</html>

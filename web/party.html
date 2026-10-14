@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KNAS Jukebox</title>
+<style>
+@font-face{font-family:"KNAS Head";src:url(/fonts/classic-800i.woff) format("woff");font-weight:800;font-style:italic;font-display:swap}
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-700.woff) format("woff");font-weight:700;font-display:swap}
+:root{--gold:#ffd23a;--gold2:#ffb000;--edge:#9cb8ff;--navy:#0a1552;--u:min(1vw,1.78vh)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#000}
+body{font:700 calc(var(--u)*2) "KNAS UI","Barlow Condensed","Arial Narrow",Arial,sans-serif;color:#fff;
+  background:linear-gradient(180deg,#0b0b3a 0%,#1b1460 45%,#3a1c5e 75%,#5e1f3a 100%);display:flex;flex-direction:column}
+body:after{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 2px,transparent 2px 4px)}
+.sh{text-shadow:2px 2px 0 #000,0 0 2px #000}
+header{display:flex;align-items:center;gap:calc(var(--u)*1.4);padding:calc(var(--u)*1.4) calc(var(--u)*2.4) calc(var(--u)*.8)}
+.logo{height:calc(var(--u)*5);padding:0 calc(var(--u)*1.4);border-radius:calc(var(--u)*.7);display:flex;align-items:center;gap:calc(var(--u)*.8);
+  font:800 italic calc(var(--u)*3.2) "KNAS Head",Arial,sans-serif;background:linear-gradient(160deg,#5d8bff,#1d3db8 55%,#0b1a66);box-shadow:inset 0 0 0 2px #cfe0ff,2px 2px 0 #000}
+.logo b{background:#e3261b;padding:0 calc(var(--u)*.8);border-radius:3px;font-style:normal;font-size:calc(var(--u)*2.4);letter-spacing:1px}
+#name{flex:1;font:800 italic calc(var(--u)*4) "KNAS Head",Arial,sans-serif;color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#clock{font:800 calc(var(--u)*3.4) "KNAS Head",Arial,sans-serif;font-style:normal}
+main{flex:1;min-height:0;display:flex;gap:calc(var(--u)*2);padding:calc(var(--u)*.6) calc(var(--u)*2.4) calc(var(--u)*1.4)}
+.panel{border-radius:calc(var(--u)*.9);background:linear-gradient(180deg,#2c55c8,#1d3a9e 50%,#112673);box-shadow:inset 0 0 0 3px var(--edge),inset 0 0 0 5px var(--navy),4px 5px 0 rgba(0,0,0,.55)}
+#left{flex:1;min-width:0;display:flex;flex-direction:column;gap:calc(var(--u)*1.2)}
+#screen{position:relative;flex:1;min-height:0;padding:calc(var(--u)*1.1);display:flex;align-items:center;justify-content:center}
+#box{position:relative;height:100%;max-width:100%;aspect-ratio:16/9;background:#000;border-radius:4px;overflow:hidden}
+#box iframe,#yt{position:absolute;inset:0;width:100%;height:100%;border:0}
+#vid{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;display:none}
+#wait{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6%;gap:calc(var(--u)*1.4);background:radial-gradient(circle at 50% 40%,#1d2a7a,#060a2e)}
+#wait b{font:800 italic calc(var(--u)*4) "KNAS Head",Arial,sans-serif;color:var(--gold)}
+#wait span{font-size:calc(var(--u)*2.3);color:#dfe7ff}
+#wait i{width:calc(var(--u)*6);height:calc(var(--u)*6);border-radius:50%;border:calc(var(--u)*.7) solid rgba(255,210,58,.25);border-top-color:var(--gold);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.it em{font-style:normal;color:var(--gold)}
+#idle{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6%;gap:calc(var(--u)*1.4);background:radial-gradient(circle at 50% 40%,#1d2a7a,#060a2e)}
+#idle b{font:800 italic calc(var(--u)*4.4) "KNAS Head",Arial,sans-serif;color:var(--gold)}
+#idle span{font-size:calc(var(--u)*2.4);color:#dfe7ff}
+#idle code{font:700 calc(var(--u)*2.8) "KNAS UI",monospace;color:#fff;background:rgba(0,0,0,.35);padding:calc(var(--u)*.4) calc(var(--u)*1.2);border-radius:6px}
+#nowbar{padding:calc(var(--u)*1.1) calc(var(--u)*1.8);display:flex;align-items:center;gap:calc(var(--u)*1.4);min-height:calc(var(--u)*8)}
+#nowbar .tag{flex:none;font:800 italic calc(var(--u)*2) "KNAS Head",Arial,sans-serif;color:#000;background:var(--gold);padding:calc(var(--u)*.3) calc(var(--u)*1);border-radius:4px}
+#nowT{flex:1;min-width:0}
+#nowT b{display:block;font-size:calc(var(--u)*3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#nowT small{display:block;font-size:calc(var(--u)*2);color:#cfe0ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#right{flex:0 0 30%;min-width:0;padding:calc(var(--u)*1.6);display:flex;flex-direction:column}
+#right h2{font:800 italic calc(var(--u)*3.2) "KNAS Head",Arial,sans-serif;color:var(--gold);margin-bottom:calc(var(--u)*1)}
+#next{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:calc(var(--u)*.9)}
+.it{display:flex;gap:calc(var(--u)*1);align-items:center;background:rgba(0,0,40,.35);border-radius:6px;padding:calc(var(--u)*.6)}
+.it img{width:calc(var(--u)*9);aspect-ratio:16/9;object-fit:cover;border-radius:3px;flex:none;background:#000}
+.it div{min-width:0;flex:1}
+.it b{display:block;font-size:calc(var(--u)*1.9);line-height:1.15;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.it small{display:block;font-size:calc(var(--u)*1.6);color:#cfe0ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.it i{font:800 italic calc(var(--u)*2.4) "KNAS Head",Arial,sans-serif;color:var(--gold);min-width:calc(var(--u)*2.6);text-align:center;font-style:italic}
+#empty{color:#cfe0ff;font-size:calc(var(--u)*2)}
+#more{color:#cfe0ff;font-size:calc(var(--u)*1.8);margin-top:calc(var(--u)*.8)}
+#add{margin-top:calc(var(--u)*1.2);font-size:calc(var(--u)*1.8);color:#dfe7ff;border-top:2px solid rgba(156,184,255,.35);padding-top:calc(var(--u)*1.1);display:flex;flex-direction:column;gap:calc(var(--u)*1)}
+#add .row{display:flex;gap:calc(var(--u)*1.2);align-items:center}
+.qr{flex:none;width:calc(var(--u)*11);height:calc(var(--u)*11);background:#fff;border-radius:6px;padding:3px;box-shadow:2px 2px 0 rgba(0,0,0,.5)}
+.qr img{width:100%;height:100%;display:block;image-rendering:pixelated}
+#add b{display:block;color:var(--gold);font:800 italic calc(var(--u)*2.4) "KNAS Head",Arial,sans-serif}
+#add .wifi{display:none}
+#add .wifi .qr{width:calc(var(--u)*7);height:calc(var(--u)*7)}
+#idle .qrs{display:flex;gap:calc(var(--u)*4);align-items:flex-start;justify-content:center}
+#idle .qrs div{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*.8);font-size:calc(var(--u)*2.1);color:#dfe7ff}
+#idle .qr{width:calc(var(--u)*15);height:calc(var(--u)*15)}
+#idle{gap:calc(var(--u)*1.1)!important}
+#add code{display:block;font:700 calc(var(--u)*2.1) "KNAS UI",monospace;color:#fff;margin-top:calc(var(--u)*.3);overflow-wrap:break-word}
+#sound{position:absolute;right:calc(var(--u)*1.6);top:calc(var(--u)*1.6);display:none;z-index:3;font-size:calc(var(--u)*2.2);background:rgba(0,0,0,.7);padding:calc(var(--u)*.5) calc(var(--u)*1.2);border-radius:6px;color:var(--gold)}
+#note{position:absolute;left:50%;bottom:calc(var(--u)*2);transform:translateX(-50%);display:none;z-index:3;max-width:90%;font-size:calc(var(--u)*2);background:rgba(0,0,0,.8);padding:calc(var(--u)*.6) calc(var(--u)*1.4);border-radius:6px;text-align:center}
+@media (max-aspect-ratio:1/1){main{flex-direction:column}#left{flex:0 0 auto}#right{flex:1 1 auto}#screen{flex:0 0 auto}#box{height:auto;width:100%}:root{--u:min(1.6vw,1vh)}}
+</style>
+</head>
+<body>
+<header><div class="logo sh">KNAS<b>TV</b></div><div id="name" class="sh">KNAS Jukebox</div><div id="clock" class="sh"></div></header>
+<main>
+  <div id="left">
+    <div id="screen" class="panel"><div id="box"><div id="yt"></div><video id="vid" playsinline preload="auto"></video>
+      <div id="wait"><i></i><b class="sh">Getting it ready…</b><span id="waitT">The NAS is downloading this video. It only takes a moment.</span></div>
+      <div id="idle"><b class="sh">🎵 Nothing playing</b><span>Scan with your phone camera to add songs</span>
+        <div class="qrs"><div><span class="qr"><img class="qrJoin" alt=""></span><code class="addUrl"></code></div><div class="wifiBox" style="display:none"><span class="qr"><img class="qrWifi" alt=""></span><span class="wifiName"></span></div></div>
+        <span id="idleHint">Search for any song, or paste a YouTube link.</span></div>
+      <div id="sound">🔇 Press any button for sound</div><div id="note"></div></div></div>
+    <div id="nowbar" class="panel"><span class="tag">NOW</span><div id="nowT"><b class="sh">—</b><small></small></div></div>
+  </div>
+  <div id="right" class="panel">
+    <h2 class="sh">Up next</h2>
+    <div id="next"></div><div id="empty" class="hidden"></div><div id="more"></div>
+    <div id="add"><div class="row"><span class="qr"><img class="qrJoin" alt=""></span><div><b class="sh">Add a song!</b>Scan with your phone camera, or go to<code class="addUrl"></code></div></div>
+      <div class="row wifi"><span class="qr"><img class="qrWifi" alt=""></span><div>Not on the Wi-Fi? Scan to join <span class="wifiName" style="color:var(--gold)"></span></div></div></div>
+  </div>
+</main>
+<script>
+(function(){
+"use strict";
+var $=function(i){return document.getElementById(i)},P=null,READY=false,CUR=null,ST=null,VOL=1,MUTED=false,forcedMute=false,unstartedT=0,noteT=0,MODE="",V=$("vid");
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function post(u,b){return fetch(u,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b||{})}).then(function(r){return r.json()})}
+function tellTV(o){try{if(window.parent!==window)window.parent.postMessage(o,location.origin)}catch(e){}}
+function clock(){var d=new Date();$("clock").textContent=d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}
+clock();setInterval(clock,5000);
+function note(t){var n=$("note");n.textContent=t;n.style.display="block";clearTimeout(noteT);noteT=setTimeout(function(){n.style.display="none"},6000)}
+
+function paint(){var s=ST||{};
+  $("name").textContent=s.name||"KNAS Jukebox";
+  var join=s.join||location.origin+"/j";
+  [].forEach.call(document.querySelectorAll(".addUrl"),function(c){c.innerHTML=esc(join.replace(/^https?:\/\//,"")).replace(/\//g,"/<wbr>")});
+  var jq="/qr.svg?t="+encodeURIComponent(join);[].forEach.call(document.querySelectorAll(".qrJoin"),function(i){if(i.getAttribute("src")!==jq)i.src=jq});
+  var w=s.wifi;[].forEach.call(document.querySelectorAll(".qrWifi"),function(i){var u=w?"/qr.svg?t="+encodeURIComponent(w.qr):"";if(u&&i.getAttribute("src")!==u)i.src=u});
+  [].forEach.call(document.querySelectorAll(".wifiName"),function(x){x.textContent=w?w.name:""});
+  [].forEach.call(document.querySelectorAll(".wifi,.wifiBox"),function(x){x.style.display=w?"flex":"none"});
+  var n=s.now;$("idle").style.display=n?"none":"flex";
+  $("nowT").querySelector("b").textContent=n?n.title:"Nothing playing";
+  $("nowbar").querySelector(".tag").textContent=n&&n.karaoke?"🎤 SING!":"NOW";
+  $("nowT").querySelector("small").textContent=n?((n.by||"")+(n.shuffled?" · shuffle":"")):"Add a video from your phone";
+  var q=s.queue||[],show=q.slice(0,6);
+  $("next").innerHTML=show.map(function(x,i){var tag=(x.karaoke?" <em>🎤</em>":"")+(x.ready?" <em>✓</em>":(x.dl==="getting"?" <em>⬇</em>":""));
+    return'<div class="it"><i>'+(i+1)+'</i><img alt="" onerror="this.style.visibility=\'hidden\'" src="https://i.ytimg.com/vi/'+esc(x.id)+'/mqdefault.jpg"><div><b>'+esc(x.title)+'</b><small>'+esc(x.by)+tag+'</small></div></div>'}).join("");
+  $("empty").classList.toggle("hidden",q.length>0);$("empty").style.display=q.length?"none":"block";
+  $("empty").textContent=s.shuffle&&s.can_shuffle?"The list is empty, so it's shuffling videos you've played.":"The list is empty.";
+  $("more").textContent=q.length>show.length?"+ "+(q.length-show.length)+" more":"";
+  var d=s.downloads||{};$("waitT").textContent=d.tools==="installing"?"Setting up the video downloader. This only happens the first time.":"The NAS is downloading this video. It only takes a moment.";
+  tellTV({knas:"party-now",title:n?n.title:""})}
+
+/* three ways a video plays: the NAS's downloaded copy (file), YouTube's own player (embed), or waiting for the download */
+function show(mode){MODE=mode;
+  $("wait").style.display=mode==="wait"?"flex":"none";
+  V.style.display=mode==="file"?"block":"none";
+  var f=document.querySelector("#box iframe");if(f)f.style.visibility=mode==="embed"?"visible":"hidden";
+  if(mode!=="file"&&V.getAttribute("src")){V.pause();V.removeAttribute("src");try{V.load()}catch(e){}}
+  if(mode!=="embed"&&READY)try{P.stopVideo()}catch(e){}}
+function sync(){fetch("/api/party",{cache:"no-store"}).then(function(r){return r.json()}).then(function(s){
+    if(!s||!s.ok){return}
+    var was=ST&&ST.note;ST=s;paint();if(s.note&&s.note!==was)note(s.note);
+    var n=s.now,mode=n?(n.mode||"embed"):"";
+    if(mode==="embed"&&!READY)return;            /* YouTube's player is still loading; onReady syncs again */
+    var want=n?n.id+"|"+n.added+"|"+mode:null;
+    if(want===CUR)return;CUR=want;
+    if(!n){show("");return}
+    var at=s.elapsed>4?Math.floor(s.elapsed):0;
+    if(mode==="wait"){show("wait");return}
+    if(mode==="file"){show("file");V.src=n.file;
+      V.onloadedmetadata=function(){if(at&&at>=V.duration-2&&ST&&ST.now){post("/api/party/ended",{id:ST.now.id}).then(function(s){ST=s;sync()});return}   /* it finished while nobody was watching */
+        if(at&&at<V.duration-2)try{V.currentTime=at}catch(e){}if(ST&&ST.now&&V.duration>5)post("/api/party/title",{id:ST.now.id,secs:V.duration})};
+      applyVol();playFile();return}
+    show("embed");P.loadVideoById({videoId:n.id,startSeconds:at});applyVol();unstartedT=Date.now()
+  }).catch(function(){})}
+function playFile(){var p=V.play();if(p&&p.catch)p.catch(function(){if(!forcedMute){forcedMute=true;$("sound").style.display="block";applyVol();V.play().catch(function(){})}})}
+V.addEventListener("ended",function(){if(ST&&ST.now&&MODE==="file")post("/api/party/ended",{id:ST.now.id}).then(function(s){ST=s;sync()})});
+/* this TV can't play the NAS's copy (an old browser, say): use YouTube's player here instead, if YouTube allows it */
+V.addEventListener("error",function(){if(!ST||!ST.now||MODE!=="file"||!V.getAttribute("src"))return;var n=ST.now;
+  if(!n.blocked&&READY){var at=Math.floor(V.currentTime||ST.elapsed||0);show("embed");P.loadVideoById({videoId:n.id,startSeconds:at>4?at:0});applyVol();unstartedT=Date.now();return}
+  post("/api/party/failed",{id:n.id,code:"file"}).then(function(){sync()})});
+
+function applyVol(){try{V.volume=VOL;V.muted=MUTED||forcedMute}catch(e){}
+  if(!P||!READY)return;try{P.setVolume(Math.round(VOL*100));if(MUTED||forcedMute)P.mute();else P.unMute()}catch(e){}}
+function unmute(){if(forcedMute){forcedMute=false;$("sound").style.display="none";applyVol();if(MODE==="file")V.play().catch(function(){});else try{P.playVideo()}catch(e){}}}
+addEventListener("message",function(e){if(e.origin!==location.origin||!e.data||!e.data.knas)return;var d=e.data;
+  if(d.knas==="vol"){VOL=Math.max(0,Math.min(1,+d.v));MUTED=!!d.muted;applyVol()}
+  else if(d.knas==="unmute")unmute()});
+document.addEventListener("click",unmute);document.addEventListener("keydown",unmute);
+
+/* some TVs' browsers get "error 153" from the privacy-mode player; then KNAS switches to the regular one once */
+var HOST="https://www.youtube-nocookie.com",RETRIED={};
+function makePlayer(){
+  P=new YT.Player("yt",{width:"100%",height:"100%",host:HOST,
+    playerVars:{autoplay:1,controls:0,rel:0,modestbranding:1,playsinline:1,iv_load_policy:3,fs:0,disablekb:1,origin:location.origin},
+    events:{onReady:function(){READY=true;CUR=null;var f=document.querySelector("#box iframe");if(f)f.style.visibility=MODE==="embed"?"visible":"hidden";sync()},
+      onStateChange:function(e){if(MODE!=="embed")return;
+        if(e.data===YT.PlayerState.ENDED&&ST&&ST.now){post("/api/party/ended",{id:ST.now.id}).then(function(s){ST=s;sync()})}
+        if(e.data===YT.PlayerState.PLAYING){unstartedT=0;try{var du=P.getDuration();if(du>5&&ST&&ST.now)post("/api/party/title",{id:ST.now.id,secs:du})}catch(x){}
+          if(ST&&ST.now&&ST.now.title==="YouTube video"){var v={};try{v=P.getVideoData()||{}}catch(x){}if(v.title&&v.video_id===ST.now.id)post("/api/party/title",{id:ST.now.id,title:v.title,by:v.author||""}).then(sync)}}},
+      onError:function(e){if(!ST||!ST.now||MODE!=="embed")return;var id=ST.now.id;
+        if((e.data===152||e.data===153)&&HOST.indexOf("nocookie")>0){HOST="https://www.youtube.com";READY=false;CUR=null;
+          try{P.destroy()}catch(x){}var d=document.createElement("div");d.id="yt";$("box").insertBefore(d,$("box").firstChild);makePlayer();return}
+        if((e.data===5||e.data===2)&&!RETRIED[id]){RETRIED[id]=1;CUR=null;setTimeout(sync,1500);return}   /* one more try for a hiccup */
+        post("/api/party/failed",{id:id,code:e.data}).then(function(){CUR=null;sync()})}}})}
+window.onYouTubeIframeAPIReady=makePlayer;
+
+/* autoplay with sound can be blocked until someone presses a button: play muted and say so */
+setInterval(function(){if(MODE!=="embed"||!READY||!CUR||!unstartedT)return;var st=-1;try{st=P.getPlayerState()}catch(e){}
+  var waited=Date.now()-unstartedT;
+  if(st!==1&&st!==3&&waited>3500&&!forcedMute){forcedMute=true;$("sound").style.display="block";applyVol();try{P.playVideo()}catch(e){}}
+  /* never skip a video just for being slow: an ad may be playing, or the TV's connection is slow */},1000);
+
+var s=document.createElement("script");s.src="https://www.youtube.com/iframe_api";
+s.onerror=function(){$("idleHint").textContent="Can't reach YouTube from this TV, so only videos the NAS downloaded can play."};
+document.head.appendChild(s);
+sync();setInterval(function(){if(!document.hidden)sync()},3000);
+})();
+</script>
+</body>
+</html>
