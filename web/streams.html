@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#090c2b">
+<title>KNAS Stream</title>
+<link rel="icon" href="/remote-icon-192.png">
+<link rel="apple-touch-icon" href="/remote-icon-180.png">
+<style>
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-600.woff) format("woff");font-weight:600;font-display:swap}
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-700.woff) format("woff");font-weight:700;font-display:swap}
+@font-face{font-family:"KNAS Head";src:url(/fonts/classic-800i.woff) format("woff");font-weight:800;font-style:italic;font-display:swap}
+:root{--bg:#090c2b;--card:#131b4f;--card2:#18225e;--line:rgba(156,184,255,.18);--line2:rgba(156,184,255,.35);--text:#eef2ff;--muted:#a3b0dd;
+  --gold:#ffd23a;--gold2:#ffb000;--ink:#1a1300;--red:#e3261b;--ok:#7dff9e;--head:"KNAS Head","Arial Narrow",Arial,sans-serif;--ui:"KNAS UI","Segoe UI",Roboto,Arial,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{font:600 15px/1.4 var(--ui);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;
+  background:radial-gradient(900px 500px at 80% -10%,rgba(90,47,134,.5),transparent 60%),var(--bg) fixed;
+  padding:max(12px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom))}
+.hidden{display:none!important}
+.wrap{max-width:460px;margin:0 auto}
+header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+header a{color:var(--muted);text-decoration:none;font-size:22px;padding:4px}
+header h1{font:800 italic 24px var(--head);color:var(--gold);flex:1}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.card h2{font:800 italic 19px var(--head);color:var(--gold);margin-bottom:8px}
+.note{color:var(--muted);font-size:13px}
+.row{display:flex;gap:8px}
+input{flex:1;min-width:0;font:600 15px var(--ui);color:var(--text);background:var(--bg);border:1px solid var(--line2);border-radius:10px;padding:11px 12px}
+.btn{font:700 14.5px var(--ui);color:var(--text);background:rgba(255,255,255,.06);border:1px solid var(--line2);border-radius:10px;padding:10px 13px;white-space:nowrap}
+.btn.gold{background:linear-gradient(180deg,#ffe680,var(--gold) 50%,var(--gold2));color:var(--ink);border-color:transparent}
+.btn.red{background:var(--red);border-color:transparent;color:#fff}
+.now{display:flex;gap:12px;align-items:center}
+.now .dot{width:12px;height:12px;border-radius:50%;background:var(--red);flex:none;animation:b 1s steps(2) infinite}
+.now.idle .dot{background:#555;animation:none}
+@keyframes b{50%{opacity:.25}}
+.now b{display:block;font-size:16px}.now small{display:block;color:var(--muted);font-size:12.5px;word-break:break-all}
+.msg{margin-top:8px;font-size:13.5px}.msg.err{color:#ff8a80}.msg.ok{color:var(--ok)}
+.fav{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.fav:first-child{border-top:0}
+.fav span{flex:1;min-width:0;cursor:pointer}.fav span b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fav span small{display:block;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fav button{background:none;border:0;color:var(--muted);font-size:18px;padding:4px 6px}
+ul{margin:6px 0 0 18px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><a href="/remote" aria-label="Back to the remote">‹</a><h1>📡 Stream</h1></header>
+  <div class="card hidden" id="offBox"><h2 id="offT">The Stream channel is off</h2><div class="note" id="offN">Give the Stream channel a number on the setup page (Experimental → Phone extras).</div></div>
+  <div id="ui" class="hidden">
+    <div class="card">
+      <div class="now idle" id="now"><div class="dot"></div><div style="flex:1;min-width:0"><b id="nT">Nothing streaming</b><small id="nS">Paste a link below.</small></div></div>
+      <div class="msg" id="msg"></div>
+      <div class="row" style="margin-top:10px" id="nowBtns"><button class="btn" id="tuneBtn" type="button">📺 Put it on the TVs</button><button class="btn" id="saveBtn" type="button">⭐ Save</button><button class="btn red" id="stopBtn" type="button">■ Stop</button></div>
+    </div>
+    <div class="card">
+      <h2>Play a stream</h2>
+      <div class="row"><input id="url" type="url" inputmode="url" placeholder="Paste a link (YouTube, Twitch…)" autocomplete="off"><button class="btn gold" id="playBtn" type="button">▶ Play</button></div>
+      <ul><li>YouTube live streams, Twitch, news and TV station sites, or a direct .m3u8 link.</li><li>Paid apps (Netflix, Hulu, ESPN+…) lock their video, so they can't play here.</li></ul>
+    </div>
+    <div class="card"><h2>Saved streams</h2><div id="favs"><div class="note">Streams you save show up here for one-tap playing.</div></div></div>
+  </div>
+</div>
+<script>
+"use strict";
+var $=function(id){return document.getElementById(id)};
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function post(u,o){return fetch(u,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(o||{})}).then(function(r){return r.json()})}
+var ST={};
+function msg(t,cls){$("msg").textContent=t||"";$("msg").className="msg"+(cls?" "+cls:"")}
+function paint(s){ST=s;var on=!!s.url;$("now").classList.toggle("idle",!on||!s.ready);$("nowBtns").classList.toggle("hidden",!on);
+  $("nT").textContent=on?(s.title||"Live stream"):"Nothing streaming";$("nS").textContent=on?((s.by?s.by+" · ":"")+s.url):"Paste a link below.";
+  if(s.resolving)msg("Finding the stream…");else if(s.error)msg(s.error,"err");else if(on&&s.ready)msg((s.live?"Live on channel ":"Playing on channel ")+s.channel+".","ok");else msg("");
+  var f=s.favs||[];$("favs").innerHTML=f.length?f.slice().reverse().map(function(x){return'<div class="fav"><span data-play="'+esc(x.url)+'"><b>'+esc(x.title)+'</b><small>'+esc(x.url)+'</small></span><button type="button" data-rm="'+esc(x.url)+'" aria-label="Remove">✕</button></div>'}).join(""):'<div class="note">Streams you save show up here for one-tap playing.</div>'}
+function refresh(){return fetch("/api/stream",{cache:"no-store"}).then(function(r){if(r.status===403)throw"home";return r.json()}).then(function(s){paint(s);return s})}
+function play(u,title){msg("Finding the stream…");post("/api/stream/play",{url:u,title:title||""}).then(function(s){if(s.ok===false){msg(s.message,"err");return}paint(s);watch()}).catch(function(){msg("Couldn't reach KNAS","err")})}
+var watchT=0;function watch(){clearTimeout(watchT);var n=0;(function go(){refresh().then(function(s){if(s.resolving&&++n<60)watchT=setTimeout(go,1500)}).catch(function(){})})()}
+$("playBtn").onclick=function(){var u=$("url").value.trim();if(!u){msg("Paste a link first.","err");return}play(u);$("url").value=""};
+$("url").addEventListener("keydown",function(e){if(e.key==="Enter")$("playBtn").click()});
+$("stopBtn").onclick=function(){post("/api/stream/stop").then(paint)};
+$("saveBtn").onclick=function(){var t=prompt("Name this stream:",ST.title||"");if(t==null)return;post("/api/stream/fav",{url:ST.url,title:t}).then(function(s){if(s.ok===false)msg(s.message,"err");else{paint(s);msg("Saved.","ok")}})};
+$("tuneBtn").onclick=function(){post("/api/stream/tune").then(function(j){msg(j.message||"",j.ok?"ok":"err")})};
+$("favs").onclick=function(e){var p=e.target.closest("[data-play]"),r=e.target.closest("[data-rm]");
+  if(p)play(p.dataset.play,p.querySelector("b").textContent);
+  if(r&&confirm("Remove this saved stream?"))post("/api/stream/fav",{remove:r.dataset.rm}).then(paint)};
+refresh().then(function(s){if(!s.on){$("offBox").classList.remove("hidden");return}$("ui").classList.remove("hidden");if(s.resolving)watch();setInterval(function(){if(!document.hidden)refresh()},5000)})
+  .catch(function(e){$("offBox").classList.remove("hidden");if(e==="home"){$("offT").textContent="Home network only";$("offN").textContent="This only works on the same Wi-Fi as KNAS."}});
+</script>
+</body>
+</html>

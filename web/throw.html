@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#090c2b">
+<title>Throw it to the TV</title>
+<link rel="icon" href="/remote-icon-192.png">
+<link rel="apple-touch-icon" href="/remote-icon-180.png">
+<style>
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-600.woff) format("woff");font-weight:600;font-display:swap}
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-700.woff) format("woff");font-weight:700;font-display:swap}
+@font-face{font-family:"KNAS Head";src:url(/fonts/classic-800i.woff) format("woff");font-weight:800;font-style:italic;font-display:swap}
+:root{--bg:#090c2b;--card:#131b4f;--card2:#18225e;--line:rgba(156,184,255,.18);--line2:rgba(156,184,255,.35);--text:#eef2ff;--muted:#a3b0dd;
+  --gold:#ffd23a;--gold2:#ffb000;--ink:#1a1300;--red:#e3261b;--ok:#7dff9e;--head:"KNAS Head","Arial Narrow",Arial,sans-serif;--ui:"KNAS UI","Segoe UI",Roboto,Arial,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{font:600 15px/1.4 var(--ui);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+  background:radial-gradient(900px 500px at 80% -10%,rgba(90,47,134,.5),transparent 60%),var(--bg) fixed;
+  padding:max(12px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom))}
+.hidden{display:none!important}
+.wrap{max-width:440px;margin:0 auto}
+header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+header a{color:var(--muted);text-decoration:none;font-size:22px;padding:4px}
+header h1{font:800 italic 24px var(--head);color:var(--gold);flex:1}
+.tvs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none}
+.tvs::-webkit-scrollbar{display:none}
+.tvs button{flex:none;font:700 13.5px var(--ui);color:var(--text);background:rgba(255,255,255,.06);border:1px solid var(--line2);border-radius:999px;padding:6px 12px;cursor:pointer}
+.tvs button.on{background:linear-gradient(180deg,#ffe680,var(--gold) 50%,var(--gold2));color:var(--ink);border-color:transparent}
+.pick{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:300px;border:2px dashed var(--line2);border-radius:18px;background:rgba(255,255,255,.03);cursor:pointer;text-align:center;padding:20px}
+.pick b{font:800 italic 26px var(--head);color:var(--gold)}
+.pick .big{font-size:56px;line-height:1}
+.note{color:var(--muted);font-size:13.5px}
+.stage{position:relative;height:min(62vh,460px);display:flex;align-items:flex-end;justify-content:center;touch-action:none}
+.card{position:relative;width:100%;max-height:100%;border-radius:16px;overflow:hidden;background:#000;box-shadow:0 0 0 2px var(--line2),0 14px 40px rgba(0,0,0,.5);will-change:transform}
+.card img,.card video{pointer-events:none;-webkit-user-drag:none;user-select:none;-webkit-user-select:none;display:block;width:100%;max-height:min(52vh,400px);object-fit:contain;background:#000}
+.card .bar{position:absolute;left:0;bottom:0;height:5px;background:var(--gold);width:0;transition:width .2s}
+.arrow{position:absolute;left:0;right:0;top:4px;text-align:center;font:800 italic 22px var(--head);color:var(--gold);animation:bob 1.4s ease-in-out infinite;pointer-events:none}
+@keyframes bob{50%{transform:translateY(-8px)}}
+.status{text-align:center;margin:12px 0 10px;min-height:22px}
+.row{display:flex;gap:10px}
+.btn{flex:1;font:700 15px var(--ui);color:var(--text);background:rgba(255,255,255,.06);border:1px solid var(--line2);border-radius:12px;padding:13px;cursor:pointer}
+.btn.gold{background:linear-gradient(180deg,#ffe680,var(--gold) 50%,var(--gold2));color:var(--ink);border-color:transparent;box-shadow:0 3px 0 #8a6200}
+.btn:disabled{opacity:.45}
+.opts{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.opts label{color:var(--muted);font-size:13px}
+.opts input,.opts select{font:600 14px var(--ui);color:var(--text);background:var(--card);border:1px solid var(--line2);border-radius:8px;padding:7px 9px}
+.opts input{flex:1;min-width:120px}
+.off{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.off h2{font:800 italic 20px var(--head);color:var(--gold);margin-bottom:6px}
+@keyframes away{to{transform:translateY(-120vh) rotate(-8deg) scale(.6);opacity:.2}}
+.card.away{animation:away .45s cubic-bezier(.5,0,.9,.4) forwards}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><a href="/remote" aria-label="Back to the remote">‹</a><h1>Throw it to the TV</h1></header>
+  <div class="off hidden" id="offBox"><h2 id="offT">It's off</h2><div class="note" id="offN">Turn on “Throw it to the TV” on the setup page (Experimental).</div></div>
+  <div id="ui" class="hidden">
+    <div class="tvs" id="tvs"></div>
+    <label class="pick" id="pick"><input type="file" id="file" accept="image/*,video/*" class="hidden"><span class="big">📤</span><b>Pick a photo or video</b><span class="note">Then flick it up to throw it onto the TV.</span></label>
+    <div id="have" class="hidden">
+      <div class="stage" id="stage"><div class="arrow" id="arrow">⬆ FLICK IT UP ⬆</div><div class="card" id="card"><div id="media"></div><div class="bar" id="bar"></div></div></div>
+      <div class="status" id="status"></div>
+      <div class="row"><button class="btn" id="again" type="button">Pick another</button><button class="btn gold" id="go" type="button">Throw it ⤴</button></div>
+      <div class="row" style="margin-top:10px"><button class="btn hidden" id="down" type="button">✋ Take it off the TV</button></div>
+    </div>
+    <div class="opts"><label for="from">From</label><input id="from" maxlength="24" placeholder="Your name (shown on the TV)">
+      <label for="secs">Photos stay</label><select id="secs"><option value="15">15 sec</option><option value="30" selected>30 sec</option><option value="60">1 min</option><option value="300">5 min</option></select></div>
+  </div>
+</div>
+<script>
+"use strict";
+var $=function(id){return document.getElementById(id)};
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function post(u,o){return fetch(u,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(o)}).then(function(r){return r.json()})}
+var LS={get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+var TVS=[],SEL=LS.get("knas_throw_tv")||"all",ITEM=null,UP=null,PENDING=false,THROWN=false;
+$("from").value=LS.get("knas_throw_from")||"";$("from").oninput=function(){LS.set("knas_throw_from",this.value)};
+$("secs").value=LS.get("knas_throw_secs")||"30";$("secs").onchange=function(){LS.set("knas_throw_secs",this.value)};
+function say(t){$("status").innerHTML=t}
+function tvsNow(){fetch("/api/remote/tvs",{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){TVS=(j.tvs||[]).filter(function(t){return t.on});
+  if(SEL!=="all"&&!TVS.some(function(t){return t.id===SEL}))SEL="all";
+  $("tvs").innerHTML=(TVS.length>1?'<button type="button" data-tv="all" class="'+(SEL==="all"?"on":"")+'">📺 Every TV</button>':"")+
+    TVS.map(function(t){return'<button type="button" data-tv="'+esc(t.id)+'" class="'+(SEL===t.id||TVS.length===1?"on":"")+'">'+esc(t.name)+'</button>'}).join("");
+  if(!TVS.length)$("tvs").innerHTML='<span class="note">No TVs are on right now. Open the cable box on a TV.</span>'}).catch(function(){})}
+$("tvs").onclick=function(e){var b=e.target.closest("[data-tv]");if(!b)return;SEL=b.dataset.tv;LS.set("knas_throw_tv",SEL);tvsNow()};
+function targets(){return SEL==="all"||TVS.length===1?"all":[SEL]}
+
+/* ---------- picking and sending ---------- */
+function shrink(file){return new Promise(function(ok,bad){
+  if(file.type==="image/gif"){ok({blob:file,type:"image/gif"});return}
+  var img=new Image(),u=URL.createObjectURL(file);
+  img.onload=function(){var m=1920,w=img.naturalWidth,h=img.naturalHeight,s=Math.min(1,m/Math.max(w,h));
+    var c=document.createElement("canvas");c.width=Math.round(w*s);c.height=Math.round(h*s);c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);
+    c.toBlob(function(b){b?ok({blob:b,type:"image/jpeg"}):bad()},"image/jpeg",.88)};
+  img.onerror=function(){URL.revokeObjectURL(u);bad()};img.src=u})}
+function send(blob,kind,type,name){return new Promise(function(ok,bad){var x=new XMLHttpRequest();
+  x.open("POST","/api/throw/upload?kind="+kind+"&type="+encodeURIComponent(type)+"&name="+encodeURIComponent(name||"")+"&from="+encodeURIComponent($("from").value));
+  x.upload.onprogress=function(e){if(e.lengthComputable)$("bar").style.width=(e.loaded/e.total*100).toFixed(1)+"%"};
+  x.onload=function(){try{var j=JSON.parse(x.responseText);j.ok?ok(j):bad(j.message||"Couldn't send it")}catch(e){bad("Couldn't send it")}};
+  x.onerror=function(){bad("Couldn't reach KNAS")};x.send(blob)})}
+$("file").onchange=function(){var f=this.files&&this.files[0];this.value="";if(!f)return;
+  var video=/^video\//.test(f.type)||/\.(mov|mp4|m4v|webm|3gp|mkv)$/i.test(f.name);ITEM=null;THROWN=false;PENDING=false;
+  $("pick").classList.add("hidden");$("have").classList.remove("hidden");$("down").classList.add("hidden");$("card").className="card";$("card").style.transform="";$("arrow").classList.remove("hidden");
+  $("bar").style.width="0";var url=URL.createObjectURL(f);
+  $("media").innerHTML=video?'<video src="'+url+'" muted playsinline autoplay loop></video>':'<img src="'+url+'" alt="" draggable="false">';
+  say(video?"Sending the video to KNAS…":"Getting it ready…");$("go").disabled=false;
+  UP=(video?Promise.resolve({blob:f,type:f.type||"video/mp4"}):shrink(f)).then(function(s){return send(s.blob,video?"video":"image",s.type,f.name)})
+    .then(function(j){ITEM=j;$("bar").style.width="100%";if(!THROWN)say(video&&!j.ready?"Almost ready…":"Ready. Flick it up! ⬆");if(PENDING)fire();return j})
+    .catch(function(m){say("⚠ "+esc(typeof m==="string"?m:"Couldn't open that one. Try a different photo."));$("go").disabled=true;throw m});
+  UP.catch(function(){})};
+$("again").onclick=function(){$("file").click()};
+function fire(){if(!ITEM){PENDING=true;say("Throwing as soon as it's sent…");return}PENDING=false;
+  post("/api/throw/show",{id:ITEM.id,tvs:targets(),secs:+$("secs").value,from:$("from").value}).then(function(j){
+    if(j.wait){say(esc(j.message||"Still getting it ready…"));setTimeout(fire,1500);return}
+    if(!j.ok){say("⚠ "+esc(j.message||"Couldn't throw it"));back();return}
+    say("💥 It's on "+(j.tvs>1?j.tvs+" TVs":"the TV")+"!");$("down").classList.remove("hidden")}).catch(function(){say("⚠ Couldn't reach KNAS");back()})}
+function throwIt(){if(THROWN||$("go").disabled)return;THROWN=true;if(navigator.vibrate)try{navigator.vibrate([10,30,25])}catch(e){}
+  $("card").style.transform="";$("card").classList.add("away");$("arrow").classList.add("hidden");fire()}
+function back(){THROWN=false;$("card").classList.remove("away");$("card").style.transform="";$("arrow").classList.remove("hidden")}
+$("go").onclick=throwIt;
+$("down").onclick=function(){post("/api/throw/clear",{tvs:targets()}).then(function(){say("Taken off the TV.");$("down").classList.add("hidden")})};
+
+/* ---------- the flick ---------- */
+(function(){var y0=0,t0=0,dy=0,on=false,last=[];
+  $("stage").addEventListener("pointerdown",function(e){if(THROWN||$("go").disabled)return;on=true;y0=e.clientY;t0=performance.now();dy=0;last=[[t0,y0]];$("card").style.transition="none";try{$("stage").setPointerCapture(e.pointerId)}catch(er){}});
+  $("stage").addEventListener("pointermove",function(e){if(!on)return;dy=Math.min(40,e.clientY-y0);var n=performance.now();last.push([n,e.clientY]);if(last.length>6)last.shift();
+    $("card").style.transform="translateY("+dy+"px) rotate("+(dy/40)+"deg) scale("+(1+Math.min(0,dy)/-1600)+")"});
+  function end(){if(!on)return;on=false;var a=last[0],b=last[last.length-1],v=(b[1]-a[1])/Math.max(1,b[0]-a[0]);
+    $("card").style.transition="transform .25s";if(dy<-110||(v<-.6&&dy<-30))throwIt();else $("card").style.transform=""}
+  $("stage").addEventListener("pointerup",end);$("stage").addEventListener("pointercancel",end)})();
+
+fetch("/api/throw",{cache:"no-store"}).then(function(r){if(r.status===403)throw"home";return r.json()}).then(function(j){
+  if(!j.on){$("offBox").classList.remove("hidden");return}$("ui").classList.remove("hidden");tvsNow();setInterval(tvsNow,5000)})
+  .catch(function(e){$("offBox").classList.remove("hidden");if(e==="home"){$("offT").textContent="Home network only";$("offN").textContent="This only works on the same Wi-Fi as KNAS (or over Tailscale)."}});
+</script>
+</body>
+</html>

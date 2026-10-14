@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#090c2b">
+<title>Flick Games</title>
+<link rel="icon" href="/remote-icon-192.png">
+<link rel="apple-touch-icon" href="/remote-icon-180.png">
+<style>
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-600.woff) format("woff");font-weight:600;font-display:swap}
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-700.woff) format("woff");font-weight:700;font-display:swap}
+@font-face{font-family:"KNAS Head";src:url(/fonts/classic-800i.woff) format("woff");font-weight:800;font-style:italic;font-display:swap}
+:root{--bg:#090c2b;--card:#131b4f;--card2:#18225e;--line:rgba(156,184,255,.18);--line2:rgba(156,184,255,.35);--text:#eef2ff;--muted:#a3b0dd;
+  --gold:#ffd23a;--gold2:#ffb000;--ink:#1a1300;--me:#ff3b30;--head:"KNAS Head","Arial Narrow",Arial,sans-serif;--ui:"KNAS UI","Segoe UI",Roboto,Arial,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{font:600 15px/1.4 var(--ui);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;overflow:hidden;
+  background:radial-gradient(900px 500px at 80% -10%,rgba(90,47,134,.5),transparent 60%),var(--bg) fixed;
+  padding:max(12px,env(safe-area-inset-top)) 16px max(14px,env(safe-area-inset-bottom))}
+.hidden{display:none!important}
+.wrap{max-width:460px;margin:0 auto;display:flex;flex-direction:column;min-height:calc(100vh - 30px)}
+header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+header h1{font:800 italic 24px var(--head);color:var(--gold);flex:1}
+.me{width:14px;height:14px;border-radius:4px;background:var(--me)}
+.score{font:800 italic 22px var(--head);color:var(--gold)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+.card h2{font:800 italic 20px var(--head);color:var(--gold);margin-bottom:8px}
+.note{color:var(--muted);font-size:13.5px}
+label{display:block;color:var(--muted);font-size:13px;margin-bottom:5px}
+input{width:100%;font:700 17px var(--ui);color:var(--text);background:var(--bg);border:1px solid var(--line2);border-radius:10px;padding:11px 12px}
+.btn{display:block;width:100%;font:700 16px var(--ui);color:var(--text);background:rgba(255,255,255,.06);border:1px solid var(--line2);border-radius:12px;padding:13px;margin-top:10px}
+.btn.gold{background:linear-gradient(180deg,#ffe680,var(--gold) 50%,var(--gold2));color:var(--ink);border-color:transparent;box-shadow:0 3px 0 #8a6200}
+.games{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.games button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 8px;border-radius:14px;border:2px solid var(--line2);background:var(--card2);color:var(--text);font:700 15px var(--ui)}
+.games button i{font-style:normal;font-size:34px}
+.games button.on{border-color:var(--gold);background:rgba(255,210,58,.12)}
+.pad{position:relative;flex:1;min-height:340px;border-radius:22px;border:2px solid var(--line2);background:radial-gradient(circle at 50% 80%,rgba(255,255,255,.08),rgba(255,255,255,.02) 60%);touch-action:none;overflow:hidden}
+.pad.go{border-color:var(--me);box-shadow:0 0 0 3px color-mix(in srgb,var(--me) 35%,transparent)}
+.pad .obj{position:absolute;left:50%;bottom:40px;font-size:84px;line-height:1;transform:translateX(-50%);filter:drop-shadow(0 8px 12px rgba(0,0,0,.45));transition:transform .15s}
+.pad .obj.fly{transition:transform .35s ease-out,opacity .35s;opacity:0}
+.pad .top{position:absolute;left:0;right:0;top:14px;text-align:center;font:800 italic 24px var(--head);color:var(--gold)}
+.pad .sub{position:absolute;left:12px;right:12px;top:48px;text-align:center;color:var(--muted);font-size:13px}
+.pad .trail{position:absolute;inset:0;pointer-events:none}
+.pad.wait .obj{opacity:.25}
+.res{min-height:44px;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:700;font-size:17px;margin:10px 0 4px}
+.res.good{color:#7dff9e}
+.pow{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12.5px}
+.pow .bar{flex:1;position:relative;height:10px;border-radius:5px;background:rgba(255,255,255,.08);overflow:hidden}
+.pow .bar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#36d1ff,var(--gold),#ff3b30);border-radius:5px;transition:width .3s}
+.pow .bar b{position:absolute;left:50%;top:-2px;bottom:-2px;width:2px;background:#fff}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><h1>🎯 Flick Games</h1><div class="me hidden" id="me"></div><div class="score hidden" id="score">0</div></header>
+  <div class="card hidden" id="offBox"><h2 id="offT">Flick Games is off</h2><div class="note" id="offN">Give Flick Games a channel number on the setup page (Experimental → Phone extras).</div></div>
+  <div id="join" class="hidden"><div class="card"><label for="name">Your name</label><input id="name" maxlength="14" placeholder="Player"><button class="btn gold" id="joinBtn" type="button">Join</button></div>
+    <div class="note" style="text-align:center">Tune a TV to the Flick Games channel.</div></div>
+  <div id="lobby" class="hidden">
+    <div class="card" id="hostBox"><h2>Pick a game</h2><div class="games" id="games"></div><button class="btn gold" id="startBtn" type="button">▶ Start</button></div>
+    <div class="card hidden" id="guestBox"><h2>You're in!</h2><div class="note" id="guestT">Waiting for the host to start the game…</div></div>
+  </div>
+  <div id="play" class="hidden" style="flex:1;display:flex;flex-direction:column">
+    <div class="pad wait" id="pad"><div class="top" id="padTop">Get ready</div><div class="sub" id="padSub"></div><canvas class="trail" id="trail"></canvas><div class="obj" id="obj">🎯</div></div>
+    <div class="res" id="res"></div>
+    <div class="pow"><span>Soft</span><div class="bar"><i id="powBar"></i><b></b></div><span>Hard</span></div>
+    <div id="overBox" class="hidden"><button class="btn gold" id="againBtn" type="button">Play again</button><button class="btn" id="lobbyBtn" type="button">Pick another game</button></div>
+  </div>
+</div>
+<script>
+"use strict";
+var $=function(id){return document.getElementById(id)};
+var LS={get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+var SOCK=null,PID=null,HOST=false,ST={},PL=[],GAME="darts";
+var GAMES={darts:["🎯","Darts","Flick straight at the bullseye. Harder goes higher, softer goes lower."],hoops:["🏀","Hoops","Flick toward the hoop. Too soft is short, too hard bangs off the backboard."],
+  bowling:["🎳","Bowling","Flick up the lane. Bend your swipe to curve the ball into the pocket."],pong:["🏓","Cup Pong","Soft flicks land in the front cups, harder flicks reach the back."]};
+$("name").value=LS.get("knas_flick_name")||"";
+function send(o){if(SOCK&&SOCK.readyState===1)SOCK.send(JSON.stringify(o))}
+function buzz(p){if(navigator.vibrate)try{navigator.vibrate(p)}catch(e){}}
+$("games").innerHTML=Object.keys(GAMES).map(function(k){return'<button type="button" data-g="'+k+'"><i>'+GAMES[k][0]+'</i>'+GAMES[k][1]+'</button>'}).join("");
+$("games").onclick=function(e){var b=e.target.closest("[data-g]");if(!b)return;send({t:"pick",game:b.dataset.g})};
+$("startBtn").onclick=function(){send({t:"start"})};$("againBtn").onclick=function(){send({t:"again"})};$("lobbyBtn").onclick=function(){send({t:"lobby"})};
+$("joinBtn").onclick=function(){LS.set("knas_flick_name",$("name").value);connect()};
+function connect(){var ws=new WebSocket((location.protocol==="https:"?"wss://":"ws://")+location.host+"/api/flick/ws?role=player&name="+encodeURIComponent($("name").value||""));SOCK=ws;
+  ws.onmessage=function(e){var m;try{m=JSON.parse(e.data)}catch(er){return}
+    if(m.t==="welcome"){PID=m.pid;document.documentElement.style.setProperty("--me",m.color);$("me").classList.remove("hidden");$("score").classList.remove("hidden");$("join").classList.add("hidden");paint()}
+    else if(m.t==="full"){alert("6 players are already in.")}
+    else if(m.t==="players"){PL=m.list||[];HOST=!!(PL[0]&&PL[0].id===PID);paint()}
+    else if(m.t==="state"){ST=m;paint()}
+    else if(m.t==="result"){$("res").textContent=m.text;$("res").className="res"+(m.good?" good":"");if(m.good)buzz([20,30,40])}};
+  ws.onclose=function(){SOCK=null;setTimeout(connect,2000)}}
+setInterval(function(){send({t:"ping"})},15000);
+function paint(){if(!PID)return;var ph=ST.phase||"lobby";GAME=ST.game||GAME;
+  $("score").textContent=(ST.scores&&ST.scores[PID])||0;
+  $("lobby").classList.toggle("hidden",ph!=="lobby");$("play").classList.toggle("hidden",ph==="lobby");
+  $("hostBox").classList.toggle("hidden",!HOST);$("guestBox").classList.toggle("hidden",HOST);
+  document.querySelectorAll("#games button").forEach(function(b){b.classList.toggle("on",b.dataset.g===GAME)});
+  var host=PL[0]?PL[0].name:"the host";$("guestT").textContent="Waiting for "+host+" to start "+GAMES[GAME][1]+"…";
+  $("obj").textContent=GAMES[GAME][0];
+  var mine=ph==="play"&&ST.turn===PID,who=(PL.find(function(p){return p.id===ST.turn})||{}).name;
+  $("pad").classList.toggle("go",mine);$("pad").classList.toggle("wait",!mine);
+  $("padTop").textContent=ph==="over"?"Game over":(mine?"YOUR TURN!":(ST.turn==="busy"?"…":(who?who+" is up":"Get ready")));
+  $("padSub").textContent=ph==="over"?"":(mine?GAMES[GAME][2]+(ST.left?" ("+ST.left+" left)":""):"Watch the TV.");
+  $("overBox").classList.toggle("hidden",!(ph==="over"&&HOST))}
+
+/* ---------- the flick ---------- */
+(function(){var pad=$("pad"),obj=$("obj"),cv=$("trail"),cx=cv.getContext("2d"),pts=[],on=false;
+  function size(){var r=pad.getBoundingClientRect();cv.width=r.width;cv.height=r.height}addEventListener("resize",size);setTimeout(size,100);
+  function trail(){cx.clearRect(0,0,cv.width,cv.height);if(pts.length<2)return;var r=pad.getBoundingClientRect();cx.strokeStyle="rgba(255,255,255,.35)";cx.lineWidth=8;cx.lineCap="round";cx.lineJoin="round";cx.beginPath();
+    pts.forEach(function(p,i){var x=p[1]-r.left,y=p[2]-r.top;if(i)cx.lineTo(x,y);else cx.moveTo(x,y)});cx.stroke()}
+  pad.addEventListener("pointerdown",function(e){if(!(ST.phase==="play"&&ST.turn===PID))return;on=true;pts=[[performance.now(),e.clientX,e.clientY]];size();try{pad.setPointerCapture(e.pointerId)}catch(er){}});
+  pad.addEventListener("pointermove",function(e){if(!on)return;pts.push([performance.now(),e.clientX,e.clientY]);var a=pts[0];obj.style.transform="translateX(-50%) translate("+(e.clientX-a[1])*.4+"px,"+Math.min(0,e.clientY-a[2])*.4+"px)";trail()});
+  function up(){if(!on)return;on=false;var now=performance.now(),rec=pts.filter(function(p){return now-p[0]<110});if(rec.length<2)rec=pts.slice(-3);
+    var a=rec[0],b=rec[rec.length-1],dt=Math.max(8,b[0]-a[0]),vx=(b[1]-a[1])/dt,vy=(b[2]-a[2])/dt,pw=Math.hypot(vx,vy)/(innerHeight/350);
+    setTimeout(function(){cx.clearRect(0,0,cv.width,cv.height)},400);
+    if(vy>-.2||pw<.15){obj.style.transform="translateX(-50%)";return}
+    /* which way: the direction of the end of the swipe. Curve: how far the middle of the swipe bent away from a straight line */
+    var ang=Math.atan2(vx,-vy),s=pts[0],e=pts[pts.length-1],m=pts[Math.floor(pts.length/2)],len=Math.hypot(e[1]-s[1],e[2]-s[2])||1;
+    var bend=((e[1]-s[1])*(m[2]-s[2])-(e[2]-s[2])*(m[1]-s[1]))/len/len;var curve=Math.max(-1,Math.min(1,-bend*4));
+    send({t:"throw",ang:+ang.toFixed(3),pow:+pw.toFixed(3),curve:GAME==="bowling"?+curve.toFixed(3):0});buzz(15);
+    $("powBar").style.width=Math.min(100,pw/2*100)+"%";$("res").textContent="";
+    obj.classList.add("fly");obj.style.transform="translateX(-50%) translate("+Math.sin(ang)*200+"px,-420px) scale(.35)";
+    setTimeout(function(){obj.classList.remove("fly");obj.style.transform="translateX(-50%) scale(.3)";requestAnimationFrame(function(){obj.style.transform="translateX(-50%)"})},380)}
+  pad.addEventListener("pointerup",up);pad.addEventListener("pointercancel",up)})();
+
+fetch("/api/flick",{cache:"no-store"}).then(function(r){if(r.status===403)throw"home";return r.json()}).then(function(j){
+  if(!j.on){$("offBox").classList.remove("hidden");return}$("join").classList.remove("hidden");if($("name").value)setTimeout(function(){},0)})
+  .catch(function(e){$("offBox").classList.remove("hidden");if(e==="home"){$("offT").textContent="Home network only";$("offN").textContent="This only works on the same Wi-Fi as KNAS."}});
+</script>
+</body>
+</html>

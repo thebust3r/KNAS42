@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#090c2b">
+<title>KNAS Viewing History</title>
+<link rel="icon" href="/remote-icon-192.png">
+<link rel="apple-touch-icon" href="/remote-icon-180.png">
+<style>
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-600.woff) format("woff");font-weight:600;font-display:swap}
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-700.woff) format("woff");font-weight:700;font-display:swap}
+@font-face{font-family:"KNAS Head";src:url(/fonts/classic-800i.woff) format("woff");font-weight:800;font-style:italic;font-display:swap}
+:root{--bg:#090c2b;--card:#131b4f;--card2:#18225e;--line:rgba(156,184,255,.18);--line2:rgba(156,184,255,.35);--text:#eef2ff;--muted:#a3b0dd;
+  --gold:#ffd23a;--gold2:#ffb000;--ink:#1a1300;--red:#e3261b;--ok:#7dff9e;--head:"KNAS Head","Arial Narrow",Arial,sans-serif;--ui:"KNAS UI","Segoe UI",Roboto,Arial,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg)}
+body{font:600 15px/1.4 var(--ui);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;
+  background:radial-gradient(900px 500px at 80% -10%,rgba(90,47,134,.5),transparent 60%),var(--bg) fixed;
+  padding:max(14px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom))}
+a{color:var(--gold)}
+.hidden{display:none!important}
+.wrap{max-width:980px;margin:0 auto}
+header{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.logo{width:40px;height:40px;border-radius:9px;background:linear-gradient(160deg,#2c3fb0,#16207a);box-shadow:0 0 0 2px #9cb8ff inset;display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none}
+.logo b{font:800 italic 19px/1 var(--head);color:#fff}.logo span{font:700 7px var(--ui);color:#fff;background:var(--red);padding:0 3px;border-radius:2px;margin-top:1px}
+header h1{font:800 italic 24px var(--head);color:var(--gold)}
+header .sp{flex:1}
+header nav a{font-size:14px;text-decoration:none;margin-left:12px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.pills button{font:700 13.5px var(--ui);color:var(--text);background:rgba(255,255,255,.06);border:1px solid var(--line2);border-radius:999px;padding:6px 12px;cursor:pointer}
+.pills button.on{background:linear-gradient(180deg,#ffe680,var(--gold) 50%,var(--gold2));color:var(--ink);border-color:transparent}
+select{font:700 14px var(--ui);color:var(--text);background:var(--card);border:1px solid var(--line2);border-radius:999px;padding:6px 12px;max-width:100%}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;min-width:0}
+.card h2{font:800 italic 19px var(--head);color:var(--gold);margin-bottom:8px;letter-spacing:.3px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:12px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.stat b{display:block;font:800 italic 28px/1.1 var(--head);color:#fff}
+.stat small{color:var(--muted);font-size:13px}
+.bar{display:flex;align-items:center;gap:10px;margin:7px 0}
+.bar .n{flex:0 0 auto;min-width:46px;text-align:center;font:800 italic 16px var(--head);background:linear-gradient(160deg,#2c3fb0,#16207a);border-radius:6px;padding:2px 6px;box-shadow:0 0 0 1px #9cb8ff inset}
+.bar .l{flex:1;min-width:0}
+.bar .l div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .l i{display:block;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--gold2),var(--gold));margin-top:3px}
+.bar .v{flex:none;color:var(--muted);font-size:13px;text-align:right;min-width:60px}
+.hours{display:flex;align-items:flex-end;gap:2px;height:110px;margin-top:6px}
+.hours div{flex:1;background:linear-gradient(180deg,var(--gold),var(--gold2));border-radius:2px 2px 0 0;min-height:1px;position:relative}
+.hlab{display:flex;justify-content:space-between;color:var(--muted);font-size:11.5px;margin-top:4px}
+.fun{display:grid;gap:8px}
+.fun div{background:var(--card2);border-radius:10px;padding:9px 11px}
+.fun small{display:block;color:var(--muted);font-size:12.5px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td{padding:7px 6px;border-top:1px solid var(--line);vertical-align:top}
+td.t{color:var(--muted);white-space:nowrap;width:1%}
+td.c{white-space:nowrap;width:1%}
+td small{color:var(--muted)}
+.live{display:inline-block;font-size:11px;font-weight:700;color:#fff;background:var(--red);border-radius:4px;padding:0 5px;margin-left:6px;vertical-align:1px}
+.empty{color:var(--muted);text-align:center;padding:30px 10px}
+.note{color:var(--muted);font-size:14px}
+.wide{grid-column:1/-1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><div class="logo"><b>42</b><span>KNAS</span></div><h1>Viewing history</h1><div class="sp"></div>
+    <nav><a href="/wrapped">🎁 Wrapped</a><a href="/remote">📱 Remote</a><a href="/setup#histCard">⚙️ Settings</a></nav></header>
+
+  <div class="card hidden" id="off"><h2>Viewing history is off</h2><div class="note">Turn it on in <a href="/setup#histCard">Setup → Channels → Viewing history</a>. Nothing is kept while it's off.</div></div>
+
+  <div class="filters">
+    <div class="pills" id="days"><button data-d="1">Today</button><button data-d="7" class="on">7 days</button><button data-d="30">30 days</button><button data-d="365">Year</button><button data-d="0">All time</button></div>
+    <select id="tv" aria-label="Which TV"><option value="">All TVs</option></select>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><b id="sTotal">–</b><small>watched</small></div>
+    <div class="stat"><b id="sSessions">–</b><small>times you sat down to watch</small></div>
+    <div class="stat"><b id="sTop">–</b><small id="sTopL">favorite channel</small></div>
+    <div class="stat"><b id="sFlips">–</b><small>quick channel flips</small></div>
+  </div>
+
+  <div class="empty card hidden" id="empty">Nothing yet. Watch something in the cable box and it shows up here after a minute.</div>
+
+  <div class="grid" id="main">
+    <div class="card"><h2>Top channels</h2><div id="chs"></div></div>
+    <div class="card"><h2>Top shows</h2><div id="shows"></div></div>
+    <div class="card"><h2>By TV</h2><div id="tvs"></div></div>
+    <div class="card"><h2>When you watch</h2><div class="hours" id="hours"></div><div class="hlab"><span>12a</span><span>6a</span><span>12p</span><span>6p</span><span>11p</span></div>
+      <div class="fun" id="fun" style="margin-top:12px"></div></div>
+    <div class="card wide"><h2>Recently watched</h2><table id="recent"></table></div>
+  </div>
+</div>
+<script>
+(function(){
+"use strict";
+var $=function(i){return document.getElementById(i)},DAYS=7,TV="";
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function dur(s){s=Math.round(s||0);if(s<60)return s+"s";var m=Math.round(s/60);if(m<60)return m+" min";var h=Math.floor(m/60);m=m%60;
+  if(h<48)return h+"h"+(m?" "+m+"m":"");return Math.round(h/24*10)/10+" days"}
+function when(t){var d=new Date(t*1000),now=new Date(),y=new Date(now-86400000),tm=d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
+  if(d.toDateString()===now.toDateString())return"Today "+tm;if(d.toDateString()===y.toDateString())return"Yesterday "+tm;
+  return d.toLocaleDateString([],{weekday:"short",month:"short",day:"numeric"})+" "+tm}
+function day(s){var p=s.split("-");return new Date(+p[0],p[1]-1,+p[2]).toLocaleDateString([],{weekday:"long",month:"short",day:"numeric"})}
+function bars(list,label,num,max){if(!list.length)return'<div class="note">Nothing yet.</div>';
+  return list.map(function(x){return'<div class="bar">'+(num?'<div class="n">'+esc(num(x))+'</div>':'')+'<div class="l"><div>'+label(x)+'</div><i style="width:'+Math.max(2,Math.round(x.secs/max*100))+'%"></i></div><div class="v">'+dur(x.secs)+'</div></div>'}).join("")}
+function load(){
+  fetch("api/history?days="+DAYS+"&tv="+encodeURIComponent(TV),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){
+    if(!j.ok){$("empty").textContent=j.message||"Couldn't load the history.";$("empty").classList.remove("hidden");return}
+    $("off").classList.toggle("hidden",j.enabled!==false);
+    var sel=$("tv"),keep=sel.value;sel.innerHTML='<option value="">All TVs</option>'+(j.all_tvs||[]).map(function(t){return'<option value="'+esc(t.id)+'">'+esc(t.name)+'</option>'}).join("");sel.value=keep;
+    $("sTotal").textContent=j.total?dur(j.total):"0";$("sSessions").textContent=j.sessions;$("sFlips").textContent=j.flips;
+    var top=j.channels[0];$("sTop").textContent=top?top.ch:"–";$("sTopL").textContent=top?"favorite: "+top.name:"favorite channel";
+    var none=!j.sessions;$("empty").classList.toggle("hidden",!none);$("main").classList.toggle("hidden",none);if(none)return;
+    var m=j.channels.length?j.channels[0].secs:1;
+    $("chs").innerHTML=bars(j.channels,function(x){return esc(x.name||("Channel "+x.ch))},function(x){return x.ch},m);
+    m=j.shows.length?j.shows[0].secs:1;
+    $("shows").innerHTML=bars(j.shows,function(x){return esc(x.show)+' <small style="color:var(--muted)">· '+esc(x.ch)+(x.times>1?" · "+x.times+"×":"")+'</small>'},null,m);
+    m=j.tvs.length?j.tvs[0].secs:1;
+    $("tvs").innerHTML=bars(j.tvs,function(x){return"📺 "+esc(x.name)},null,m);
+    var hm=Math.max.apply(null,j.hours.concat([1]));
+    $("hours").innerHTML=j.hours.map(function(h,i){var lab=(i%12||12)+(i<12?"am":"pm");return'<div title="'+lab+": "+dur(h)+'" style="height:'+Math.max(1,Math.round(h/hm*100))+'%"></div>'}).join("");
+    var f=[],peak=j.hours.indexOf(hm);
+    if(hm>1)f.push("<div><b>"+((peak%12)||12)+(peak<12?" am":" pm")+"</b><small>your busiest hour</small></div>");
+    if(j.longest)f.push("<div><b>"+dur(j.longest.secs)+"</b><small>longest sit: "+esc(j.longest.show||j.longest.chname)+" on "+esc(j.longest.tv)+", "+esc(when(j.longest.start))+"</small></div>");
+    if(j.busiest&&DAYS!==1)f.push("<div><b>"+esc(day(j.busiest.day))+"</b><small>most TV in one day ("+dur(j.busiest.secs)+")</small></div>");
+    if(j.most_flips&&j.most_flips.n>=10)f.push("<div><b>"+j.most_flips.n+" flips</b><small>channel surfing record, "+esc(day(j.most_flips.day))+"</small></div>");
+    $("fun").innerHTML=f.join("");
+    $("recent").innerHTML=j.recent.map(function(r){return"<tr><td class=t>"+esc(when(r.start))+"</td><td class=c><b>"+esc(r.ch)+"</b> "+esc(r.chname)+"</td><td>"+(r.show?esc(r.show):"<small>—</small>")+(r.live?'<span class="live">NOW</span>':"")+"<br><small>"+esc(r.tv)+" · "+dur(r.secs)+"</small></td></tr>"}).join("")
+  }).catch(function(){$("empty").textContent="Couldn't reach KNAS.";$("empty").classList.remove("hidden")})}
+$("days").onclick=function(e){var b=e.target.closest("button");if(!b)return;DAYS=+b.dataset.d;[].forEach.call($("days").children,function(x){x.classList.toggle("on",x===b)});load()};
+$("tv").onchange=function(){TV=this.value;load()};
+load();setInterval(function(){if(!document.hidden)load()},60000);
+})();
+</script>
+</body>
+</html>

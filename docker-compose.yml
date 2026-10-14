@@ -1,0 +1,41 @@
+# KNAS - a 90s cable TV experience. You don't need to edit this file.
+#
+#   Start:      docker compose up -d              (or create a Project in your NAS's Docker app)
+#   Then open:  http://SERVER_IP:8642/tv          (the knas42 log shows the exact address)
+#
+# Nothing else to set up. Optional settings are on http://SERVER_IP:8642/setup (saved in settings.txt). Updates: drop the release zip
+# into the updates folder. Full guide: docs/SETUP-GUIDE.md
+services:
+  knas42:
+    # A ready-made image is downloaded (about a minute). If that ever fails, it's built from the files here.
+    image: ghcr.io/thebust3r/knas42:latest
+    build: .
+    pull_policy: missing
+    container_name: knas42
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./:/knas
+      # For the Tools page (commercial breaks in your episodes): lets KNAS see your NAS's drive, so you
+      # can paste your shows folders' locations on the Tools page. KNAS only ever works inside the
+      # folders you paste there. This is right for UGREEN and Synology. Other systems, change the left side:
+      #   QNAP: /share:/nas/share    Unraid: /mnt/user:/nas/user    Second drive: add /volume2:/nas/volume2
+      #   Docker Desktop on Windows: C:/Users/you/Videos:/nas/videos   (or delete the line if you won't use Tools)
+      - /volume1:/nas/volume1
+
+  # The recorder: turns KNAS pages into video for ErsatzTV (the break clips, and optionally the
+  # weather channel). It sits idle until it's needed. Not using ErsatzTV? It's fine to leave it.
+  knas42-cast:
+    image: ghcr.io/thebust3r/knas42-cast:latest
+    build: ./cast
+    pull_policy: missing
+    container_name: knas42-cast
+    restart: unless-stopped
+    depends_on:
+      - knas42
+    network_mode: host
+    shm_size: "1gb"
+    # Run the recorder code from your folder, so updates apply without rebuilding this image
+    command: ["sh", "-c", "if [ -f /knas/cast/cast.py ]; then exec python3 -u /knas/cast/cast.py; else exec python3 -u /app/cast.py; fi"]
+    volumes:
+      - ./:/knas:ro

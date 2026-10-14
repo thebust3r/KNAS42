@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#090c2b">
+<title>KNAS on your phone</title>
+<link rel="icon" href="/remote-icon-192.png">
+<link rel="apple-touch-icon" href="/remote-icon-180.png">
+<style>
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-600.woff) format("woff");font-weight:600;font-display:swap}
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-700.woff) format("woff");font-weight:700;font-display:swap}
+@font-face{font-family:"KNAS Head";src:url(/fonts/classic-800i.woff) format("woff");font-weight:800;font-style:italic;font-display:swap}
+:root{--bg:#090c2b;--card:#131b4f;--line:rgba(156,184,255,.18);--line2:rgba(156,184,255,.35);--text:#eef2ff;--muted:#a3b0dd;--gold:#ffd23a}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{font:600 15px/1.4 "KNAS UI","Segoe UI",Roboto,Arial,sans-serif;color:var(--text);min-height:100vh;
+  background:radial-gradient(900px 500px at 80% -10%,rgba(90,47,134,.5),transparent 60%),var(--bg) fixed;
+  padding:max(16px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom))}
+.wrap{max-width:460px;margin:0 auto}
+h1{font:800 italic 28px "KNAS Head","Arial Narrow",Arial,sans-serif;color:var(--gold);margin-bottom:4px}
+p{color:var(--muted);font-size:14px;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+a.t{display:flex;flex-direction:column;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;text-decoration:none;color:var(--text);min-height:104px}
+a.t:active{border-color:var(--gold)}
+a.t i{font-style:normal;font-size:28px;line-height:1}
+a.t b{font-size:16px}
+a.t small{color:var(--muted);font-size:12.5px}
+a.t.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>KNAS on your phone</h1>
+  <p>Pick what you want to do. (The cable box itself is on the TV, at port 8642.)</p>
+  <div class="grid">
+    <a class="t" href="/remote"><i>📺</i><b>Remote</b><small>Change channels on any TV<span id="vc"></span></small></a>
+    <a class="t hidden" id="fun" href="/fun"><i>🍅</i><b>Screen fun</b><small>Splat, confetti, draw on the TV</small></a>
+    <a class="t hidden" id="flick" href="/flick"><i>🎯</i><b>Flick games</b><small>Darts, hoops, bowling, cup pong</small></a>
+    <a class="t hidden" id="stream" href="/streams"><i>📡</i><b>Stream</b><small>Play a live stream link</small></a>
+    <a class="t hidden" id="cam" href="/cam"><i>📹</i><b>Live Cam</b><small>Put this phone's camera on TV</small></a>
+    <a class="t hidden" id="duck" href="/zapper"><i>🦆</i><b>Duck Season</b><small>Your phone is the gun</small></a>
+    <a class="t hidden" id="throw" href="/throw"><i>📤</i><b>Throw it</b><small>Flick a photo or video onto the TV</small></a>
+    <a class="t hidden" id="juke" href="/jukebox"><i>🎵</i><b>Jukebox</b><small>Add music videos</small></a>
+    <a class="t hidden" id="games" href="/play"><i>🎮</i><b>Party games</b><small>Trivia and more</small></a>
+    <a class="t hidden" id="rate" href="/ratings"><i>🏆</i><b>The Ratings</b><small>This week's most-watched</small></a>
+    <a class="t hidden" id="hist" href="/history"><i>📊</i><b>What we watched</b><small>Viewing history</small></a>
+  </div>
+</div>
+<script>
+function on(id){var e=document.getElementById(id);if(e)e.classList.remove("hidden")}
+fetch("/api/remote/features",{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j.cam)on("cam");if(j.fun)on("fun");if(j.flick)on("flick");if(j.stream)on("stream");if(j.history){on("hist");on("rate")}if(j.duck)on("duck");if(j.throw)on("throw");if(j.voice)document.getElementById("vc").textContent=", or with your voice"}).catch(function(){});
+fetch("/api/party",{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j.channel&&j.channel!=="0")on("juke")}).catch(function(){});
+fetch("/api/trivia",{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j.channel&&j.channel!=="0")on("games")}).catch(function(){});
+</script>
+</body>
+</html>

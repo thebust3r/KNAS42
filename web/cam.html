@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#090c2b">
+<title>KNAS Live Cam</title>
+<link rel="icon" href="/remote-icon-192.png">
+<link rel="apple-touch-icon" href="/remote-icon-180.png">
+<style>
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-600.woff) format("woff");font-weight:600;font-display:swap}
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-700.woff) format("woff");font-weight:700;font-display:swap}
+@font-face{font-family:"KNAS Head";src:url(/fonts/classic-800i.woff) format("woff");font-weight:800;font-style:italic;font-display:swap}
+:root{--bg:#090c2b;--card:#131b4f;--line:rgba(156,184,255,.18);--line2:rgba(156,184,255,.35);--text:#eef2ff;--muted:#a3b0dd;
+  --gold:#ffd23a;--gold2:#ffb000;--ink:#1a1300;--red:#e3261b;--head:"KNAS Head","Arial Narrow",Arial,sans-serif;--ui:"KNAS UI","Segoe UI",Roboto,Arial,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{font:600 15px/1.4 var(--ui);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;
+  background:radial-gradient(900px 500px at 80% -10%,rgba(90,47,134,.5),transparent 60%),var(--bg) fixed;
+  padding:max(12px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom))}
+.hidden{display:none!important}
+.wrap{max-width:460px;margin:0 auto}
+header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+header a{color:var(--muted);text-decoration:none;font-size:22px;padding:4px}
+header h1{font:800 italic 24px var(--head);color:var(--gold);flex:1}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+.card h2{font:800 italic 20px var(--head);color:var(--gold);margin-bottom:6px}
+.note{color:var(--muted);font-size:13.5px}
+.note b{color:var(--text)}
+.view{position:relative;border-radius:14px;overflow:hidden;background:#000;aspect-ratio:4/3;box-shadow:0 0 0 2px var(--line2)}
+.view video{width:100%;height:100%;object-fit:cover;display:block}
+.view .live{position:absolute;left:10px;top:10px;background:var(--red);color:#fff;font:800 14px var(--ui);letter-spacing:1px;padding:3px 9px;border-radius:4px;display:none}
+.view .live i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#fff;margin-right:6px;animation:b 1s steps(2) infinite}
+.view.on .live{display:block}
+.view.on{box-shadow:0 0 0 3px var(--red)}
+@keyframes b{50%{opacity:.2}}
+.view .msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;color:var(--muted)}
+.row{display:flex;gap:10px;margin-top:12px}
+.btn{flex:1;font:700 15px var(--ui);color:var(--text);background:rgba(255,255,255,.06);border:1px solid var(--line2);border-radius:12px;padding:13px;cursor:pointer;text-decoration:none;text-align:center}
+.btn.gold{background:linear-gradient(180deg,#ffe680,var(--gold) 50%,var(--gold2));color:var(--ink);border-color:transparent;box-shadow:0 3px 0 #8a6200}
+.btn.red{background:var(--red);border-color:transparent;color:#fff}
+.btn:disabled{opacity:.45}
+label{display:block;color:var(--muted);font-size:13px;margin:14px 0 5px}
+input{width:100%;font:700 17px var(--ui);color:var(--text);background:var(--card);border:1px solid var(--line2);border-radius:10px;padding:11px 12px;text-transform:uppercase}
+.stat{color:var(--muted);font-size:13px;margin-top:8px;text-align:center;min-height:18px}
+ol{margin:8px 0 0 20px;color:var(--muted);font-size:13.5px}ol li{margin:3px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><a href="/remote" aria-label="Back to the remote" id="backLink">‹</a><h1>📹 Live Cam</h1></header>
+
+  <div class="card hidden" id="offBox"><h2 id="offT">Live Cam is off</h2><div class="note" id="offN">Give Live Cam a channel number on the setup page (Experimental) to turn it on.</div></div>
+
+  <div class="card hidden" id="needSecure"><h2>One quick step</h2>
+    <div class="note">Phones only share their camera with <b>secure</b> pages, so Live Cam uses KNAS's secure address.</div>
+    <ol><li>Tap the button below.</li><li>Your phone says the connection <b>isn't private</b>. That's expected: it's KNAS's own certificate. Tap <b>Show details → visit this website</b> (iPhone) or <b>Advanced → Proceed</b> (Android).</li><li>You only do this once on each phone.</li></ol>
+    <div class="row"><a class="btn gold" id="secureGo" href="#">Open the secure Live Cam</a></div></div>
+
+  <div id="ui" class="hidden">
+    <div class="view" id="view"><video id="cam" playsinline muted autoplay></video><div class="live"><i></i>LIVE <span id="clock">0:00</span></div><div class="msg" id="vmsg">Press <b>&nbsp;Go live&nbsp;</b> to start the camera.</div></div>
+    <label for="name">What's this camera? (shown on the TV)</label>
+    <input id="name" maxlength="20" placeholder="KITCHEN">
+    <div class="row"><button class="btn" id="flip" type="button">🔄 Flip camera</button><button class="btn gold" id="go" type="button">● Go live</button></div>
+    <div class="row hidden" id="liveRow"><button class="btn" id="tune" type="button">📺 Put it on the TVs</button><button class="btn red" id="stop" type="button">■ Stop</button></div>
+    <div class="stat" id="stat"></div>
+    <div class="note" style="margin-top:14px">Pictures only, no sound. Nothing is recorded: the TV just shows what the camera sees right now, and it stops the moment you press Stop or leave this page. Keep this page open while you're live.</div>
+  </div>
+</div>
+<canvas id="cv" class="hidden"></canvas>
+<script>
+"use strict";
+var $=function(id){return document.getElementById(id)};
+var LS={get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+function post(u,o){return fetch(u,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(o)}).then(function(r){return r.json()})}
+var FACING=LS.get("knas_cam_facing")||"environment",STREAM=null,SOCK=null,LIVE=false,TIMER=0,START=0,LOCK=null,SENT=0,INFO=null;
+$("name").value=LS.get("knas_cam_name")||"";
+$("name").oninput=function(){LS.set("knas_cam_name",this.value);if(SOCK&&SOCK.readyState===1)SOCK.send(JSON.stringify({name:this.value||"LIVE CAM"}))};
+function stat(t){$("stat").textContent=t}
+
+function startCam(){if(STREAM)STREAM.getTracks().forEach(function(t){t.stop()});
+  return navigator.mediaDevices.getUserMedia({video:{facingMode:FACING,width:{ideal:960},height:{ideal:720},frameRate:{ideal:24}},audio:false}).then(function(s){
+    STREAM=s;$("cam").srcObject=s;$("vmsg").classList.add("hidden");return $("cam").play().catch(function(){})})}
+function goLive(){$("go").disabled=true;stat("Starting the camera…");
+  startCam().then(function(){stat("Connecting to KNAS…");
+    var ws=new WebSocket((location.protocol==="https:"?"wss://":"ws://")+location.host+"/api/cam/ws?name="+encodeURIComponent($("name").value||"LIVE CAM")+"&facing="+FACING);
+    ws.binaryType="arraybuffer";SOCK=ws;
+    ws.onmessage=function(e){var m;try{m=JSON.parse(e.data)}catch(er){return}
+      if(m.t==="live"){LIVE=true;START=Date.now();$("view").classList.add("on");$("go").classList.add("hidden");$("liveRow").classList.remove("hidden");stat("You're live on channel "+(INFO&&INFO.channel||"")+".");loop();wake()}
+      if(m.t==="full"){stat(m.message);stop()}};
+    ws.onclose=function(){if(LIVE){stat("Lost the connection to KNAS. Press Go live to try again.");stop()}};
+    ws.onerror=function(){stat("Couldn't connect to KNAS.")}})
+  .catch(function(e){$("go").disabled=false;stat(e&&e.name==="NotAllowedError"?"The camera was blocked. Allow the camera for this page in your browser's settings, then try again.":"Couldn't start the camera ("+(e&&e.name||e)+").")})}
+function loop(){var v=$("cam"),c=$("cv"),x=c.getContext("2d"),busy=false;
+  clearInterval(TIMER);TIMER=setInterval(function(){
+    var s=Math.floor((Date.now()-START)/1000);$("clock").textContent=Math.floor(s/60)+":"+("0"+s%60).slice(-2);
+    if(!LIVE||busy||!SOCK||SOCK.readyState!==1||SOCK.bufferedAmount>200000||!v.videoWidth)return;
+    var w=Math.min(800,v.videoWidth),h=Math.round(w*v.videoHeight/v.videoWidth);if(c.width!==w||c.height!==h){c.width=w;c.height=h}
+    if(FACING==="user"){x.setTransform(-1,0,0,1,w,0)}else x.setTransform(1,0,0,1,0,0);
+    x.drawImage(v,0,0,w,h);busy=true;
+    c.toBlob(function(b){busy=false;if(b&&SOCK&&SOCK.readyState===1){SOCK.send(b);SENT++}},"image/jpeg",.62)},83)}
+function wake(){try{if(navigator.wakeLock)navigator.wakeLock.request("screen").then(function(l){LOCK=l}).catch(function(){})}catch(e){}}
+function stop(){LIVE=false;clearInterval(TIMER);if(SOCK){try{SOCK.close()}catch(e){}SOCK=null}
+  if(STREAM){STREAM.getTracks().forEach(function(t){t.stop()});STREAM=null}$("cam").srcObject=null;$("vmsg").classList.remove("hidden");
+  $("view").classList.remove("on");$("go").classList.remove("hidden");$("go").disabled=false;$("liveRow").classList.add("hidden");if(LOCK){try{LOCK.release()}catch(e){}LOCK=null}}
+$("go").onclick=goLive;
+$("stop").onclick=function(){stop();stat("Stopped. Nothing was saved.")};
+$("flip").onclick=function(){FACING=FACING==="user"?"environment":"user";LS.set("knas_cam_facing",FACING);if(STREAM)startCam()};
+$("tune").onclick=function(){post("/api/cam/tune",{}).then(function(j){stat(j.message||"")})};
+document.addEventListener("visibilitychange",function(){if(!document.hidden&&LIVE)wake()});
+addEventListener("pagehide",stop);
+
+fetch("/api/cam",{cache:"no-store"}).then(function(r){if(r.status===403)throw"home";return r.json()}).then(function(j){INFO=j;
+  if(!j.on){$("offBox").classList.remove("hidden");return}
+  if(!window.isSecureContext||!navigator.mediaDevices){
+    if(j.secure){$("needSecure").classList.remove("hidden");$("secureGo").href=j.secure+"/cam"}
+    else{$("offBox").classList.remove("hidden");$("offT").textContent="The secure address is off";$("offN").textContent="Live Cam needs KNAS's secure address. Check SECURE_PORT in settings.txt (it shouldn't say off)."}
+    return}
+  $("ui").classList.remove("hidden")})
+  .catch(function(e){$("offBox").classList.remove("hidden");if(e==="home"){$("offT").textContent="Home network only";$("offN").textContent="Live Cam only works on the same Wi-Fi as KNAS (or over Tailscale)."}});
+</script>
+</body>
+</html>

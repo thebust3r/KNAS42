@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#090c2b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="KNAS Jukebox">
+<title>KNAS Jukebox</title>
+<link rel="icon" href="/remote-icon-192.png">
+<link rel="apple-touch-icon" href="/remote-icon-180.png">
+<style>
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-600.woff) format("woff");font-weight:600;font-display:swap}
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-700.woff) format("woff");font-weight:700;font-display:swap}
+@font-face{font-family:"KNAS Head";src:url(/fonts/classic-800i.woff) format("woff");font-weight:800;font-style:italic;font-display:swap}
+:root{--bg:#090c2b;--card:#131b4f;--card2:#18225e;--line:rgba(156,184,255,.18);--line2:rgba(156,184,255,.35);--text:#eef2ff;--muted:#a3b0dd;
+  --gold:#ffd23a;--gold2:#ffb000;--ink:#1a1300;--red:#e3261b;--ok:#7dff9e;--bad:#ff8a80;--head:"KNAS Head","Arial Narrow",Arial,sans-serif;--ui:"KNAS UI","Segoe UI",Roboto,Arial,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{font:600 15px/1.35 var(--ui);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;
+  background:radial-gradient(900px 500px at 80% -10%,rgba(90,47,134,.5),transparent 60%),var(--bg) fixed;
+  padding:max(12px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom))}
+a{color:var(--gold)}
+.hidden{display:none!important}
+.wrap{max-width:520px;margin:0 auto}
+header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.logo{width:40px;height:40px;border-radius:9px;background:linear-gradient(160deg,#2c3fb0,#16207a);box-shadow:0 0 0 2px #9cb8ff inset;display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}
+header h1{font:800 italic 22px var(--head);color:var(--gold);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header a{font-size:13.5px;text-decoration:none}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.card h2{font:800 italic 19px var(--head);color:var(--gold);margin-bottom:8px}
+input{width:100%;font:600 16px var(--ui);color:var(--text);background:rgba(0,0,30,.45);border:1px solid var(--line2);border-radius:10px;padding:11px 12px}
+input:focus{outline:2px solid var(--gold);outline-offset:1px}
+.btns{display:flex;gap:8px;margin-top:10px}
+.btn{flex:1;font:700 14.5px var(--ui);color:var(--text);background:rgba(255,255,255,.06);border:1px solid var(--line2);border-radius:10px;padding:11px 10px;cursor:pointer}
+.btn.gold{background:linear-gradient(180deg,#ffe680,var(--gold) 50%,var(--gold2));color:var(--ink);border-color:transparent}
+.btn.sm{flex:none;padding:7px 11px;font-size:13px;border-radius:8px}
+.msg{margin-top:8px;font-size:14px;min-height:1px}.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}
+.now{display:flex;gap:12px;align-items:center}
+.now img{width:120px;aspect-ratio:16/9;object-fit:cover;border-radius:8px;background:#000;flex:none}
+.now div{min-width:0;flex:1}
+.now b{display:block;font-size:16px;line-height:1.25}
+.now small{display:block;color:var(--muted);font-size:13px}
+.list{display:flex;flex-direction:column;gap:6px}
+.it{display:flex;gap:10px;align-items:center;background:var(--card2);border-radius:10px;padding:7px}
+.it img{width:76px;aspect-ratio:16/9;object-fit:cover;border-radius:5px;background:#000;flex:none}
+.it div{flex:1;min-width:0}
+.it b{display:block;font-size:14px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.it small{display:block;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.res .go{flex:none;display:flex;flex-direction:column;gap:5px}
+.res .go button{font:700 12.5px var(--ui);color:var(--text);background:rgba(255,255,255,.07);border:1px solid var(--line2);border-radius:8px;padding:6px 9px;cursor:pointer;white-space:nowrap}
+.res .go button.gold{background:linear-gradient(180deg,#ffe680,var(--gold) 50%,var(--gold2));color:var(--ink);border-color:transparent}
+.res .go button:disabled{opacity:.6}
+.it button{background:none;border:0;color:var(--muted);font-size:17px;padding:6px 7px;cursor:pointer;border-radius:8px}
+.note{color:var(--muted);font-size:13px;line-height:1.5}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.row .sp{flex:1}
+label.tog{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+label.tog input{width:20px;height:20px;accent-color:var(--gold);padding:0}
+.toast{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%);background:#000c;color:#fff;font-size:13.5px;padding:8px 14px;border-radius:999px;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90%;text-align:center}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><div class="logo">🎵</div><h1 id="title">KNAS Jukebox</h1><a href="#" id="shareBtn">📲 Share</a><a href="/remote" style="margin-left:10px">📱 Remote</a></header>
+
+  <div class="card hidden" id="off"><h2>The jukebox is off</h2><div class="note">Give it a channel number in <a href="/setup#jukeCard">Setup → Experimental → Jukebox channel</a> (Jukebox ch.), press Save, then come back.</div></div>
+
+  <div id="ui">
+    <div class="card">
+      <h2>Add a video</h2>
+      <input id="url" type="search" enterkeyhint="search" placeholder="Search a song, or paste a YouTube link" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <div class="btns"><button class="btn" id="paste" type="button">📋 Paste</button><button class="btn" id="addNext" type="button">Play next</button><button class="btn gold" id="add" type="button">🔍 Search</button></div>
+      <label class="tog hidden" id="karaokeRow" style="margin-top:10px"><input type="checkbox" id="karaoke"> 🎤 Karaoke mode <span class="note">(search finds karaoke versions with the words on screen)</span></label>
+      <div class="msg" id="msg"></div>
+      <div class="list" id="results" style="margin-top:10px"></div>
+      <div class="note" style="margin-top:6px" id="howto">Type a song or artist and press <b>Search</b>, or paste a link from YouTube (<b>Share</b> → <b>Copy link</b>).</div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="margin-bottom:8px"><h2 style="margin:0">Now playing</h2><div class="sp"></div><button class="btn sm" id="skip" type="button">⏭ Skip</button></div>
+      <div class="now" id="now"></div>
+      <div class="note" id="tvNote" style="margin-top:8px"></div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="margin-bottom:8px"><h2 style="margin:0">Up next</h2><div class="sp"></div><span class="note" id="count"></span></div>
+      <div class="list" id="list"></div>
+      <div class="row" style="margin-top:12px"><label class="tog"><input type="checkbox" id="shuffle"> When the list runs out, shuffle past videos</label></div>
+      <div class="row" style="margin-top:10px"><button class="btn sm" id="clear" type="button">Clear the list</button><button class="btn sm" id="stop" type="button">Stop playing</button></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<div id="share" class="hidden" style="position:fixed;inset:0;z-index:20;background:rgba(5,8,30,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center">
+  <div style="font:800 italic 24px var(--head);color:var(--gold)">Scan to add songs</div>
+  <img id="shareQr" alt="QR code for the jukebox" style="width:min(72vw,300px);background:#fff;border-radius:12px;padding:8px;image-rendering:pixelated">
+  <div class="note" id="shareUrl" style="font-size:15px;color:var(--text)"></div>
+  <div id="shareWifi" class="hidden" style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:6px"><div class="note">Not on the Wi-Fi yet? Scan this first:</div><img id="wifiQr" alt="QR code to join the Wi-Fi" style="width:min(40vw,160px);background:#fff;border-radius:10px;padding:6px;image-rendering:pixelated"></div>
+  <button class="btn" type="button" id="shareClose" style="flex:none;padding:10px 22px">Close</button>
+</div>
+<script>
+(function(){
+"use strict";
+var $=function(i){return document.getElementById(i)},ST=null,toastT=0,busy=false;
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function post(u,b){return fetch(u,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b||{})}).then(function(r){if(r.status===403)throw new Error("home");return r.json()})}
+function toast(t){var el=$("toast");el.textContent=t;el.classList.add("on");clearTimeout(toastT);toastT=setTimeout(function(){el.classList.remove("on")},2200)}
+function thumb(id){return"https://i.ytimg.com/vi/"+encodeURIComponent(id)+"/mqdefault.jpg"}
+function paint(){var s=ST;if(!s)return;
+  if(s.experimental!==undefined){$("karaokeRow").classList.toggle("hidden",!s.experimental);if(!s.experimental&&$("karaoke").checked)$("karaoke").checked=false}
+  var off=!s.channel||s.channel==="0";$("off").classList.toggle("hidden",!off);
+  $("title").textContent=s.name||"KNAS Jukebox";document.title=s.name||"KNAS Jukebox";
+  var n=s.now;
+  $("now").innerHTML=n?'<img alt="" onerror="this.style.visibility=\'hidden\'" src="'+thumb(n.id)+'"><div><b>'+esc(n.title)+'</b><small>'+esc(n.by)+(n.shuffled?" · shuffle":"")+'</small>'+(n.mode==="wait"?'<small style="color:var(--gold)">⬇ The NAS is getting it ready…</small>':"")+'</div>':'<div class="note">Nothing playing. Add a video above.</div>';
+  var q0=s.queue||[];$("skip").disabled=!n&&!q0.length&&!(s.shuffle&&s.can_shuffle);$("skip").textContent=n?"⏭ Skip":"▶ Play";
+  $("tvNote").innerHTML=(s.note?"⚠️ "+esc(s.note)+"<br>":"")+(off?"":"Plays on channel <b>"+esc(s.channel)+"</b>. Tune any TV there to watch.");
+  var q=s.queue||[];$("count").textContent=q.length?q.length+" video"+(q.length>1?"s":""):"";
+  $("list").innerHTML=q.length?q.map(function(x,i){return'<div class="it"><img alt="" onerror="this.style.visibility=\'hidden\'" src="'+thumb(x.id)+'"><div><b>'+esc(x.title)+'</b><small>'+esc(x.by)+(x.ready?' · <span style="color:var(--ok)">✓ ready</span>':(x.dl==="getting"?' · <span style="color:var(--gold)">⬇ getting it…</span>':(x.dl==="failed"?' · <span style="color:var(--bad)">couldn\'t download'+(x.dl_msg?": "+esc(x.dl_msg):"")+'</span>':"")))+'</small></div>'+
+      (i?'<button type="button" data-next="'+i+'" data-id="'+esc(x.id)+'" title="Play next" aria-label="Play next">⤴</button>':"")+'<button type="button" data-rm="'+i+'" data-id="'+esc(x.id)+'" title="Remove" aria-label="Remove">✕</button></div>'}).join(""):'<div class="note">Nothing in the list yet.</div>';
+  $("shuffle").checked=!!s.shuffle}
+function load(){fetch("/api/party",{cache:"no-store"}).then(function(r){if(r.status===403)throw new Error("home");return r.json()}).then(function(s){ST=s;paint()})
+  .catch(function(e){if(e.message==="home"){$("ui").innerHTML='<div class="card"><h2>Home Wi-Fi only</h2><div class="note">Connect to the same Wi-Fi as the TVs and open this page again.</div></div>'}})}
+function add(next){var u=$("url").value.trim(),m=$("msg");if(!u){m.className="msg bad";m.textContent="Type a song, or paste a YouTube link.";return}if(busy)return;busy=true;
+  m.className="msg";m.textContent="Adding…";
+  post("/api/party/add",{url:u,next:next}).then(function(s){busy=false;if(s.ok){$("url").value="";mode();$("results").innerHTML="";m.className="msg ok";m.textContent="✔ "+s.message;ST=s;paint()}else{m.className="msg bad";m.textContent="✖ "+s.message}})
+  .catch(function(){busy=false;m.className="msg bad";m.textContent="✖ Couldn't reach KNAS."})}
+try{$("karaoke").checked=localStorage.getItem("knas_karaoke")==="1"}catch(e){}
+$("karaoke").onchange=function(){try{localStorage.setItem("knas_karaoke",this.checked?"1":"0")}catch(e){}$("url").placeholder=this.checked?"Search a song to sing":"Search a song, or paste a YouTube link";if($("url").value.trim()&&!isLink($("url").value.trim()))search()};
+/* one box for both: a YouTube link gets added, anything else is a search */
+function isLink(t){return /^(https?:\/\/)?([\w-]+\.)*(youtube\.com|youtu\.be|youtube-nocookie\.com)\//i.test(t)}
+function mode(){var t=$("url").value.trim(),link=isLink(t);$("add").textContent=link?"Add to list":"🔍 Search";$("addNext").classList.toggle("hidden",!link&&!!t)}
+$("url").addEventListener("input",mode);
+function mins(s){if(!s)return"";var m=Math.floor(s/60),x=s%60;return m+":"+(x<10?"0":"")+x}
+var FOUND=[],sq=0;
+function search(){var q=$("url").value.trim(),m=$("msg"),my=++sq;if(q.length<2){m.className="msg bad";m.textContent="Type a song or artist first.";return}
+  m.className="msg";m.textContent="Searching…";$("results").innerHTML="";
+  var kar=$("karaoke").checked;
+  fetch("/api/party/search?q="+encodeURIComponent(q)+(kar?"&karaoke=1":""),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(my!==sq)return;
+    if(!j.ok){m.className="msg bad";m.textContent="✖ "+j.message;return}
+    FOUND=j.results||[];m.className="msg";m.textContent=FOUND.length?"Tap Add, or Next to play it after this song:":"Nothing found. Try other words.";$("howto").classList.add("hidden");
+    $("results").innerHTML=FOUND.map(function(x,i){return'<div class="it res"><img alt="" onerror="this.style.visibility=\'hidden\'" src="'+thumb(x.id)+'"><div><b>'+esc(x.title)+'</b><small>'+esc(x.by)+(x.karaoke?' · <span style="color:var(--gold)">🎤 karaoke</span>':"")+(x.secs?" · "+mins(x.secs):"")+(x.saved?' · <span style="color:var(--ok)">✓ saved</span>':"")+'</small></div>'+
+      '<div class="go"><button type="button" class="gold" data-add="'+i+'">+ Add</button><button type="button" data-addnext="'+i+'">Next</button></div></div>'}).join("")
+  }).catch(function(){if(my===sq){m.className="msg bad";m.textContent="✖ Couldn't reach KNAS."}})}
+$("results").onclick=function(e){var b=e.target.closest("button");if(!b)return;var i=+(b.dataset.add!=null?b.dataset.add:b.dataset.addnext),x=FOUND[i];if(!x)return;
+  var next=b.dataset.addnext!=null;b.disabled=true;b.textContent="…";
+  post("/api/party/add",{url:x.id,next:next,title:x.title,by:x.by,karaoke:!!x.karaoke}).then(function(s){if(s.ok){ST=s;paint();b.textContent="✓";toast(s.message)}else{b.disabled=false;b.textContent=next?"Next":"+ Add";toast(s.message)}})
+  .catch(function(){b.disabled=false;b.textContent=next?"Next":"+ Add";toast("Couldn't reach KNAS")})};
+$("add").onclick=function(){if(isLink($("url").value.trim()))add(false);else search()};$("addNext").onclick=function(){add(true)};
+$("url").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();if(isLink($("url").value.trim()))add(false);else search()}});
+$("paste").onclick=function(){if(navigator.clipboard&&navigator.clipboard.readText)navigator.clipboard.readText().then(function(t){$("url").value=(t||"").trim();mode();$("url").focus()}).catch(function(){$("url").focus();toast("Long-press the box and choose Paste")});else{$("url").focus();toast("Long-press the box and choose Paste")}};
+$("skip").onclick=function(){var was=ST&&ST.now;post("/api/party/skip").then(function(s){ST=s;paint();toast(was?"Skipped":"Playing")})};
+$("shuffle").onchange=function(){post("/api/party/options",{shuffle:$("shuffle").checked}).then(function(s){ST=Object.assign(ST||{},s);paint()})};
+$("clear").onclick=function(){if(!confirm("Clear everything in the list?"))return;post("/api/party/options",{clear:true}).then(function(s){ST=Object.assign(ST||{},s);paint()})};
+$("stop").onclick=function(){post("/api/party/options",{stop:true}).then(function(s){ST=Object.assign(ST||{},s);paint();toast("Stopped")})};
+$("list").onclick=function(e){var b=e.target.closest("button");if(!b)return;
+  if(b.dataset.rm!=null)post("/api/party/remove",{i:+b.dataset.rm,id:b.dataset.id}).then(function(s){ST=Object.assign(ST||{},s);paint()});
+  if(b.dataset.next!=null)post("/api/party/next",{i:+b.dataset.next,id:b.dataset.id}).then(function(s){ST=Object.assign(ST||{},s);paint();toast("Playing next")})};
+$("shareBtn").onclick=function(e){e.preventDefault();var j=(ST&&ST.join)||location.origin+"/j";$("shareQr").src="/qr.svg?t="+encodeURIComponent(j);$("shareUrl").textContent=j.replace(/^https?:\/\//,"");
+  var w=ST&&ST.wifi;$("shareWifi").classList.toggle("hidden",!w);if(w)$("wifiQr").src="/qr.svg?t="+encodeURIComponent(w.qr);$("share").classList.remove("hidden")};
+$("shareClose").onclick=function(){$("share").classList.add("hidden")};
+/* opened from a shared link like /jukebox?add=https://youtu.be/... */
+var q=new URLSearchParams(location.search);if(q.get("add")||q.get("url")||q.get("text")){$("url").value=(q.get("add")||q.get("url")||q.get("text")).trim();history.replaceState(null,"","/jukebox")}
+mode();
+load();setInterval(function(){if(!document.hidden&&!busy)load()},3000);
+document.addEventListener("visibilitychange",function(){if(!document.hidden)load()});
+})();
+</script>
+</body>
+</html>

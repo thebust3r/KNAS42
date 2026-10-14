@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#090c2b">
+<title>Zapper · Duck Season</title>
+<link rel="icon" href="/remote-icon-192.png">
+<link rel="apple-touch-icon" href="/remote-icon-180.png">
+<style>
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-600.woff) format("woff");font-weight:600;font-display:swap}
+@font-face{font-family:"KNAS UI";src:url(/fonts/ui-700.woff) format("woff");font-weight:700;font-display:swap}
+@font-face{font-family:"KNAS Head";src:url(/fonts/classic-800i.woff) format("woff");font-weight:800;font-style:italic;font-display:swap}
+:root{--bg:#090c2b;--card:#131b4f;--line:rgba(156,184,255,.18);--line2:rgba(156,184,255,.35);--text:#eef2ff;--muted:#a3b0dd;
+  --gold:#ffd23a;--gold2:#ffb000;--ink:#1a1300;--red:#e3261b;--ok:#7dff9e;--me:#ff3b30;--head:"KNAS Head","Arial Narrow",Arial,sans-serif;--ui:"KNAS UI","Segoe UI",Roboto,Arial,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{font:600 15px/1.4 var(--ui);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;
+  background:radial-gradient(900px 500px at 80% -10%,rgba(90,47,134,.5),transparent 60%),var(--bg) fixed;
+  padding:max(12px,env(safe-area-inset-top)) 16px max(14px,env(safe-area-inset-bottom))}
+.hidden{display:none!important}
+.wrap{max-width:460px;margin:0 auto}
+header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+header h1{font:800 italic 24px var(--head);color:var(--gold);flex:1}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+.card h2{font:800 italic 20px var(--head);color:var(--gold);margin-bottom:6px}
+.note{color:var(--muted);font-size:13.5px}.note b{color:var(--text)}
+ol{margin:8px 0 0 20px;color:var(--muted);font-size:13.5px}ol li{margin:3px 0}
+label{display:block;color:var(--muted);font-size:13px;margin:12px 0 5px}
+input{width:100%;font:700 17px var(--ui);color:var(--text);background:var(--bg);border:1px solid var(--line2);border-radius:10px;padding:11px 12px}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.mode{border:2px solid var(--line2);border-radius:12px;padding:12px;cursor:pointer;background:rgba(255,255,255,.03)}
+.mode.on{border-color:var(--gold);background:rgba(255,210,58,.08)}
+.mode b{display:block;font-size:16px}.mode small{display:block;color:var(--muted);font-size:12.5px;margin-top:3px}
+.btn{display:block;width:100%;font:700 16px var(--ui);color:var(--text);background:rgba(255,255,255,.06);border:1px solid var(--line2);border-radius:12px;padding:13px;cursor:pointer;text-align:center;text-decoration:none}
+.btn.gold{background:linear-gradient(180deg,#ffe680,var(--gold) 50%,var(--gold2));color:var(--ink);border-color:transparent;box-shadow:0 3px 0 #8a6200}
+.row{display:flex;gap:10px;margin-top:10px}.row .btn{flex:1}
+.top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.me{width:14px;height:14px;border-radius:3px;background:var(--me);flex:none}
+.top b{flex:1;font-size:16px}
+.shells{display:flex;gap:4px}.shells i{width:7px;height:18px;border-radius:2px;background:var(--gold)}.shells i.x{background:#333}
+.score{font:800 italic 22px var(--head);color:var(--gold);min-width:60px;text-align:right}
+.scope{position:relative;border-radius:14px;overflow:hidden;background:#000;aspect-ratio:4/3;box-shadow:0 0 0 2px var(--line2)}
+.scope video{width:100%;height:100%;object-fit:cover;display:block}
+.scope .ret{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:2px solid #ff3b30;border-radius:50%;box-shadow:0 0 0 1px #000}
+.scope .ret:before,.scope .ret:after{content:"";position:absolute;background:#ff3b30}
+.scope .ret:before{left:50%;top:-14px;bottom:-14px;width:2px;margin-left:-1px}
+.scope .ret:after{top:50%;left:-14px;right:-14px;height:2px;margin-top:-1px}
+.scope .lvl{position:absolute;left:8px;bottom:8px;font:700 12px var(--ui);background:#000a;padding:2px 7px;border-radius:5px}
+.scope.blind video{opacity:0}.scope.blind .ret{display:none}
+.scope .bl{position:absolute;inset:0;display:none;align-items:center;justify-content:center;color:var(--muted);text-align:center;padding:20px}
+.scope.blind .bl{display:flex}
+.msg{text-align:center;min-height:42px;margin:10px 0;display:flex;align-items:center;justify-content:center}
+.trig{width:100%;height:max(170px,30vh);border-radius:22px;border:0;font:800 italic 34px var(--head);color:#fff;letter-spacing:2px;cursor:pointer;touch-action:manipulation;
+  background:radial-gradient(circle at 50% 35%,#ff6b5e,var(--red) 55%,#8e0f08);box-shadow:0 6px 0 #5a0a05,0 10px 30px rgba(227,38,27,.4)}
+.trig:active,.trig.hit{transform:translateY(4px);box-shadow:0 2px 0 #5a0a05}
+.trig.cal{background:radial-gradient(circle at 50% 35%,#ffe680,var(--gold) 55%,#b07a00);color:var(--ink);box-shadow:0 6px 0 #6b4a00}
+.small{display:flex;gap:8px;margin-top:10px}.small .btn{font-size:13.5px;padding:10px 6px}
+.tilt{height:120px;display:flex;align-items:center;justify-content:center;border-radius:14px;background:var(--card);border:1px solid var(--line);color:var(--muted);text-align:center;padding:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><h1>🦆 Duck Season</h1></header>
+
+  <div class="card hidden" id="offBox"><h2 id="offT">Duck Season is off</h2><div class="note" id="offN">Give Duck Season a channel number on the setup page (Experimental) to turn it on.</div></div>
+
+  <div class="card hidden" id="needSecure"><h2>One quick step</h2>
+    <div class="note">Phones only share the camera and motion sensors with <b>secure</b> pages, so the zapper uses KNAS's secure address.</div>
+    <ol><li>Tap the button below.</li><li>Your phone says the connection <b>isn't private</b>. That's expected: it's KNAS's own certificate. Tap <b>Show details → visit this website</b> (iPhone) or <b>Advanced → Proceed</b> (Android).</li><li>You only do this once on each phone.</li></ol>
+    <div class="row"><a class="btn gold" id="secureGo" href="#">Open the secure zapper</a></div></div>
+
+  <div id="join" class="hidden">
+    <div class="card">
+      <label for="name" style="margin-top:0">Your name</label><input id="name" maxlength="14" placeholder="Player">
+      <div class="modes">
+        <div class="mode on" data-mode="zapper"><b>🎯 Zapper</b><small>Real aim. The camera checks if you're pointing right at the duck.</small></div>
+        <div class="mode" data-mode="tilt"><b>📱 Tilt</b><small>Easier. Turn the phone to move a crosshair on the TV.</small></div>
+      </div>
+      <div class="row"><button class="btn gold" id="joinBtn" type="button">Join the game</button></div>
+    </div>
+    <div class="note" style="text-align:center">Tune a TV to the Duck Season channel first.</div>
+  </div>
+
+  <div id="game" class="hidden">
+    <div class="top"><div class="me" id="me"></div><b id="who">Player</b><div class="shells" id="shells"></div><div class="score" id="score">0</div></div>
+    <div id="zapUI">
+      <div class="scope" id="scope"><video id="cam" playsinline muted autoplay></video><div class="ret" id="ret"></div><div class="lvl" id="lvl"></div><div class="bl">Scope hidden. Aim over the top of your phone, like a real light gun.</div></div>
+    </div>
+    <div id="tiltUI" class="hidden"><div class="tilt" id="tiltBox">Point the phone at the middle of the TV and tap <b>&nbsp;Center&nbsp;</b>.</div></div>
+    <div class="msg" id="msg"></div>
+    <button class="trig" id="trig" type="button">FIRE</button>
+    <div class="small"><button class="btn" id="startBtn" type="button">▶ Start</button><button class="btn" id="calBtn" type="button">🎯 Recalibrate</button><button class="btn" id="scopeBtn" type="button">👁 Hide scope</button><button class="btn hidden" id="centerBtn" type="button">⊕ Center</button><button class="btn" id="leaveBtn" type="button">Leave</button></div>
+  </div>
+</div>
+<canvas id="cv" width="16" height="16" class="hidden"></canvas>
+<script>
+"use strict";
+var $=function(id){return document.getElementById(id)};
+var LS={get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+var MODE=LS.get("knas_zap_mode")||"zapper",SOCK=null,PID=null,SLOT=100,STEPS=4,STATE={},LOCK=null,SHOTN=0;
+var PATCH=.035;                 /* the part of the camera picture that has to see the duck: 3.5% of its width, right in the middle */
+var CAL={need:3,got:[],L:null,D:null,W:null,edge:0},SAMPLES=[],SHOTS={},STREAM=null,BLIND=LS.get("knas_zap_blind")==="1";
+$("name").value=LS.get("knas_zap_name")||"";
+document.querySelectorAll(".mode").forEach(function(m){m.classList.toggle("on",m.dataset.mode===MODE);m.onclick=function(){MODE=m.dataset.mode;LS.set("knas_zap_mode",MODE);document.querySelectorAll(".mode").forEach(function(x){x.classList.toggle("on",x===m)})}});
+function msg(t){$("msg").innerHTML=t}
+function send(o){if(SOCK&&SOCK.readyState===1)SOCK.send(JSON.stringify(o))}
+function wake(){try{if(navigator.wakeLock)navigator.wakeLock.request("screen").then(function(l){LOCK=l}).catch(function(){})}catch(e){}}
+var AC=null;function pew(){try{if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();var t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type="square";o.frequency.setValueAtTime(900,t);o.frequency.exponentialRampToValueAtTime(120,t+.18);g.gain.setValueAtTime(.12,t);g.gain.exponentialRampToValueAtTime(.001,t+.2);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+.22)}catch(e){}}
+
+/* ---------- joining ---------- */
+$("joinBtn").onclick=function(){LS.set("knas_zap_name",$("name").value);$("joinBtn").disabled=true;
+  var ready=MODE==="zapper"?startCamera():startTilt();
+  ready.then(function(){connect();$("join").classList.add("hidden");$("game").classList.remove("hidden");wake();layout()})
+    .catch(function(e){$("joinBtn").disabled=false;alert(MODE==="zapper"?(e&&e.name==="NotAllowedError"?"The camera was blocked. Allow the camera for this page in your browser settings and try again.":"Couldn't start the camera ("+(e&&e.name||e)+"). Try Tilt mode."):"Couldn't use the motion sensors ("+(e&&e.message||e)+"). Try Zapper mode.")})};
+function connect(){var ws=new WebSocket("wss://"+location.host+"/api/duck/ws?role=zapper&mode="+MODE+"&name="+encodeURIComponent($("name").value||""));SOCK=ws;
+  ws.onmessage=function(e){var m;try{m=JSON.parse(e.data)}catch(er){return}
+    if(m.t==="welcome"){PID=m.pid;SLOT=(m.slot||.1)*1000;STEPS=m.steps||4;document.documentElement.style.setProperty("--me",m.color);paint();
+      msg(m.screen?(MODE==="zapper"?"Aim at the <b>&nbsp;target&nbsp;</b> in the middle of the TV and press the gold button.":"Point at the middle of the TV and tap <b>&nbsp;Center</b>."):"Tune a TV to the Duck Season channel.")}
+    else if(m.t==="full"){msg("4 players are already in. Wait for the next game.")}
+    else if(m.t==="players"){var me=(m.list||[]).find(function(p){return p.id===PID});if(me)$("who").textContent=me.name;if(!m.screen)msg("Tune a TV to the Duck Season channel.")}
+    else if(m.t==="noscreen")msg("No TV has Duck Season on. Tune a TV to its channel.");
+    else if(m.t==="shotok"){var s=SHOTS[m.shot];if(s){s.delay=m.delay||0;s.ok=true}}
+    else if(m.t==="state"){STATE=m;paint()}
+    else if(m.t==="outcome")outcome(m)};
+  ws.onclose=function(){SOCK=null;msg("Lost KNAS. Reconnecting…");setTimeout(connect,2000)}}
+setInterval(function(){send({t:"ping"})},15000);
+function paint(){var sh=STATE.shells&&PID in STATE.shells?STATE.shells[PID]:3,h="";for(var i=0;i<3;i++)h+='<i class="'+(i<sh?"":"x")+'"></i>';$("shells").innerHTML=h;
+  $("score").textContent=(STATE.scores&&STATE.scores[PID])||0;$("startBtn").classList.toggle("hidden",STATE.phase==="play");
+  var cal=MODE==="zapper"&&CAL.L==null;$("trig").classList.toggle("cal",cal);$("trig").textContent=cal?"CALIBRATE "+(CAL.got.length+1)+"/3":"FIRE"}
+function layout(){$("zapUI").classList.toggle("hidden",MODE!=="zapper");$("tiltUI").classList.toggle("hidden",MODE!=="tilt");$("calBtn").classList.toggle("hidden",MODE!=="zapper");
+  $("scopeBtn").classList.toggle("hidden",MODE!=="zapper");$("centerBtn").classList.toggle("hidden",MODE!=="tilt");$("scope").classList.toggle("blind",BLIND);$("scopeBtn").textContent=BLIND?"👁 Show scope":"👁 Hide scope";paint()}
+$("startBtn").onclick=function(){send({t:"start"})};
+$("leaveBtn").onclick=function(){if(SOCK)SOCK.close();location.reload()};
+$("scopeBtn").onclick=function(){BLIND=!BLIND;LS.set("knas_zap_blind",BLIND?"1":"0");layout()};
+$("calBtn").onclick=function(){CAL.got=[];CAL.L=null;send({t:"mode",mode:"zapper",ready:false});paint();msg("Aim at the target in the middle of the TV and press the gold button 3 times.")};
+
+/* ---------- zapper: the camera ---------- */
+function startCamera(){return navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:640},height:{ideal:480},frameRate:{ideal:60}},audio:false}).then(function(s){
+  STREAM=s;var v=$("cam");v.srcObject=s;
+  /* zoom in a little if the phone can: it makes aiming at a far-away TV fairer */
+  try{var tr=s.getVideoTracks()[0],cap=tr.getCapabilities&&tr.getCapabilities();if(cap&&cap.zoom&&cap.zoom.max>=2)tr.applyConstraints({advanced:[{zoom:2}]}).catch(function(){})}catch(e){}
+  return v.play().catch(function(){}).then(function(){sampleLoop()})})}
+function sampleLoop(){var v=$("cam"),c=$("cv"),x=c.getContext("2d",{willReadFrequently:true});
+  function grab(){if(v.videoWidth){var vw=v.videoWidth,vh=v.videoHeight,side=Math.max(4,vw*PATCH);
+      x.drawImage(v,vw/2-side/2,vh/2-side/2,side,side,0,0,16,16);var d=x.getImageData(0,0,16,16).data,sum=0;
+      for(var i=0;i<d.length;i+=4)sum+=d[i]*.299+d[i+1]*.587+d[i+2]*.114;
+      var now=performance.now(),val=sum/256;SAMPLES.push([now,val]);while(SAMPLES.length&&SAMPLES[0][0]<now-4000)SAMPLES.shift();
+      $("lvl").textContent="light "+Math.round(val);
+      /* the reticle shows exactly the part of the picture that counts */
+      var r=$("scope").getBoundingClientRect(),scale=Math.max(r.width/vw,r.height/vh),px=side*scale;$("ret").style.width=$("ret").style.height=Math.max(10,px)+"px"}
+    if(v.requestVideoFrameCallback)v.requestVideoFrameCallback(grab);else requestAnimationFrame(grab)}
+  if(v.requestVideoFrameCallback)v.requestVideoFrameCallback(grab);else requestAnimationFrame(grab)}
+function between(a,b){return SAMPLES.filter(function(s){return s[0]>=a&&s[0]<=b})}
+
+/* calibration: shoot the target in the middle. The phone learns how long the flash takes to show up, and
+   how bright "white" and "black" look to its camera. */
+function calShot(id){var s=SHOTS[id];delete SHOTS[id];if(!s.ok){failCal("KNAS didn't answer. Try again.");return}
+  var t0=s.t+s.delay,win=between(t0,t0+1800);if(win.length<8){failCal("The camera is too slow. Try again.");return}
+  var vals=win.map(function(p){return p[1]}),lo=Math.min.apply(null,vals),hi=Math.max.apply(null,vals);
+  if(hi-lo<28){failCal("Couldn't see the flash. Point the middle of the scope at the target and try again.");return}
+  var mid=(lo+hi)/2,dark=false,fall=null,rise=null,fall2=null;
+  for(var i=0;i<win.length;i++){var v=win[i][1],t=win[i][0];
+    if(!dark){if(v<mid){dark=true;fall=t}continue}                 /* the screen goes black... */
+    if(rise==null){if(v>=mid)rise=t;continue}                       /* ...the white box appears... */
+    if(v<mid){fall2=t;break}}                                       /* ...and goes away again */
+  if(rise==null||fall2==null){failCal("Couldn't see the flash clearly. Try again.");return}
+  var wide=fall2-rise;if(wide<SLOT*.45||wide>SLOT*1.8){failCal("That flash didn't look right. Try again, holding steady.");return}
+  var L=rise-SLOT-t0,edge=0;if(fall!=null&&Math.abs((fall-t0)-L)<SLOT*.7){L=(L+(fall-t0))/2;edge=(fall-t0)-L}
+  var white=between(rise,fall2).map(function(p){return p[1]}),black=between(fall2+10,fall2+SLOT*2-20).map(function(p){return p[1]});
+  CAL.got.push({L:L,edge:edge,W:median(white),D:black.length?median(black):lo});
+  if(CAL.got.length<CAL.need){paint();msg("Got it ("+CAL.got.length+"/3). Again!");return}
+  CAL.L=median(CAL.got.map(function(g){return g.L}));CAL.W=median(CAL.got.map(function(g){return g.W}));CAL.D=median(CAL.got.map(function(g){return g.D}));CAL.edge=median(CAL.got.map(function(g){return g.edge}));
+  send({t:"calibrated",latency:Math.round(CAL.L)});paint();if(navigator.vibrate)try{navigator.vibrate([20,40,20])}catch(e){}
+  msg("✅ Calibrated (the TV takes "+Math.round(CAL.L)+" ms). Ready!")}
+function failCal(t){msg("⚠ "+t);paint()}
+function median(a){a=a.slice().sort(function(x,y){return x-y});return a.length?a[Math.floor(a.length/2)]:0}
+
+/* a real shot: look at what the camera saw during each step of the flash */
+function judge(id){var s=SHOTS[id];delete SHOTS[id];if(!s.ok)return;
+  var start=s.t+s.delay+CAL.L,thr=CAL.D+(CAL.W-CAL.D)*.5,pad=Math.min(22,SLOT*.2);
+  /* Wi-Fi can make the flash a little early or late. The first step is always black, so slide the timing
+     (up to 60 ms either way) to where the camera saw the darkest first step, preferring the expected time. */
+  var best=null;for(var o=-60;o<=60;o+=5){var w=between(start+o+pad,start+o+SLOT-pad);if(!w.length)continue;
+    var m=w.reduce(function(a,q){return a+q[1]},0)/w.length,sc=m+Math.abs(o)*.04;if(!best||sc<best.sc)best={o:o,sc:sc}}
+  if(best)start+=best.o;
+  function peak(k){var w=between(start+k*SLOT+pad,start+(k+1)*SLOT-pad);if(!w.length)w=between(start+k*SLOT+pad*.4,start+(k+1)*SLOT-pad*.4);return w.length?Math.max.apply(null,w.map(function(p){return p[1]})):null}
+  var p=[0,1,2].map(peak),w0=between(start+pad,start+SLOT-pad).map(function(q){return q[1]}),dark=!w0.length||median(w0)<thr;
+  var hits=[dark&&p[1]!=null&&p[1]>=thr,dark&&p[2]!=null&&p[2]>=thr];
+  LASTDARK=dark;send({t:"result",shot:id,hits:hits,aimed:dark})}   /* the TV says whether it was a hit (it knows where the ducks were) */
+var LASTDARK=true;
+function outcome(m){if(m.hit){msg("💥 HIT!");if(navigator.vibrate)try{navigator.vibrate([30,30,60])}catch(e){}}
+  else msg(LASTDARK||MODE==="tilt"?"Missed.":"Missed. (Something bright is behind your aim: lights or a window?)")}
+
+/* ---------- tilt mode: the motion sensors move a crosshair ---------- */
+var ORI=null,ZERO=null,AIMX=.5,AIMY=.5,SPAN_X=38,SPAN_Y=28;
+function startTilt(){return new Promise(function(ok,bad){
+  function go(){window.addEventListener("deviceorientation",function(e){if(e.alpha==null&&e.beta==null)return;ORI=e});setTimeout(function(){ORI?ok():bad(new Error("no motion sensor found"))},900)}
+  if(window.DeviceOrientationEvent&&typeof DeviceOrientationEvent.requestPermission==="function")DeviceOrientationEvent.requestPermission().then(function(r){r==="granted"?go():bad(new Error("permission denied"))}).catch(bad);
+  else if(window.DeviceOrientationEvent)go();else bad(new Error("not supported"))})}
+function aimNow(){if(!ORI)return null;var r=Math.PI/180,a=(ORI.alpha||0)*r,b=(ORI.beta||0)*r,g=(ORI.gamma||0)*r;
+  /* which way the back of the phone points */
+  var ca=Math.cos(a),sa=Math.sin(a),cb=Math.cos(b),sb=Math.sin(b),cg=Math.cos(g),sg=Math.sin(g);
+  var fx=-(ca*sg+sa*sb*cg),fy=-(sa*sg-ca*sb*cg),fz=-cb*cg;
+  return{yaw:Math.atan2(fx,fy)/r,pitch:Math.asin(Math.max(-1,Math.min(1,fz)))/r}}
+function center(){var n=aimNow();if(n){ZERO=n;msg("Centered. Fire away!")}}
+$("centerBtn").onclick=center;
+setInterval(function(){if(MODE!=="tilt"||!SOCK)return;var n=aimNow();if(!n)return;if(!ZERO)ZERO=n;
+  var dy=n.yaw-ZERO.yaw;while(dy>180)dy-=360;while(dy<-180)dy+=360;
+  AIMX=Math.max(0,Math.min(1,.5+dy/SPAN_X));AIMY=Math.max(0,Math.min(1,.5-(n.pitch-ZERO.pitch)/SPAN_Y));
+  send({t:"aim",x:+AIMX.toFixed(4),y:+AIMY.toFixed(4)})},33);
+
+/* ---------- the trigger ---------- */
+function fire(){if(!SOCK)return;$("trig").classList.add("hit");setTimeout(function(){$("trig").classList.remove("hit")},90);if(navigator.vibrate)try{navigator.vibrate(18)}catch(e){}
+  if(MODE==="tilt"){send({t:"tshot",x:AIMX,y:AIMY});pew();return}
+  var cal=CAL.L==null,id=PID+"-"+(++SHOTN);SHOTS[id]={t:performance.now(),delay:0,ok:false,cal:cal};
+  send({t:"shot",shot:id,cal:cal});if(!cal)pew();
+  var wait=cal?1600:(CAL.L+SLOT*STEPS+140);
+  setTimeout(function(){var s=SHOTS[id];if(!s)return;var extra=s.delay||0;setTimeout(function(){if(cal)calShot(id);else judge(id)},extra)},wait)}
+$("trig").addEventListener("pointerdown",function(e){e.preventDefault();fire()});
+document.addEventListener("visibilitychange",function(){if(!document.hidden)wake()});
+
+/* ---------- start ---------- */
+fetch("/api/duck",{cache:"no-store"}).then(function(r){if(r.status===403)throw"home";return r.json()}).then(function(j){
+  if(!j.on){$("offBox").classList.remove("hidden");return}
+  if(!window.isSecureContext){if(j.secure){$("needSecure").classList.remove("hidden");$("secureGo").href=j.secure+"/zapper"}else{$("offBox").classList.remove("hidden");$("offT").textContent="The secure address is off";$("offN").textContent="The zapper needs KNAS's secure address. Check SECURE_PORT in settings.txt."}return}
+  $("join").classList.remove("hidden")})
+  .catch(function(e){$("offBox").classList.remove("hidden");if(e==="home"){$("offT").textContent="Home network only";$("offN").textContent="Duck Season only works on the same Wi-Fi as KNAS."}});
+</script>
+</body>
+</html>

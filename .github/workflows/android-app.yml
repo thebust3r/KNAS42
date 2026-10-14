@@ -1,0 +1,72 @@
+# The KNAS 42 app for Android and Android TV: GitHub builds the APK from the android/ folder.
+# - Every change to android/ builds it (download it from the run's "Artifacts").
+# - Publishing a release builds it and attaches KNAS-42-<version>.apk to the release.
+# The app is signed with the key in the repo's secrets (KNAS_KEYSTORE_B64, KNAS_KEYSTORE_PASSWORD),
+# so each new version installs right over the old one.
+name: Android app
+
+on:
+  push:
+    branches: [main, master]
+    paths: ["android/**", ".github/workflows/android-app.yml"]
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: Work out the version
+        id: v
+        run: |
+          version="$(sed -n 's/^VERSION = "\(.*\)"/\1/p' app/server.py | head -n1)"
+          echo "version=${version:-0.0.0}" >> "$GITHUB_OUTPUT"
+
+      - name: Get the signing key
+        env:
+          KS_B64: ${{ secrets.KNAS_KEYSTORE_B64 }}
+          KS_PASS: ${{ secrets.KNAS_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -n "$KS_B64" ]; then
+            echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/knas.jks"
+            echo "KNAS_KEYSTORE=$RUNNER_TEMP/knas.jks" >> "$GITHUB_ENV"
+            echo "KNAS_KEYSTORE_PASSWORD=$KS_PASS" >> "$GITHUB_ENV"
+          else
+            echo "::warning::No signing key in the repo secrets, so this APK uses a test key (it won't install over a normal one)."
+          fi
+
+      - name: Build the APK
+        run: gradle -p android assembleRelease -PknasVersion=${{ steps.v.outputs.version }} --no-daemon --stacktrace
+
+      - name: Name it
+        run: |
+          mkdir -p out
+          cp android/app/build/outputs/apk/release/*.apk "out/KNAS-42-${{ steps.v.outputs.version }}.apk"
+          ls -la out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KNAS-42-app-${{ steps.v.outputs.version }}
+          path: out/*.apk
+
+      - name: Attach it to the release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ github.event.release.tag_name }}" out/*.apk --clobber

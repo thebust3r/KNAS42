@@ -1,0 +1,69 @@
+# Ready-made Docker images: GitHub builds KNAS's two images (for regular PCs/NAS boxes and for ARM ones like
+# a Raspberry Pi) and publishes them at ghcr.io, so installing KNAS downloads them in about a minute
+# instead of building for 5-10 minutes. docker-compose.yml still builds from the files here if the
+# download ever fails.
+#
+# One-time step after the first run: on GitHub, open your profile → Packages → knas42 → Package settings
+# → Change visibility → Public. Do the same for knas42-cast. (New packages start out private.)
+name: Docker images
+
+on:
+  push:
+    branches: [main, master]
+    paths: ["Dockerfile", "cast/**", "app/server.py", ".github/workflows/docker-images.yml"]
+  release:
+    types: [published]
+  workflow_dispatch:      # run it by hand from the Actions tab
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  images:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: knas42
+            context: .
+          - name: knas42-cast
+            context: ./cast
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Work out the image name and version
+        id: meta
+        run: |
+          owner="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
+          version="$(sed -n 's/^VERSION = "\(.*\)"/\1/p' app/server.py | head -n1)"
+          echo "image=ghcr.io/$owner/${{ matrix.name }}" >> "$GITHUB_OUTPUT"
+          echo "version=${version:-dev}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Sign in to GitHub's image registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and publish (amd64 + arm64)
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.image }}:latest
+            ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.version }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.description=KNAS 42 - a 90s cable box for any screen
+            org.opencontainers.image.licenses=MIT
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
