@@ -51,6 +51,7 @@ public class MainActivity extends Activity {
     private boolean backHeld = false;
     private boolean stopped = false;
     private long stoppedAt = 0;
+    private Updater updater;
 
     @Override
     protected void onCreate(Bundle saved) {
@@ -78,6 +79,8 @@ public class MainActivity extends Activity {
         }
         web.requestFocus();
         if (WakeService.enabled(this)) WakeService.start(this);
+        updater = new Updater(this, prefs);
+        if (url != null) updater.check(true);          // a new app version on GitHub? (at most every few hours)
     }
 
     private void setUpWebView() {
@@ -298,6 +301,7 @@ public class MainActivity extends Activity {
                 "Open when the TV turns on: " + (auto ? "ON (press to turn off)" : "OFF (press to turn on)"),
                 "Use KNAS as the home screen: " + (home ? "ON (press to turn off)" : "OFF (press to turn on)"),
                 "Other apps (the TV's normal home screen)",
+                "Check for app updates (this is " + Updater.installedVersion(this) + ")",
                 "Reload KNAS"
         };
         dialog = new AlertDialog.Builder(this)
@@ -309,6 +313,7 @@ public class MainActivity extends Activity {
                         else if (which == 1) setAutoStart(!auto);
                         else if (which == 2) setHome(!home);
                         else if (which == 3) openOtherApps();
+                        else if (which == 4) updater.check(false);
                         else web.reload();
                     }
                 })
@@ -415,6 +420,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        if (updater != null) updater.resumed();
         if (WakeService.enabled(this) && Build.VERSION.SDK_INT >= 23 && Settings.canDrawOverlays(this) && justAskedOverlay) {
             justAskedOverlay = false;
             Toast.makeText(this, "All set: KNAS will open when the TV turns on", Toast.LENGTH_LONG).show();

@@ -134,6 +134,8 @@ In the app:
 - **Back** closes the guide. Pressing it again asks if you want to leave, or opens **Settings**.
 - **Hold Back** for a second to open **Settings** any time: change the NAS address, reload, turn on **Open when the TV turns on**, or make KNAS the home screen.
 
+**Updates:** the app checks GitHub for new versions by itself and asks "Install now?" when one is out. The first time, Android asks you to allow **Install unknown apps** for KNAS 42; the app takes you there. You can also check any time: hold **Back** → **Check for app updates**.
+
 **Open when the TV turns on:** turn it on in the app's Settings and KNAS opens by itself whenever the TV (or the box) wakes up. Newer Android asks you to allow **Display over other apps** for KNAS 42 the first time; the app takes you to that setting. If your box doesn't open it, find it under Settings → Apps → Special app access → Display over other apps.
 
 **Use KNAS as the home screen** (so the TV turns on straight to KNAS, with no home screen first): in the app, hold **Back** → **Use KNAS as the home screen** → on. Your other apps (Netflix, YouTube, settings) are always under hold **Back** → **Other apps**. Turn the setting off any time to go back to normal.

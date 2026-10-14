@@ -1,6 +1,6 @@
-**Already have KNAS?** Download `KNAS-2.22.1-update.zip` below and drop it (still zipped) into your `updates` folder. Your settings stay.
+**Already have KNAS?** Download `KNAS-2.22.2-update.zip` below and drop it (still zipped) into your `updates` folder. Your settings stay.
 **New install?** Download the code with the green **Code** button on the main page and follow the README.
-**Android TV box or Android phone?** Download `KNAS-42-2.22.1.apk` below and install it. ([How](https://github.com/thebust3r/knas42/blob/main/docs/SETUP-GUIDE.md#android-tv-box-onn-chromecast-with-google-tv-fire-tv-and-android-phones))
+**Android TV box or Android phone?** Download `KNAS-42-2.22.2.apk` below and install it. ([How](https://github.com/thebust3r/knas42/blob/main/docs/SETUP-GUIDE.md#android-tv-box-onn-chromecast-with-google-tv-fire-tv-and-android-phones))
 
 ## New since 2.6.2
 
@@ -8,6 +8,7 @@
 - Opens straight to the cable box, full screen
 - TV remote works: arrows, OK, numbers, channel up/down, guide, info, back
 - Can open by itself when the TV turns on, right away, picking up where you left off (hold Back → Settings)
+- New in 2.22.2: the app updates itself. When a new version is on GitHub it asks "Install now?" and does it with one press.
 - New in 2.22.1: "Use KNAS as the home screen", so the TV turns on straight to KNAS with no home screen first. Your other apps are under Settings → Other apps. (Google TV boxes like Onn need a one-time step from a computer, see the setup guide.)
 
 **Phone remote**
