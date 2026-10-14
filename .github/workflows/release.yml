@@ -1,4 +1,5 @@
-# Publishing a new version: push a tag like v2.22.0 and GitHub does the rest:
+# Publishing a new version: change VERSION in app/server.py (and the notes in .github/RELEASE_NOTES.md),
+# push it, and GitHub does the rest (it skips versions that already have a release):
 #   1. builds the update zip (KNAS-<version>-update.zip, for the updates folder)
 #   2. builds the KNAS 42 Android app (KNAS-42-<version>.apk), signed with the key in the repo's secrets
 #   3. publishes a release with both attached, using .github/RELEASE_NOTES.md as the notes
@@ -6,14 +7,37 @@ name: Release
 
 on:
   push:
-    tags: ["v*"]
+    branches: [main, master]
+    paths: ["app/server.py", ".github/RELEASE_NOTES.md", ".github/workflows/release.yml"]
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      new: ${{ steps.v.outputs.new }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Is this a new version?
+        id: v
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version="$(sed -n 's/^VERSION = "\(.*\)"/\1/p' app/server.py | head -n1)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if gh release view "v$version" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "v$version already has a release, nothing to do"; echo "new=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "new=true" >> "$GITHUB_OUTPUT"
+          fi
+
   release:
+    needs: check
+    if: needs.check.outputs.new == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -22,9 +46,8 @@ jobs:
       - name: Work out the version
         id: v
         run: |
-          version="$(sed -n 's/^VERSION = "\(.*\)"/\1/p' app/server.py | head -n1)"
-          echo "version=${version:-0.0.0}" >> "$GITHUB_OUTPUT"
-          echo "tag=${GITHUB_REF_NAME:-v$version}" >> "$GITHUB_OUTPUT"
+          echo "version=${{ needs.check.outputs.version }}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${{ needs.check.outputs.version }}" >> "$GITHUB_OUTPUT"
 
       - name: Make the update zip
         run: |
@@ -73,5 +96,5 @@ jobs:
           if gh release view "$tag" >/dev/null 2>&1; then
             gh release upload "$tag" out/* --clobber
           else
-            gh release create "$tag" out/* --title "KNAS ${{ steps.v.outputs.version }}" --notes-file .github/RELEASE_NOTES.md
+            gh release create "$tag" out/* --target "$GITHUB_SHA" --title "KNAS ${{ steps.v.outputs.version }}" --notes-file .github/RELEASE_NOTES.md
           fi
