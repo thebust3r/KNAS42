@@ -80,7 +80,12 @@ def check_source(src):
     try:
         s1, u1 = _playlist(src)
     except Exception as e:
-        return f"can't reach the break recorder at {src} ({type(e).__name__}: {e}). Is knas42-cast running?"
+        if "127.0.0.1" in src:
+            switched = ensure_recorder()
+            return ("the break recorder (knas42-cast) isn't running. " + ("KNAS just switched it on for you: " if switched else "")
+                    + "restart the KNAS project in your NAS's Docker app (Stop, then Start), or run `docker compose up -d` in the KNAS folder. "
+                    + f"({type(e).__name__})")
+        return f"can't reach the break recorder at {src} ({type(e).__name__}: {e})"
     if not u1:
         return "the break recorder is up but has no video yet (starting?)"
     time.sleep(5)
@@ -247,14 +252,45 @@ def enabled():
     return env("BREAK_CLIPS_ON", "on").lower() not in ("off", "no", "0", "false")
 
 
+ENV_FILE = os.path.join(ROOT, ".env")
+
+
+def ensure_recorder():
+    """Switch on the optional recorder for Docker: COMPOSE_PROFILES=clips in the .env file next to
+    docker-compose.yml. Takes effect the next time the project starts. True if it had to be added."""
+    try:
+        lines = open(ENV_FILE, encoding="utf-8").read().splitlines() if os.path.exists(ENV_FILE) else []
+        for i, line in enumerate(lines):
+            m = re.match(r"\s*COMPOSE_PROFILES\s*=\s*(.*)$", line)
+            if m:
+                profiles = [p.strip() for p in m.group(1).strip().strip('"').split(",") if p.strip()]
+                if "clips" in profiles:
+                    return False
+                lines[i] = "COMPOSE_PROFILES=" + ",".join(profiles + ["clips"])
+                break
+        else:
+            lines += ["# Written by KNAS: starts the break-clip recorder (knas42-cast) because break clips are on.",
+                      "COMPOSE_PROFILES=clips"]
+        with open(ENV_FILE, "w", encoding="utf-8") as f:
+            f.write("\n".join(lines) + "\n")
+        log("switched on the recorder (COMPOSE_PROFILES=clips in .env); restart the KNAS project to start it")
+        return True
+    except OSError as e:
+        log("couldn't write .env to switch on the recorder:", e)
+        return False
+
+
 def _loop():
     time.sleep(20)                       # let the server settle
     while True:
+        if re.search(r"\b8643\s*=", env("CAST_CHANNELS", "")):
+            ensure_recorder()            # the weather channel stream for ErsatzTV needs the recorder too
         if not enabled():                # turned off on the setup page: leave your clips folder alone
             status.update(state="off (break clips are turned off)", next_run=None, error=None)
             NOW.clear()
             time.sleep(10)
             continue
+        ensure_recorder()                # break clips need the recorder container
         hours = max(1.0, float(env("BREAK_CLIPS_HOURS", "3") or 3))
         if not plan():
             status["state"] = "off (BREAK_CLIPS is blank)"

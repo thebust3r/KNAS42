@@ -162,7 +162,7 @@ The guide covers everything in detail: installing on each type of NAS, watching 
 |---|---|
 | 8642 | The web pages and the setup page |
 | 8643 | The weather channel as live video for ErsatzTV (off unless you turn it on) |
-| 8644 | The break screen recorder (only runs while making break clips) |
+| 8644 | The break screen recorder (optional: only if break clips are on) |
 | 8645 | The secure (https) address, for Live Cam, Duck Season and the voice remote |
 
 **Your files:** settings are in `settings.txt`, your own facts and trivia are in `facts.txt` and `trivia.txt`, and your teams are in `teams.txt`. Updates never overwrite them.

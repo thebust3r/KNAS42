@@ -1030,7 +1030,7 @@ get("api/setup").then(function(j){
   $("TRIVIA_TOPICS").innerHTML=(j.trivia_topics||[]).map(function(t){return '<button type="button" data-v="'+esc(t[0])+'"'+(tsel.indexOf(t[0])>=0?' class="on"':'')+'><span>'+esc(t[1])+'</span></button>'}).join("");
   $("TRIVIA_TOPICS").querySelectorAll("button").forEach(function(b){b.onclick=function(){b.classList.toggle("on");dirty()}});
   srcStatus(j.facts_status||{});
-  seg("BREAK_CLIPS_ON",S.BREAK_CLIPS_ON||"on");clipsToggle();$("BREAK_CLIPS_ON").querySelectorAll("button").forEach(function(b){b.addEventListener("click",clipsToggle)});
+  seg("BREAK_CLIPS_ON",S.BREAK_CLIPS_ON||"off");clipsToggle();$("BREAK_CLIPS_ON").querySelectorAll("button").forEach(function(b){b.addEventListener("click",clipsToggle)});
   setChecks("WEATHER_PAGES",S.WEATHER_PAGES);setChecks("BREAK_SEGMENTS",S.BREAK_SEGMENTS);
   var cc=S.CAST_CHANNELS;$("CAST").querySelectorAll("input").forEach(function(c){c.checked=(cc==null||cc==="")?c.value.indexOf("/break")>=0:(cc!=="none"&&cc.replace(/\s/g,"").indexOf(c.value)>=0)});
   var sel=$("sport");sel.innerHTML=(j.sports||[]).map(function(s){return '<option value="'+esc(s[0])+'">'+esc(s[1])+'</option>'}).join("");
@@ -1205,7 +1205,7 @@ $("save").onclick=function(){
   st.THEME=$("THEME").dataset.v||"classic";st.SCANLINES=$("SCANLINES").dataset.v||"on";
   st.FONT=$("FONT").dataset.v||"classic";st.FONT_WEIGHT=$("FONT_WEIGHT").dataset.v||"bold";st.TEXT_SHADOW=$("TEXT_SHADOW").dataset.v||"classic";
   var pr=PRESETS[st.THEME]||[];CKEYS.forEach(function(k,i){var v=$(k).value.toLowerCase();st[k]=(v===(pr[i]||"").toLowerCase())?"":v});st.VIDEO_BITRATE=$("VIDEO_BITRATE").value;st.FPS=$("FPS").value;
-  st.BREAK_CLIPS_ON=$("BREAK_CLIPS_ON").dataset.v||"on";
+  st.BREAK_CLIPS_ON=$("BREAK_CLIPS_ON").dataset.v||"off";
   st.ERSATZTV_API_KEY=st.ERSATZTV_API_KEY.replace(/^"|"$/g,"");if(!st.ERSATZTV_API_KEY)delete st.ERSATZTV_API_KEY;   // blank = keep the key the copier found
   if($("ERSATZTV_HOST").dataset.v)st.ERSATZTV_HOST=$("ERSATZTV_HOST").dataset.v;
   ["FACTS_LIST","TRIVIA_LIST","FACTS_LOCAL"].forEach(function(k){st[k]=$(k).checked?"on":"off"});

@@ -36,7 +36,7 @@ echo "3. Fonts and pages load (no internet needed for these)"
 
 echo "4. Saving the setup page"
 R="$(curl -fsS -X POST -H 'Content-Type: application/json' \
-  -d '{"settings":{"CITY_NAME":"Springfield, MO","LATITUDE":"37.2090","LONGITUDE":"-93.2923","TZ":"America/Chicago","BREAK_CLIPS":"30s x1","BREAK_CLIPS_HOURS":"6"},"teams":[]}' \
+  -d '{"settings":{"CITY_NAME":"Springfield, MO","LATITUDE":"37.2090","LONGITUDE":"-93.2923","TZ":"America/Chicago","BREAK_CLIPS_ON":"on","BREAK_CLIPS":"30s x1","BREAK_CLIPS_HOURS":"6"},"teams":[]}' \
   "$BASE/api/setup")"
 case "$R" in *'"ok": true'*) pass "settings saved";; *) fail "saving settings failed: $R";; esac
 sleep 6

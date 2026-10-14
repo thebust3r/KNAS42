@@ -23,9 +23,11 @@ services:
       #   Docker Desktop on Windows: C:/Users/you/Videos:/nas/videos   (or delete the line if you won't use Tools)
       - /volume1:/nas/volume1
 
-  # The recorder: turns KNAS pages into video for ErsatzTV (the break clips, and optionally the
-  # weather channel). It sits idle until it's needed. Not using ErsatzTV? It's fine to leave it.
+  # The recorder (optional): turns KNAS pages into video for ErsatzTV (the break clips, and optionally the
+  # weather channel). It only starts if you use break clips: turning them on in the setup page switches it on
+  # (KNAS writes COMPOSE_PROFILES=clips into a file called .env in this folder). Then restart the project once.
   knas42-cast:
+    profiles: ["clips"]
     image: ghcr.io/thebust3r/knas42-cast:latest
     build: ./cast
     pull_policy: missing

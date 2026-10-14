@@ -12,6 +12,8 @@ on:
 jobs:
   fresh-install:
     runs-on: ubuntu-latest
+    env:
+      COMPOSE_PROFILES: clips     # also start the optional break-clip recorder, so the test can record a clip
     timeout-minutes: 30
     steps:
       - name: Get the files (like downloading the ZIP)

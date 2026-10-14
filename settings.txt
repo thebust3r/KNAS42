@@ -191,8 +191,9 @@ TRIVIA_SOURCES=
 
 # ---- Break screen and break clips (filler between episodes) (optional) ----
 BREAK_VIDEO_MAX=90
-# Make break clips for ErsatzTV filler: on, or off if you use your own filler clips
-BREAK_CLIPS_ON=on
+# Make break clips for ErsatzTV filler: on, or off (no ErsatzTV, or you use your own filler clips)
+# Turning this on also switches on the recorder (knas42-cast); restart the KNAS project once after.
+BREAK_CLIPS_ON=off
 # Clips recorded into the break-clips folder: length x how many
 BREAK_CLIPS=30s x2, 1m x3, 2m x2, 5m x2
 BREAK_CLIPS_HOURS=3

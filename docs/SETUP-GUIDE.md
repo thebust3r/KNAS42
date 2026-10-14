@@ -265,6 +265,8 @@ You only need this if you want KNAS Weather as a channel in ErsatzTV itself, for
 
 ## 6. Break clips: shows that start on the :00 and :30
 
+**Turning them on:** break clips are off on new installs. Setup page → **Breaks & clips** → **On: KNAS makes them for me** → Save. Clips are made by a second, optional container (the recorder, `knas42-cast`), and turning clips on switches it on. Then restart the KNAS project once in your NAS's Docker app (Stop, then Start; or `docker compose up -d` from a command line). **Clip status** on that page tells you if the recorder still isn't running.
+
 Real TV channels start shows on the hour and half hour, with commercials in between. ErsatzTV can do the same if it has **filler** to play in the gaps. KNAS makes that filler for you: short videos of its "We'll Be Right Back" break screen, with trivia, facts and your channel name.
 
 - KNAS records them into the `break-clips` folder inside the KNAS folder: `KNAS Break 30sec A.ts`, `KNAS Break 1min A.ts`, `KNAS Break 5min B.ts`, and so on.
