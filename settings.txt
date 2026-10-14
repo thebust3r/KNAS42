@@ -267,3 +267,7 @@ SEASON_TUNE=on
 SEASON_GREETING=on
 SEASON_COLORS=on
 SEASON_WINTER=on
+
+# ---- Update check (optional) ----
+# on = the setup page tells you when a new KNAS is out on GitHub (it checks a few times a day). off = never check.
+UPDATE_CHECK=on

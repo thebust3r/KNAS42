@@ -526,6 +526,49 @@ def _refresh(key, fn):
             _refreshing.discard(key)
 
 
+# ---------------------------------------------------------------- "a new KNAS is out" (setup page banner)
+UPDATE_REPO = env("UPDATE_REPO", "thebust3r/knas42")
+
+
+def _version_rank(v):
+    """Comparable version. The numbering restarted at 1.1.1; the old test builds (2.6 to 2.22) count as older."""
+    nums = [int(x) for x in re.findall(r"\d+", v or "")[:3]] + [0, 0, 0]
+    nums = nums[:3]
+    legacy = nums[0] == 2 and 6 <= nums[1] <= 22
+    return (0 if legacy else 1, nums)
+
+
+def _latest_release():
+    req = urllib.request.Request(f"https://api.github.com/repos/{UPDATE_REPO}/releases/latest",
+                                 headers={"User-Agent": "knas42-update-check", "Accept": "application/vnd.github+json"})
+    with urllib.request.urlopen(req, timeout=15) as r:
+        rel = json.loads(r.read().decode("utf-8", "replace"))
+    zip_url = next((a.get("browser_download_url") for a in rel.get("assets", [])
+                    if str(a.get("name", "")).endswith("-update.zip")), None)
+    lines = [l.strip()[2:].strip() for l in (rel.get("body") or "").splitlines() if l.strip().startswith(("- ", "* "))]
+    return {"version": str(rel.get("tag_name", "")).lstrip("vV"), "url": rel.get("html_url"), "zip": zip_url,
+            "notes": [_short(re.sub(r"[*_`]", "", l)) for l in lines[:6]], "more": max(0, len(lines) - 6),
+            "published": rel.get("published_at")}
+
+
+def _short(t, n=110):
+    return t if len(t) <= n else t[:n].rsplit(" ", 1)[0].rstrip(",;:(") + "…"
+
+
+def update_check():
+    out = {"ok": True, "current": VERSION, "newer": False}
+    if env("UPDATE_CHECK", "on").lower() in ("off", "no", "0", "false"):
+        return dict(out, off=True)
+    try:
+        rel = cached("github-release", 6 * 3600, _latest_release)
+    except Exception as e:
+        return dict(out, ok=False, error=str(e)[:200])
+    if rel and rel.get("version"):
+        out.update(latest=rel["version"], url=rel.get("url"), zip=rel.get("zip"), notes=rel.get("notes", []), more=rel.get("more", 0),
+                   newer=_version_rank(rel["version"]) > _version_rank(VERSION))
+    return out
+
+
 def warm_weather_channel():
     """Fetch the weather channel's data when KNAS starts and keep it fresh, so the channel shows up instantly."""
     time.sleep(3)
@@ -1912,6 +1955,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self.serve_page("sports.html", "sports")
         if path in ("/tv", "/tv/", "/tv.html"):
             return self.serve_page("tv.html", "tv")
+        if path == "/api/update-check":
+            return self.send_json(update_check())
         if path == "/api/version":
             return self.send_json({"version": VERSION, "settings_file": os.path.exists(keeper.SETTINGS), "screen": env("SCREEN", "auto"), "channel_up": env("CHANNEL_UP", "guide").lower(), "shuffle": env("SHUFFLE", "on").lower() not in ("off", "no", "0", "false")})
         if path == "/api/tv":

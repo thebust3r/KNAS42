@@ -205,6 +205,7 @@ nav a .warn{margin-left:auto;width:18px;height:18px;border-radius:50%;background
 .notice h2{font:italic 800 28px var(--head);color:var(--gold)}
 .notice .links{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
 #done{display:none}
+#upd{display:none}#upd ul{margin:8px 0 0 20px;color:var(--text)}#upd li{margin:2px 0}#upd .how{margin-top:10px;font-size:14px;color:var(--muted)}
 
 /* ---------- save bar ---------- */
 #bar{position:fixed;left:260px;right:0;bottom:0;z-index:15;background:rgba(9,12,43,.92);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-top:1px solid var(--line2);padding:12px 34px}
@@ -274,6 +275,14 @@ nav a .warn{margin-left:auto;width:18px;height:18px;border-radius:50%;background
 </aside>
 
 <main id="main">
+
+<div class="card notice" id="upd">
+  <h2>🆕 A new KNAS is out</h2>
+  <div class="why" id="updWhy"></div>
+  <ul id="updNotes"></ul>
+  <div class="links"><a class="btn" id="updZip" href="#">Download the update</a><a class="btn ghost" id="updPage" href="#" target="_blank" rel="noopener">See everything that's new ↗</a><button type="button" class="ghost" id="updLater">Not now</button></div>
+  <div class="how">To install it, drop the zip (still zipped) into the <b>updates</b> folder inside your KNAS folder. KNAS installs it and restarts by itself in about a minute. Your settings stay.</div>
+</div>
 
 <div class="card notice" id="done">
   <h2>📺 You're on the air!</h2>
@@ -1360,6 +1369,20 @@ $("find").addEventListener("input",function(){var v=this.value.trim();clearTimeo
 $("expLock").onclick=function(){fetch("api/experimental",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({lock:true})}).then(function(){setExp(false);status("Experimental tools hidden. Type the code to bring them back.")})};
 fetch("api/secure",{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j.url)$("secAddr").textContent=j.url;else if(j.error)$("secAddr").textContent="off ("+j.error+")"}).catch(function(){});
 fetch("api/experimental",{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){setExp(j.on);if(j.on&&location.hash==="#s-exp")show("s-exp")}).catch(function(){});
+})();
+
+/* ---------- "a new KNAS is out": checks GitHub a few times a day ---------- */
+(function(){var $=function(id){return document.getElementById(id)};
+fetch("api/update-check",{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){
+  if(!j||!j.newer||!j.latest)return;
+  var skip="";try{skip=localStorage.getItem("knas-skip-update")||""}catch(e){}
+  if(skip===j.latest)return;
+  $("updWhy").textContent="KNAS "+j.latest+" is ready (this one is "+j.current+"). New in it:";
+  $("updNotes").innerHTML=(j.notes||[]).map(function(n){return"<li>"+String(n).replace(/[&<>]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;"}[c]})+"</li>"}).join("")+(j.more?"<li>…and "+j.more+" more</li>":"");
+  if(j.zip)$("updZip").href=j.zip;else $("updZip").style.display="none";
+  if(j.url)$("updPage").href=j.url;else $("updPage").style.display="none";
+  $("updLater").onclick=function(){try{localStorage.setItem("knas-skip-update",j.latest)}catch(e){}$("upd").style.display="none"};
+  $("upd").style.display="block"}).catch(function(){});
 })();
 </script>
 </body>
