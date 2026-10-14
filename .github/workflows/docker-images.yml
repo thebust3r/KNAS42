@@ -1,5 +1,6 @@
 # Ready-made Docker images: GitHub builds KNAS's two images (for regular PCs/NAS boxes and for ARM ones like
-# a Raspberry Pi) and publishes them at ghcr.io, so installing KNAS downloads them in about a minute
+# a Raspberry Pi) and publishes them at ghcr.io (and on Docker Hub too, if the repo has the DOCKERHUB_USERNAME
+# and DOCKERHUB_TOKEN secrets, so they show up when you search in a NAS's Docker app), so installing KNAS downloads them in about a minute
 # instead of building for 5-10 minutes. docker-compose.yml still builds from the files here if the
 # download ever fails.
 #
@@ -41,6 +42,11 @@ jobs:
           version="$(sed -n 's/^VERSION = "\(.*\)"/\1/p' app/server.py | head -n1)"
           echo "image=ghcr.io/$owner/${{ matrix.name }}" >> "$GITHUB_OUTPUT"
           echo "version=${version:-dev}" >> "$GITHUB_OUTPUT"
+          # Docker Hub too (so it shows up in NAS Docker apps' image search), when the repo has the Docker Hub secrets
+          hub_user="$(echo '${{ secrets.DOCKERHUB_USERNAME }}' | tr '[:upper:]' '[:lower:]')"
+          if [ -n "$hub_user" ] && [ "${{ secrets.DOCKERHUB_TOKEN != '' }}" = "true" ]; then
+            echo "hub=docker.io/$hub_user/${{ matrix.name }}" >> "$GITHUB_OUTPUT"
+          fi
 
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
@@ -52,6 +58,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Sign in to Docker Hub
+        if: steps.meta.outputs.hub != ''
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Build and publish (amd64 + arm64)
         uses: docker/build-push-action@v6
         with:
@@ -61,9 +74,22 @@ jobs:
           tags: |
             ${{ steps.meta.outputs.image }}:latest
             ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.version }}
+            ${{ steps.meta.outputs.hub && format('{0}:latest', steps.meta.outputs.hub) || '' }}
+            ${{ steps.meta.outputs.hub && format('{0}:{1}', steps.meta.outputs.hub, steps.meta.outputs.version) || '' }}
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.description=KNAS 42 - a 90s cable box for any screen
             org.opencontainers.image.licenses=MIT
           cache-from: type=gha,scope=${{ matrix.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+
+      - name: Docker Hub page text (from the README)
+        if: steps.meta.outputs.hub != '' && matrix.name == 'knas42'
+        continue-on-error: true     # needs a Docker Hub token with Delete access too; the images are published either way
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ secrets.DOCKERHUB_USERNAME }}/knas42
+          short-description: "KNAS 42: a 90s cable box for any screen (weather channel, sports, TV guide)"
+          readme-filepath: ./README.md
