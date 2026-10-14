@@ -89,14 +89,26 @@ jobs:
           ls -la out
 
       # With a RELEASE_TOKEN secret (a token from your own GitHub account), the release shows as made by you.
-      # Without one, it's made by "github-actions".
+      # If the token is missing or can't publish, it falls back to "github-actions" so the release still goes out.
       - name: Publish the release
         env:
-          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          USER_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          BOT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           tag="${{ steps.v.outputs.tag }}"
-          if gh release view "$tag" >/dev/null 2>&1; then
-            gh release upload "$tag" out/* --clobber
-          else
-            gh release create "$tag" out/* --target "$GITHUB_SHA" --title "KNAS ${{ steps.v.outputs.version }}" --notes-file .github/RELEASE_NOTES.md
+          publish() {
+            if gh release view "$tag" >/dev/null 2>&1; then
+              gh release upload "$tag" out/* --clobber
+            else
+              gh release create "$tag" out/* --target "$GITHUB_SHA" --title "KNAS ${{ steps.v.outputs.version }}" --notes-file .github/RELEASE_NOTES.md
+            fi
+          }
+          if [ -n "$USER_TOKEN" ]; then
+            perm="$(GH_TOKEN="$USER_TOKEN" gh api "repos/$GITHUB_REPOSITORY" --jq '.permissions.push' 2>&1 || true)"
+            echo "RELEASE_TOKEN check: $perm"
+            if [ "$perm" = "true" ] && GH_TOKEN="$USER_TOKEN" publish 2> err.txt; then
+              echo "Published as you"; exit 0
+            fi
+            echo "::warning::RELEASE_TOKEN couldn't publish the release (check: ${perm}; $(tr '\n' ' ' < err.txt 2>/dev/null | head -c 300)). It needs access to the knas42 repo with Contents: Read and write. Publishing as github-actions instead."
           fi
+          GH_TOKEN="$BOT_TOKEN" publish
