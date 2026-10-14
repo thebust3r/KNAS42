@@ -1,0 +1,77 @@
+# Publishing a new version: push a tag like v2.22.0 and GitHub does the rest:
+#   1. builds the update zip (KNAS-<version>-update.zip, for the updates folder)
+#   2. builds the KNAS 42 Android app (KNAS-42-<version>.apk), signed with the key in the repo's secrets
+#   3. publishes a release with both attached, using .github/RELEASE_NOTES.md as the notes
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Work out the version
+        id: v
+        run: |
+          version="$(sed -n 's/^VERSION = "\(.*\)"/\1/p' app/server.py | head -n1)"
+          echo "version=${version:-0.0.0}" >> "$GITHUB_OUTPUT"
+          echo "tag=${GITHUB_REF_NAME:-v$version}" >> "$GITHUB_OUTPUT"
+
+      - name: Make the update zip
+        run: |
+          mkdir -p pkg out
+          git archive --format=tar HEAD | tar -x -C pkg
+          rm -rf pkg/android pkg/.github
+          (cd pkg && zip -qr "../out/KNAS-${{ steps.v.outputs.version }}-update.zip" .)
+          python3 -m py_compile pkg/server.py pkg/app/*.py
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: Get the signing key
+        env:
+          KS_B64: ${{ secrets.KNAS_KEYSTORE_B64 }}
+          KS_PASS: ${{ secrets.KNAS_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -n "$KS_B64" ]; then
+            echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/knas.jks"
+            echo "KNAS_KEYSTORE=$RUNNER_TEMP/knas.jks" >> "$GITHUB_ENV"
+            echo "KNAS_KEYSTORE_PASSWORD=$KS_PASS" >> "$GITHUB_ENV"
+            echo "Signing with the KNAS key"
+          else
+            echo "::error::The signing key isn't in the repo secrets (KNAS_KEYSTORE_B64, KNAS_KEYSTORE_PASSWORD)."
+            exit 1
+          fi
+
+      - name: Build the Android app
+        run: |
+          gradle -p android assembleRelease -PknasVersion=${{ steps.v.outputs.version }} --no-daemon
+          cp android/app/build/outputs/apk/release/*.apk "out/KNAS-42-${{ steps.v.outputs.version }}.apk"
+          keytool -printcert -jarfile out/*.apk | grep -i "owner" || true
+          ls -la out
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${{ steps.v.outputs.tag }}"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" out/* --clobber
+          else
+            gh release create "$tag" out/* --title "KNAS ${{ steps.v.outputs.version }}" --notes-file .github/RELEASE_NOTES.md
+          fi
