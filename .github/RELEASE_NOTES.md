@@ -1,6 +1,10 @@
-**Already have KNAS?** Download `KNAS-1.1.1-update.zip` below and drop it (still zipped) into your `updates` folder. Your settings stay.
+**Already have KNAS?** Download `KNAS-1.1.2-update.zip` below and drop it (still zipped) into your `updates` folder. Your settings stay.
 **New install?** Download the code with the green **Code** button on the main page and follow the README.
-**Android TV box or Android phone?** Download `KNAS-42-1.1.1.apk` below and install it. ([How](https://github.com/thebust3r/knas42/blob/main/docs/SETUP-GUIDE.md#android-tv-box-onn-chromecast-with-google-tv-fire-tv-and-android-phones))
+**Android TV box or Android phone?** Download `KNAS-42-1.1.2.apk` below and install it. ([How](https://github.com/thebust3r/knas42/blob/main/docs/SETUP-GUIDE.md#android-tv-box-onn-chromecast-with-google-tv-fire-tv-and-android-phones))
+
+## New in 1.1.2
+- The setup page tells you when a new KNAS is out, with what's new and a download button
+- The break-clip recorder (knas42-cast) is optional on new installs: it only starts if you turn on break clips
 
 ## New since the first GitHub version
 
