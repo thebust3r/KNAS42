@@ -55,6 +55,20 @@ It runs on your home server in Docker. Watch it on any TV, computer, phone or ol
 
 **You need:** a NAS or computer that's always on and runs Docker (UGREEN, Synology, QNAP, Unraid, a Linux PC, a mini PC or a Raspberry Pi 4/5).
 
+There are two ways: **straight from your NAS's Docker app** (no downloading files, just below), or **as a project** from the files here (Step 1 onward). Both end up the same.
+
+### The quick way: from your NAS's Docker app
+
+1. In your NAS's Docker app, open **Images** (sometimes called the image database or registry), search for **knas42** and download the **latest** version. (Or add it by name: `ghcr.io/thebust3r/knas42:latest`.)
+2. Make a new, empty folder on your NAS for KNAS, for example `docker/knas42`.
+3. Create a container from the image with these settings:
+   - **Network:** **host**. (If your app only offers bridge, map ports **8642** and **8645** to the same numbers.)
+   - **Storage / volume:** your new folder → **`/knas`**, read and write. This is where your settings, music and clips are kept.
+   - **Restart:** always (or "unless stopped").
+4. Start it and open `http://YOUR-NAS-IP:8642/setup`.
+
+The first start fills your folder with everything KNAS needs. **To update later**, download the newest image and re-create the container (your folder and settings stay), or drop an update zip into the folder's `updates` folder. Want break clips for ErsatzTV? Do the same with the **knas42-cast** image: host network, the **same folder** → `/knas`.
+
 ### Step 1: Download it
 
 Click the green **Code** button at the top of this page, then **Download ZIP**. Unzip it. You'll get a folder called something like `knas-retro-tv-main`. Copy that whole folder onto your NAS, for example into your `docker` folder.

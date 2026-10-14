@@ -38,3 +38,47 @@ jobs:
       - name: Clean up
         if: always()
         run: docker compose down
+
+  # The other way to install: straight from the image in a NAS's Docker app, with an empty folder
+  # mapped to /knas. Checks that the image fills the folder, starts, keeps settings when the
+  # container is re-created, and updates an older folder without touching its settings.
+  image-install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the image (what Docker Hub / ghcr.io has)
+        run: docker build -t knas42-test .
+
+      - name: Start it like a Docker app would (empty folder mapped to /knas, host network)
+        run: |
+          mkdir -p "$RUNNER_TEMP/knasfolder"
+          docker run -d --name knas42 --network host -v "$RUNNER_TEMP/knasfolder:/knas" knas42-test
+          i=0; until curl -fsS http://localhost:8642/api/version; do i=$((i+1)); [ $i -gt 60 ] && exit 1; sleep 2; done
+          echo; ls "$RUNNER_TEMP/knasfolder"
+          test -f "$RUNNER_TEMP/knasfolder/settings.txt" && test -f "$RUNNER_TEMP/knasfolder/server.py" && test -d "$RUNNER_TEMP/knasfolder/updates"
+          for p in /tv /setup /remote /phone; do c=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:8642$p"); echo "$p $c"; [ "$c" = 200 ] || [ "$c" = 302 ] || exit 1; done
+
+      - name: Settings survive re-creating the container
+        run: |
+          curl -fsS -X POST -H 'Content-Type: application/json' http://localhost:8642/api/setup \
+            -d '{"settings":{"CITY_NAME":"Springfield, MO","LATITUDE":"37.2090","LONGITUDE":"-93.2923","STATION_NAME":"KTEST 9"},"teams":[]}' >/dev/null
+          sleep 3; docker rm -f knas42
+          docker run -d --name knas42 --network host -v "$RUNNER_TEMP/knasfolder:/knas" knas42-test
+          i=0; until curl -fsS http://localhost:8642/api/version >/dev/null; do i=$((i+1)); [ $i -gt 60 ] && exit 1; sleep 2; done
+          grep -q "KTEST 9" "$RUNNER_TEMP/knasfolder/settings.txt"
+
+      - name: A newer image updates an older folder (and keeps its settings)
+        run: |
+          docker rm -f knas42
+          sed -i 's/^VERSION = ".*"/VERSION = "1.0.0"/' "$RUNNER_TEMP/knasfolder/app/server.py"
+          docker run -d --name knas42 --network host -v "$RUNNER_TEMP/knasfolder:/knas" knas42-test
+          i=0; until curl -fsS http://localhost:8642/api/version >/dev/null; do i=$((i+1)); [ $i -gt 60 ] && exit 1; sleep 2; done
+          docker logs knas42 2>&1 | grep "updated the KNAS folder"
+          grep -q "KTEST 9" "$RUNNER_TEMP/knasfolder/settings.txt"
+          curl -fsS http://localhost:8642/api/version | grep -v '"1.0.0"'
+
+      - name: Show the logs (if something went wrong)
+        if: failure()
+        run: docker logs knas42 2>&1 | tail -n 100

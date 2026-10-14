@@ -1,0 +1,15 @@
+.git
+.github
+android
+build
+data
+.env
+**/__pycache__
+**/*.pyc
+break-clips
+music/*
+!music/.keep
+updates/*
+!updates/README.txt
+break-videos/*
+!break-videos/.keep

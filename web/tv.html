@@ -527,7 +527,8 @@ function keyName(e){var k=e.key,c=e.keyCode||e.which;
   if(k==="ArrowLeft"||k==="Left"||c===37)return"left";if(k==="ArrowRight"||k==="Right"||c===39)return"right";
   if(k==="Enter"||k===" "||c===13||c===23||k==="Select")return"ok";
   if(k==="Escape"||k==="Backspace"||k==="BrowserBack"||k==="GoBack"||c===27||c===8||c===461||c===10009)return"back";
-  if(k==="g"||k==="G"||k==="ContextMenu"||k==="Guide"||c===458||c===172)return"guide";
+  if(k==="g"||k==="G"||k==="ContextMenu"||k==="Guide"||c===458||c===172||c===10073)return"guide";   /* 10073 = Samsung CH LIST */
+  if(c===10190)return"left";   /* Samsung PRE-CH: last channel */
   if(k==="i"||k==="Info"||c===457)return"info";
   if(k==="m"||k==="M")return"mute";if(k==="+"||k==="="||c===107||c===187)return"volup";if(k==="-"||k==="_"||c===109||c===189)return"voldown";
   if(/^[0-9]$/.test(k))return"d"+k;

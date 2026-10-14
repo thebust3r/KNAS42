@@ -11,7 +11,7 @@ name: Docker images
 on:
   push:
     branches: [main, master]
-    paths: ["Dockerfile", "cast/**", "app/server.py", ".github/workflows/docker-images.yml"]
+    paths: ["Dockerfile", ".dockerignore", "docker-start.py", "cast/**", "app/server.py", ".github/workflows/docker-images.yml"]
   release:
     types: [published]
   workflow_dispatch:      # run it by hand from the Actions tab

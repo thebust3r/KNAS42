@@ -1,6 +1,10 @@
-**Already have KNAS?** Download `KNAS-1.1.2-update.zip` below and drop it (still zipped) into your `updates` folder. Your settings stay.
+**Already have KNAS?** Download `KNAS-1.1.3-update.zip` below and drop it (still zipped) into your `updates` folder. Your settings stay.
 **New install?** Download the code with the green **Code** button on the main page and follow the README.
-**Android TV box or Android phone?** Download `KNAS-42-1.1.2.apk` below and install it. ([How](https://github.com/thebust3r/knas42/blob/main/docs/SETUP-GUIDE.md#android-tv-box-onn-chromecast-with-google-tv-fire-tv-and-android-phones))
+**Android TV box or Android phone?** Download `KNAS-42-1.1.3.apk` below and install it. ([How](https://github.com/thebust3r/knas42/blob/main/docs/SETUP-GUIDE.md#android-tv-box-onn-chromecast-with-google-tv-fire-tv-and-android-phones))
+
+## New in 1.1.3
+- Install straight from your NAS's Docker app: search for knas42, map an empty folder to /knas, use host network, start. The first start sets everything up, and a newer image updates it (your settings stay)
+- KNAS is on Docker Hub too, so it shows up in Docker app image searches
 
 ## New in 1.1.2
 - The setup page tells you when a new KNAS is out, with what's new and a download button
