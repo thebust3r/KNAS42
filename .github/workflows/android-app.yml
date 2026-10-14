@@ -1,6 +1,6 @@
 # The KNAS 42 app for Android and Android TV: GitHub builds the APK from the android/ folder.
 # - Every change to android/ builds it (download it from the run's "Artifacts").
-# - Publishing a release builds it and attaches KNAS-42-<version>.apk to the release.
+# - Releases are made by release.yml (push a tag like v2.22.0), which builds and attaches the APK.
 # The app is signed with the key in the repo's secrets (KNAS_KEYSTORE_B64, KNAS_KEYSTORE_PASSWORD),
 # so each new version installs right over the old one.
 name: Android app
@@ -9,8 +9,6 @@ on:
   push:
     branches: [main, master]
     paths: ["android/**", ".github/workflows/android-app.yml"]
-  release:
-    types: [published]
   workflow_dispatch:
 
 permissions:
@@ -64,9 +62,3 @@ jobs:
         with:
           name: KNAS-42-app-${{ steps.v.outputs.version }}
           path: out/*.apk
-
-      - name: Attach it to the release
-        if: github.event_name == 'release'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "${{ github.event.release.tag_name }}" out/*.apk --clobber
