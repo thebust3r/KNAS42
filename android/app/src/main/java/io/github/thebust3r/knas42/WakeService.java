@@ -10,9 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ServiceInfo;
 import android.os.Build;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
 import android.os.SystemClock;
 
 /**
@@ -56,18 +54,15 @@ public class WakeService extends Service {
             @Override
             public void onReceive(Context context, Intent intent) {
                 long now = SystemClock.uptimeMillis();
-                if (now - lastOpen < 5000) return;
+                if (now - lastOpen < 3000) return;
                 lastOpen = now;
-                // give the TV a moment to finish waking before opening KNAS
-                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-                    @Override
-                    public void run() { if (enabled(WakeService.this)) openKnas(WakeService.this); }
-                }, 1200);
+                if (enabled(WakeService.this)) openKnas(WakeService.this);     // right away, no waiting
             }
         };
         IntentFilter f = new IntentFilter();
         f.addAction(Intent.ACTION_SCREEN_ON);
         f.addAction(Intent.ACTION_DREAMING_STOPPED);
+        f.addAction(Intent.ACTION_USER_PRESENT);
         if (Build.VERSION.SDK_INT >= 33) registerReceiver(wake, f, Context.RECEIVER_EXPORTED);
         else registerReceiver(wake, f);
     }

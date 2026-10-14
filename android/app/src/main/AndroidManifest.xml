@@ -38,6 +38,19 @@
             </intent-filter>
         </activity>
 
+        <!-- "Use KNAS as the home screen" (off until you turn it on in the app's settings) -->
+        <activity-alias
+            android:name=".Home"
+            android:targetActivity=".MainActivity"
+            android:enabled="false"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+
         <receiver android:name=".BootReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

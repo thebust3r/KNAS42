@@ -132,9 +132,19 @@ Press **Save & Start** at the bottom. KNAS restarts with your settings in a few 
 In the app:
 - The remote works like a cable box: arrows, OK, numbers, channel up/down, guide and info.
 - **Back** closes the guide. Pressing it again asks if you want to leave, or opens **Settings**.
-- **Hold Back** for a second to open **Settings** any time: change the NAS address, reload, or turn on **Open when the TV turns on**.
+- **Hold Back** for a second to open **Settings** any time: change the NAS address, reload, turn on **Open when the TV turns on**, or make KNAS the home screen.
 
 **Open when the TV turns on:** turn it on in the app's Settings and KNAS opens by itself whenever the TV (or the box) wakes up. Newer Android asks you to allow **Display over other apps** for KNAS 42 the first time; the app takes you to that setting. If your box doesn't open it, find it under Settings → Apps → Special app access → Display over other apps.
+
+**Use KNAS as the home screen** (so the TV turns on straight to KNAS, with no home screen first): in the app, hold **Back** → **Use KNAS as the home screen** → on. Your other apps (Netflix, YouTube, settings) are always under hold **Back** → **Other apps**. Turn the setting off any time to go back to normal.
+- **Most Android TV boxes and phones:** press **Home**. When it asks which home screen to use, pick **KNAS 42** → **Always**.
+- **Google TV boxes (Onn, Chromecast with Google TV):** they don't ask, so it takes a one-time step from a computer:
+  1. On the TV: **Settings → System → About**, then click **Android TV OS build** 7 times until it says you're a developer. Go back to **Settings → System → Developer options** and turn on **USB debugging**. Write down the TV's IP address (**Settings → Network & Internet →** your Wi-Fi).
+  2. On a computer: download **SDK Platform-Tools** from developer.android.com/tools/releases/platform-tools and unzip it. Open a command window in that folder (on Windows: click the address bar of the folder, type `cmd`, press Enter).
+  3. Type `adb connect TV_IP` (your TV's IP). The TV asks to allow it: pick **Always allow**, then type the same command again.
+  4. Type `adb shell cmd package set-home-activity io.github.thebust3r.knas42/.Home` and press Enter.
+  5. Press **Home** on the remote: it goes to KNAS. If a TV update ever puts the old home screen back, do step 4 again.
+- **Fire TV:** Amazon doesn't allow other home screens. Use **Open when the TV turns on** instead.
 
 **Rather use a browser?** Fully Kiosk Browser works too: set its Start URL to `http://SERVER_IP:8642/tv` and turn on **Autoplay Videos**, **Launch on Boot** and **Keep Screen On**.
 
