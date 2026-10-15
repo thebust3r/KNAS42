@@ -58,6 +58,16 @@ It runs on your home server in Docker. Watch it on any TV, computer, phone or ol
 
 There are two ways: **straight from your NAS's Docker app** (no downloading files, just below), or **as a project** from the files here (Step 1 onward). Both end up the same.
 
+### The easiest way on a Windows PC or Mac
+
+1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) and open it. Wait until the bottom-left corner says **Engine running**.
+2. Go to the [latest release](https://github.com/thebust3r/knas42/releases/latest) and download **Install-KNAS-Windows.bat** (Mac: **install-knas.sh**).
+3. Double-click it. (Windows may say "Windows protected your PC": click **More info** → **Run anyway**. Mac: open Terminal and type `sh ` then drag the file in and press Enter.)
+
+It downloads KNAS, sets it up with the right settings, and opens the setup page. Your files go in a **KNAS42** folder in your user folder. To update later, run it again. If Windows asks about the firewall, click **Allow** so your TVs can reach it.
+
+> Setting it up by hand in Docker Desktop instead? When you click **Run** on the image, open **Optional settings** and type **8642** and **8645** in the host port boxes, or KNAS won't be reachable. Then open `http://localhost:8642/setup` (the 172.x address in the log only works inside Docker).
+
 ### The quick way: from your NAS's Docker app
 
 1. In your NAS's Docker app, open **Images** (sometimes called the image database or registry), search for **knas42** and download the **latest** version. (Or add it by name: `ghcr.io/thebust3r/knas42:latest`.)

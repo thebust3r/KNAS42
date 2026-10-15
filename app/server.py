@@ -12,7 +12,7 @@ import securecert, ws, throw, livecam, voice, duck, fun, flick, stream
 from datetime import datetime, timedelta, timezone
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 
-VERSION = "1.1.4"
+VERSION = "1.1.5"
 HERE = os.path.dirname(os.path.abspath(__file__))       # the app folder
 ROOT = os.path.dirname(HERE)                            # your KNAS folder
 DATA = os.path.join(ROOT, "data")                       # caches and logs
@@ -2009,6 +2009,11 @@ if __name__ == "__main__":
     print("", flush=True)
     print("  " + ("Set up KNAS here:  " if not configured() else "Setup page:  ") + f"http://{ip}:{PORT}/setup", flush=True)
     print(f"  Cable box (TV):    http://{ip}:{PORT}/tv", flush=True)
+    if re.match(r"172\.(1[6-9]|2\d|3[01])\.", ip or ""):
+        print("", flush=True)
+        print("  That address is Docker's own inside-the-container address and only works inside Docker.", flush=True)
+        print(f"  On this computer, open http://localhost:{PORT}/setup instead. Other devices (TVs, phones) use", flush=True)
+        print(f"  this computer's or NAS's own address, like http://192.168.x.x:{PORT}/tv", flush=True)
     print("", flush=True)
     if SECURE_PORT:
         import socket as _s

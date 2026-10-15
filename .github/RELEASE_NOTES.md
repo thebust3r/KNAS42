@@ -1,7 +1,11 @@
-**Already have KNAS?** Download `KNAS-1.1.4-update.zip` below and drop it (still zipped) into your `updates` folder. Your settings stay.
-**New install?** Download the code with the green **Code** button on the main page and follow the README.
-**Samsung TV?** Download `KNAS-42-Samsung-1.1.4.wgt` below and install it with TizenBrew Installer (install from a file). The TV needs Developer Mode on.
-**Android TV box or Android phone?** Download `KNAS-42-1.1.4.apk` below and install it. ([How](https://github.com/thebust3r/knas42/blob/main/docs/SETUP-GUIDE.md#android-tv-box-onn-chromecast-with-google-tv-fire-tv-and-android-phones))
+**Already have KNAS?** Download `KNAS-1.1.5-update.zip` below and drop it (still zipped) into your `updates` folder. Your settings stay.
+**New install on a Windows PC?** Open Docker Desktop, then download `Install-KNAS-Windows.bat` below and double-click it (Mac: `install-knas.sh`). On a NAS, follow the README.
+**Samsung TV?** Download `KNAS-42-Samsung-1.1.5.wgt` below and install it with TizenBrew Installer (install from a file). The TV needs Developer Mode on.
+**Android TV box or Android phone?** Download `KNAS-42-1.1.5.apk` below and install it. ([How](https://github.com/thebust3r/knas42/blob/main/docs/SETUP-GUIDE.md#android-tv-box-onn-chromecast-with-google-tv-fire-tv-and-android-phones))
+
+## New in 1.1.5
+- One-click installer for Windows (and Mac/Linux): sets up KNAS in Docker Desktop with the right settings and opens the setup page. Run it again to update
+- The startup log says to use localhost when running in Docker Desktop, instead of only Docker's internal address
 
 ## New in 1.1.4
 - Android TV app: the Home button really goes to KNAS on Google TV boxes (Onn, Chromecast) when "Use KNAS as the home screen" is on, and "Other apps" shows a list of your installed apps
