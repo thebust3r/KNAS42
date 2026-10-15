@@ -1,0 +1,117 @@
+# Builds KNAS 42 for Windows: KNAS42-Setup-<version>.exe (an installer with the KNAS tray app inside),
+# then installs it on the build machine and checks that KNAS comes on the air.
+name: Windows app
+
+on:
+  push:
+    paths: ["windows/**", ".github/workflows/windows-app.yml", "app/**", "web/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Get ready
+        shell: pwsh
+        run: |
+          python -m pip install --quiet pyinstaller==6.11.1 pystray==0.19.5 pillow tzdata
+          python windows/build.py
+          "version=$(Get-Content build/version.txt)" >> $env:GITHUB_OUTPUT
+        id: v
+
+      - name: Build the app
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Continue"
+          $r = $PWD.Path
+          pyinstaller --noconfirm --clean --windowed --name KNAS42 --icon "$r\build\knas.ico" `
+            --distpath "$r\dist" --workpath "$r\build\pyi" --specpath "$r\build" `
+            --paths "$r\windows" --hidden-import knas_std_imports --hidden-import pystray._win32 `
+            --collect-data tzdata --collect-submodules xml --collect-submodules email --collect-submodules http `
+            --collect-submodules urllib --collect-submodules concurrent --collect-submodules json --collect-submodules sqlite3 `
+            --add-data "$r\build\knas;knas" --add-data "$r\build\knas.ico;." `
+            "$r\windows\knas_windows.py" 2>&1 | Tee-Object -FilePath pyi.log
+          $code = $LASTEXITCODE
+          Select-String -Path pyi.log -Pattern 'ERROR|Error|error:|Traceback' | Select-Object -Last 15 | ForEach-Object { Write-Output "::error::$($_.Line)" }
+          if ($code -ne 0) { exit $code }
+          Get-ChildItem dist/KNAS42 | Select-Object Name, Length | Format-Table -AutoSize
+
+      - name: Check the app runs KNAS
+        shell: pwsh
+        run: |
+          $home2 = Join-Path $env:RUNNER_TEMP "knas-test"
+          New-Item -ItemType Directory -Force $home2 | Out-Null
+          Copy-Item -Recurse dist/KNAS42/_internal/knas/* $home2
+          Add-Content "$home2/settings.txt" "`nCITY_NAME=Testville`nLATITUDE=36.06`nLONGITUDE=-94.15"
+          $p = Start-Process -FilePath dist/KNAS42/KNAS42.exe -ArgumentList @("--server", $home2) -PassThru
+          $ok = $false
+          for ($i = 0; $i -lt 60; $i++) {
+            Start-Sleep 2
+            try { $r = Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8642/api/version -TimeoutSec 3; Write-Output $r.Content; $ok = $true; break } catch {}
+          }
+          foreach ($page in "/setup", "/tv", "/phone") {
+            if ($ok) { $s = (Invoke-WebRequest -UseBasicParsing "http://127.0.0.1:8642$page" -TimeoutSec 10).StatusCode; Write-Output "$page -> $s" }
+          }
+          Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+          $log = Join-Path $env:LOCALAPPDATA "KNAS42\data\knas-windows.log"
+          if (Test-Path $log) { Get-Content $log -Tail 40 | ForEach-Object { if ($_ -match "Error|Traceback|error") { Write-Output "::warning::$_" } else { Write-Output $_ } } }
+          if (-not $ok) { Write-Output "::error::KNAS didn't come on the air"; exit 1 }
+
+      - name: Make the installer
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress | Out-Null }
+          & $iscc /Qp "/DMyVersion=${{ steps.v.outputs.version }}" windows\installer.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Get-ChildItem dist/*.exe | Select-Object Name, Length
+
+      - name: Check the installer
+        shell: pwsh
+        run: |
+          $setup = (Get-ChildItem dist/KNAS42-Setup-*.exe)[0].FullName
+          Start-Process -FilePath $setup -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART" -Wait
+          $exe = Join-Path ${env:ProgramFiles} "KNAS 42\KNAS42.exe"
+          if (-not (Test-Path $exe)) { Write-Output "::error::the installer didn't install KNAS42.exe"; exit 1 }
+          Write-Output "installed: $exe"
+          netsh advfirewall firewall show rule name="KNAS 42" | Select-Object -First 6
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KNAS42-Windows
+          path: dist/KNAS42-Setup-*.exe
+
+      - name: Publish a test release (test repo only)
+        if: github.event.repository.name == 'knas-windows'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          gh release create "test-${{ github.run_number }}" (Get-ChildItem dist/KNAS42-Setup-*.exe).FullName --repo $env:GITHUB_REPOSITORY `
+            --title "Windows test build ${{ github.run_number }}" --notes "Test build of KNAS 42 for Windows. Download KNAS42-Setup and run it." --latest
+
+      - name: Add the installer to the KNAS release
+        if: github.repository == 'thebust3r/knas42'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          # the release itself is made by release.yml when the version changes; wait for it (up to 30 minutes)
+          $tag = "v${{ steps.v.outputs.version }}"
+          for ($i = 0; $i -lt 60; $i++) {
+            gh release view $tag --repo $env:GITHUB_REPOSITORY *> $null
+            if ($LASTEXITCODE -eq 0) { break }
+            Start-Sleep 30
+          }
+          gh release view $tag --repo $env:GITHUB_REPOSITORY *> $null
+          if ($LASTEXITCODE -ne 0) { Write-Output "::notice::no $tag release yet; the installer is in this run's downloads"; exit 0 }
+          gh release upload $tag (Get-ChildItem dist/KNAS42-Setup-*.exe).FullName --repo $env:GITHUB_REPOSITORY --clobber

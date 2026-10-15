@@ -155,7 +155,13 @@ def clear_cache():
 
 # ---------------------------------------------------------------- tools (yt-dlp + a JavaScript helper)
 
+WIN = os.name == "nt"
+EXE = ".exe" if WIN else ""
+
+
 def _musl():
+    if WIN:
+        return False
     return any(os.path.exists(p) for p in ("/lib/ld-musl-x86_64.so.1", "/lib/ld-musl-aarch64.so.1")) or \
         platform.libc_ver()[0] == ""
 
@@ -165,6 +171,8 @@ def _asset():
     arm = m in ("aarch64", "arm64")
     if m not in ("x86_64", "amd64") and not arm:
         return None                              # anything else: the plain Python version
+    if WIN:
+        return "yt-dlp.exe"                     # also runs on Windows on ARM
     return ("yt-dlp_musllinux" if _musl() else "yt-dlp_linux") + ("_aarch64" if arm else "")
 
 
@@ -181,8 +189,8 @@ def _ytdlp_cmd():
     sysbin = shutil.which("yt-dlp")
     if sysbin:
         return [sysbin], False
-    own = os.path.join(BIN, "yt-dlp")
-    if os.path.isfile(own + ".pyz"):
+    own = os.path.join(BIN, "yt-dlp" + EXE)
+    if not WIN and os.path.isfile(own + ".pyz"):
         return [os.environ.get("PYTHON", "python3"), own + ".pyz"], True
     if os.path.isfile(own):
         return [own], True
@@ -194,7 +202,7 @@ def _js():
         p = shutil.which(name)
         if p:
             return name, flag, p
-    p = os.path.join(BIN, "deno")
+    p = os.path.join(BIN, "deno" + EXE)
     if os.path.isfile(p):
         return "deno", "deno:" + p, p
     return None, None, None
@@ -219,13 +227,13 @@ def _ensure_tools_locked():
         if not cmd:
             a = _asset()
             if a:
-                dest = os.path.join(BIN, "yt-dlp")
+                dest = os.path.join(BIN, "yt-dlp" + EXE)
                 _get(RELEASES + a, dest)
                 os.chmod(dest, 0o755)
                 if subprocess.run([dest, "--version"], capture_output=True, timeout=120).returncode != 0:
                     os.remove(dest)
                     a = None
-            if not a:                            # the plain Python version works everywhere Python does
+            if not a and not WIN:                # the plain Python version works everywhere Python does
                 _get(RELEASES + "yt-dlp", os.path.join(BIN, "yt-dlp.pyz"))
             cmd, own = _ytdlp_cmd()
         elif own and time.time() - TOOLS["updated"] > 20 * 3600:
@@ -239,11 +247,12 @@ def _ensure_tools_locked():
         if not name and not _musl() and platform.machine().lower() in ("x86_64", "amd64", "aarch64", "arm64"):
             arch = "aarch64" if platform.machine().lower() in ("aarch64", "arm64") else "x86_64"
             z = os.path.join(BIN, "deno.zip")
-            _get(f"https://github.com/denoland/deno/releases/latest/download/deno-{arch}-unknown-linux-gnu.zip", z)
+            target = "pc-windows-msvc" if WIN else "unknown-linux-gnu"
+            _get(f"https://github.com/denoland/deno/releases/latest/download/deno-{'x86_64' if WIN else arch}-{target}.zip", z)
             with zipfile.ZipFile(z) as zz:
-                zz.extract("deno", BIN)
+                zz.extract("deno" + EXE, BIN)
             os.remove(z)
-            os.chmod(os.path.join(BIN, "deno"), 0o755)
+            os.chmod(os.path.join(BIN, "deno" + EXE), 0o755)
             name, flag, _p = _js()
         ver = subprocess.run(cmd + ["--version"], capture_output=True, text=True, timeout=120).stdout.strip()
         TOOLS.update(state="ready", ytdlp=ver, js=name or "", updated=time.time(),

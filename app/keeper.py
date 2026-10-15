@@ -171,6 +171,8 @@ def _snapshot():
 def restart(reason):
     log(f"restarting: {reason}")
     time.sleep(0.5)
+    if os.environ.get("KNAS_SUPERVISED"):        # the Windows app runs KNAS and starts it again by itself
+        os._exit(75)
     os.execv(sys.executable, [sys.executable, "-u", os.path.join(HERE, "server.py")])   # the launcher in your KNAS folder
 
 

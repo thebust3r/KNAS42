@@ -271,3 +271,15 @@ SEASON_WINTER=on
 # ---- Update check (optional) ----
 # on = the setup page tells you when a new KNAS is out on GitHub (it checks a few times a day). off = never check.
 UPDATE_CHECK=on
+
+# ---- Away from home (optional) ----
+# The KNAS phone and TV apps use this when you're away from home: they save it while you're home, then try it
+# when the home address doesn't answer (turn Tailscale on and the app finds KNAS by itself).
+# KNAS finds this machine's own Tailscale address by itself, so most people leave this blank. Fill it in when
+# Tailscale runs in its own container, or to use a Tailscale name. Example: TAILSCALE_ADDRESS=100.101.102.103
+TAILSCALE_ADDRESS=
+
+# ---- This machine's address (optional) ----
+# KNAS shows your TVs links like http://192.168.1.50:8642/tv. It finds this address by itself (and skips VPNs).
+# Only fill this in if the address it shows is wrong. Example: LAN_IP=192.168.1.50
+LAN_IP=

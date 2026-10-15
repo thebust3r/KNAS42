@@ -1,7 +1,15 @@
-**Already have KNAS?** Download `KNAS-1.1.5-update.zip` below and drop it (still zipped) into your `updates` folder. Your settings stay.
-**New install on a Windows PC?** Open Docker Desktop, then download `Install-KNAS-Windows.bat` below and double-click it (Mac: `install-knas.sh`). On a NAS, follow the README.
-**Samsung TV?** Download `KNAS-42-Samsung-1.1.5.wgt` below and install it with TizenBrew Installer (install from a file). The TV needs Developer Mode on.
-**Android TV box or Android phone?** Download `KNAS-42-1.1.5.apk` below and install it. ([How](https://github.com/thebust3r/knas42/blob/main/docs/SETUP-GUIDE.md#android-tv-box-onn-chromecast-with-google-tv-fire-tv-and-android-phones))
+**Already have KNAS?** Download `KNAS-1.1.6-update.zip` below and drop it (still zipped) into your `updates` folder. Your settings stay.
+**New install on a Windows PC?** Download `KNAS42-Setup-1.1.6.exe` below and run it: no Docker needed. (Mac or Docker Desktop: `install-knas.sh` / `Install-KNAS-Windows.bat`.) On a NAS, follow the README.
+**Samsung TV?** Download `KNAS-42-Samsung-1.1.6.wgt` below and install it with TizenBrew Installer (install from a file). The TV needs Developer Mode on.
+**Android TV box or Android phone?** Download `KNAS-42-1.1.6.apk` below and install it. ([How](https://github.com/thebust3r/knas42/blob/main/docs/SETUP-GUIDE.md#android-tv-box-onn-chromecast-with-google-tv-fire-tv-and-android-phones))
+
+## New in 1.1.6
+- KNAS for Windows: an installer (KNAS42-Setup) that runs KNAS as a normal Windows program, no Docker. Icon by the clock with setup, the TV address and the phone remote; starts with Windows; finds ErsatzTV on the same PC by itself
+- The guide on phones: slide a finger and the highlight follows it channel by channel; drag past the edge to keep scrolling
+- iPhones use lite mode, and the Doppler radar no longer runs phones out of memory
+- The TV address shown everywhere is your home address, even with a VPN on (LAN_IP in settings to set it yourself)
+- KNAS finds its own Tailscale address and shares it with the KNAS apps for watching away from home (TAILSCALE_ADDRESS in settings to set one)
+- Commercial splitter: fixed the ffmpeg download error, and it finds far more breaks (fuzzy VHS black, quiet cuts, commercial lengths). Add Commercial Breaks got the same download fix
 
 ## New in 1.1.5
 - One-click installer for Windows (and Mac/Linux): sets up KNAS in Docker Desktop with the right settings and opens the setup page. Run it again to update

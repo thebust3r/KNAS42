@@ -53,7 +53,7 @@ jobs:
         run: |
           mkdir -p pkg out
           git archive --format=tar HEAD | tar -x -C pkg
-          rm -rf pkg/android pkg/.github pkg/tizen pkg/signing pkg/package.json pkg/installers
+          rm -rf pkg/android pkg/.github pkg/tizen pkg/signing pkg/package.json pkg/installers pkg/xbox pkg/windows
           (cd pkg && zip -qr "../out/KNAS-${{ steps.v.outputs.version }}-update.zip" .)
           python3 -m py_compile pkg/server.py pkg/app/*.py
           cp installers/Install-KNAS-Windows.bat installers/install-knas.sh out/

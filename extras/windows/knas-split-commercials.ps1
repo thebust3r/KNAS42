@@ -46,7 +46,8 @@ function Get-FFmpeg {
   Say "This needs a free video tool called ffmpeg, and it isn't on this PC yet." Yellow
   $ans = Read-Host "Download it now? About 100 MB, saved next to this tool. (Y/N)"
   if ($ans -notmatch '^[Yy]') { throw "Can't split without ffmpeg." }
-  $zip = Join-Path $here "knas-ffmpeg-download.zip"   # next to this tool, not on C:; $dest = Join-Path $here "ffmpeg"
+  $zip = Join-Path $here "knas-ffmpeg-download.zip"   # next to this tool, not on C:
+  $dest = Join-Path $here "ffmpeg"
   $ProgressPreference = "SilentlyContinue"
   Say "Downloading ffmpeg..." Cyan
   Invoke-WebRequest -UseBasicParsing -Uri "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip" -OutFile $zip
@@ -75,21 +76,83 @@ function Split-One([string]$ff, [string]$video) {
   Say ""; Say "=== $name ===" White
   Say "Looking for the breaks between commercials (this reads the whole video, so a 3-hour tape takes a few minutes)..." Cyan
   $inv = [Globalization.CultureInfo]::InvariantCulture
-  $r = Run-FF $ff @("-hide_banner", "-nostats", "-i", $video, "-map", "0:v:0", "-vf", "scale=320:-2,blackdetect=d=$($BlackSeconds.ToString($inv)):pix_th=0.06:pic_th=0.98", "-an", "-f", "null", "-")
+  $probe = Run-FF $ff @("-hide_banner", "-i", $video)
   $dur = 0
-  $m = [regex]::Match($r.text, 'Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)')
+  $m = [regex]::Match($probe.text, 'Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)')
   if ($m.Success) { $dur = [int]$m.Groups[1].Value * 3600 + [int]$m.Groups[2].Value * 60 + [double]::Parse($m.Groups[3].Value, $inv) }
   if ($dur -le 0) { Say "  Couldn't read this video. Is it a normal video file?" Red; return }
+  $hasAudio = $probe.text -match 'Stream #\d+:\d+[^\n]*: Audio:'
+  # one pass finds three things: dark gaps (VHS "black" is often fuzzy gray, so this is forgiving),
+  # picture changes (cuts), and short quiet moments in the sound
+  $bt = $BlackSeconds.ToString($inv)
+  $graph = "[0:v:0]scale=160:-2,blackdetect=d=$($bt):pix_th=0.14:pic_th=0.85,select='gt(scene,0.25)',metadata=print[v]"
+  $maps = @("-map", "[v]")
+  if ($hasAudio) { $graph += ";[0:a:0]silencedetect=n=-38dB:d=0.06[a]"; $maps += @("-map", "[a]") }
+  $r = Run-FF $ff (@("-hide_banner", "-nostats", "-i", $video, "-filter_complex", $graph) + $maps + @("-f", "null", "-"))
   $blacks = @()
   foreach ($b in [regex]::Matches($r.text, 'black_start:\s*([\d.]+)\s+black_end:\s*([\d.]+)')) {
     $bs = [double]::Parse($b.Groups[1].Value, $inv); $be = [double]::Parse($b.Groups[2].Value, $inv)
     if ($be - $bs -le 4) { $blacks += , @($bs, $be) }   # longer than 4 seconds of black is a dark scene, not a break
   }
-  Say ("  Found {0} breaks in {1} of video." -f $blacks.Count, (Fmt $dur))
-  # the pieces are the parts between the black gaps (the black itself is trimmed off)
+  $scenes = @()
+  foreach ($c in [regex]::Matches($r.text, 'pts_time:([\d.]+)[^\n]*\n[^\n]*lavfi\.scene_score=([\d.]+)')) {
+    $scenes += , @([double]::Parse($c.Groups[1].Value, $inv), [double]::Parse($c.Groups[2].Value, $inv))
+  }
+  $quiet = @(); $qs = $null
+  foreach ($q in [regex]::Matches($r.text, 'silence_(start|end):\s*(-?[\d.]+)')) {
+    $t = [double]::Parse($q.Groups[2].Value, $inv)
+    if ($q.Groups[1].Value -eq "start") { $qs = $t } elseif ($qs -ne $null) { if ($t - $qs -le 3) { $quiet += , @($qs, $t) }; $qs = $null }
+  }
+  # cuts: [end of the piece before, start of the next one]
+  $cuts = @(); $nBlack = 0; $nQuiet = 0; $nTiming = 0
+  foreach ($b in $blacks) { $cuts += , @($b[0], $b[1]); $nBlack++ }
+  # a picture cut right where the sound goes quiet is almost always a new commercial
+  foreach ($q in $quiet) {
+    $near = $scenes | Where-Object { $_[0] -ge $q[0] - 0.3 -and $_[0] -le $q[1] + 0.3 } | Sort-Object { - $_[1] } | Select-Object -First 1
+    if (-not $near) { continue }
+    $t = $near[0]
+    if ($cuts | Where-Object { $t -ge $_[0] - 1 -and $t -le $_[1] + 1 }) { continue }
+    $cuts += , @($t, $t); $nQuiet++
+  }
+  $cuts = @($cuts | Sort-Object { $_[0] })
   $pieces = @(); $start = 0.0
-  foreach ($b in $blacks) { $pieces += , @($start, $b[0]); $start = $b[1] }
+  foreach ($c in $cuts) { if ($c[0] -gt $start) { $pieces += , @($start, $c[0]) }; $start = [math]::Max($start, $c[1]) }
   $pieces += , @($start, $dur)
+  # Last try for long stretches with no gap at all: commercials are almost always 10, 15, 20, 30, 45 or 60 seconds,
+  # so look for a chain of picture cuts that lands on those lengths. Only used when it explains most of the stretch.
+  $std = @{ 30 = 3.0; 15 = 2.0; 60 = 2.6; 45 = 1.5; 20 = 1.5; 10 = 1.0; 90 = 1.0; 120 = 1.0 }
+  $final = @()
+  foreach ($p in $pieces) {
+    $len = $p[1] - $p[0]
+    if ($len -le 65) { $final += , $p; continue }
+    $nodes = @($p[0]) + @($scenes | Where-Object { $_[1] -ge 0.3 -and $_[0] -gt $p[0] + 8 -and $_[0] -lt $p[1] - 8 } | ForEach-Object { $_[0] }) + @($p[1])
+    $n = $nodes.Count; $best = New-Object double[] $n; $from = New-Object int[] $n; $cover = New-Object double[] $n
+    for ($i = 1; $i -lt $n; $i++) { $best[$i] = -1; $from[$i] = -1 }
+    for ($j = 1; $j -lt $n; $j++) {
+      for ($i = $j - 1; $i -ge 0; $i--) {
+        $d = $nodes[$j] - $nodes[$i]
+        if ($d -gt 125) { break }
+        if ($best[$i] -lt 0) { continue }
+        foreach ($k in $std.Keys) {
+          if ([math]::Abs($d - $k) -le 0.45) {
+            $v = $best[$i] + $std[$k]
+            if ($v -gt $best[$j]) { $best[$j] = $v; $from[$j] = $i; $cover[$j] = $cover[$i] + $d }
+          }
+        }
+      }
+    }
+    # the chain can stop early; whatever is left after it stays one piece
+    $endAt = 0; $endVal = 0
+    for ($j = 1; $j -lt $n; $j++) { if ($best[$j] -gt $endVal) { $endVal = $best[$j]; $endAt = $j } }
+    if ($endAt -eq 0 -or $cover[$endAt] -lt 0.6 * $len) { $final += , $p; continue }
+    $chain = @(); $j = $endAt
+    while ($j -gt 0) { $chain = @($nodes[$j]) + $chain; $j = $from[$j] }
+    $s0 = $p[0]
+    foreach ($t in $chain) { $final += , @($s0, $t); $s0 = $t; if ($t -lt $p[1]) { $nTiming++ } }
+    if ($p[1] - $s0 -gt 0.5) { $final += , @($s0, $p[1]) }
+  }
+  $pieces = $final
+  Say ("  Found {0} breaks in {1} of video ({2} dark gaps, {3} quiet cuts, {4} by commercial length)." -f ($nBlack + $nQuiet + $nTiming), (Fmt $dur), $nBlack, $nQuiet, $nTiming)
   # in order: [start, end, folder]
   $all = @(); $keepN = 0; $longN = 0; $dropped = 0
   foreach ($p in $pieces) {

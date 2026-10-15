@@ -58,10 +58,20 @@ It runs on your home server in Docker. Watch it on any TV, computer, phone or ol
 
 There are two ways: **straight from your NAS's Docker app** (no downloading files, just below), or **as a project** from the files here (Step 1 onward). Both end up the same.
 
-### The easiest way on a Windows PC or Mac
+### The easiest way on a Windows PC: KNAS for Windows
+
+No Docker needed. KNAS runs as a normal Windows program with an icon by the clock.
+
+1. Go to the [latest release](https://github.com/thebust3r/knas42/releases/latest) and download **KNAS42-Setup-….exe**.
+2. Run it. (Windows may say "Windows protected your PC": click **More info** → **Run anyway**.) Click through the installer; leave **Start KNAS when Windows starts** checked.
+3. KNAS starts and opens its setup page in its own window. If ErsatzTV runs on the same PC, it's already filled in.
+
+Right-click the KNAS icon by the clock for setup, the TV address, the phone remote, your KNAS folder and more. Your settings and music live in `%LOCALAPPDATA%\KNAS42` and stay through updates (drop update zips in its `updates` folder, or install a newer KNAS42-Setup over the old one).
+
+### On a Mac, or Windows with Docker Desktop
 
 1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) and open it. Wait until the bottom-left corner says **Engine running**.
-2. Go to the [latest release](https://github.com/thebust3r/knas42/releases/latest) and download **Install-KNAS-Windows.bat** (Mac: **install-knas.sh**).
+2. Go to the [latest release](https://github.com/thebust3r/knas42/releases/latest) and download **install-knas.sh** (Windows with Docker Desktop: **Install-KNAS-Windows.bat**).
 3. Double-click it. (Windows may say "Windows protected your PC": click **More info** → **Run anyway**. Mac: open Terminal and type `sh ` then drag the file in and press Enter.)
 
 It downloads KNAS, sets it up with the right settings, and opens the setup page. Your files go in a **KNAS42** folder in your user folder. To update later, run it again. If Windows asks about the firewall, click **Allow** so your TVs can reach it.

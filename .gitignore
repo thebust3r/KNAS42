@@ -15,3 +15,4 @@ android/local.properties
 *.jks
 *.keystore
 .env
+windows/knas_std_imports.py

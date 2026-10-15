@@ -1016,6 +1016,11 @@ get("api/setup").then(function(j){
   var tz="";try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||""}catch(e){}
   if(!S.TZ)$("TZ").value=tz;
   seg("UNITS",S.UNITS||(AUTOLOC?(AUTOLOC.metric?"metric":"us"):(/^(en-US|en-LR|my)/.test(navigator.language||"en-US")?"us":"metric")));
+  if(j.windows_app){var hb=$("ERSATZTV_HOST").querySelectorAll("button");   /* KNAS for Windows: "this same machine" is this PC */
+    hb[0].textContent="On this PC (same as KNAS)";hb[1].textContent="On another Windows PC";hb[2].textContent="On a Mac or Linux computer";
+    /* ...and the rest of the page talks about this PC instead of a NAS */
+    var tw=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),n,fix=[[/your NAS's/g,"this PC's"],[/Your NAS's/g,"This PC's"],[/your NAS/g,"this PC"],[/Your NAS/g,"This PC"],[/the NAS's/g,"this PC's"],[/the NAS/g,"this PC"],[/this same NAS \/ server/g,"this PC"],[/same NAS/g,"same PC"],[/\bNAS's/g,"PC's"]];
+    while((n=tw.nextNode())){var t=n.nodeValue;if(t.indexOf("NAS")<0)continue;fix.forEach(function(f){t=t.replace(f[0],f[1])});n.nodeValue=t}}
   seg("ERSATZTV_HOST",S.ERSATZTV_HOST||j.etv_where_auto||"");hostShow();$("ERSATZTV_HOST").querySelectorAll("button").forEach(function(b){b.addEventListener("click",hostShow)});
   $("ERSATZTV_URL").addEventListener("change",function(){if(!S.ERSATZTV_HOST&&!$("ERSATZTV_HOST").dataset.picked){var h=($("ERSATZTV_URL").value.match(/\/\/([^:\/]+)/)||[])[1]||"";if(h)seg("ERSATZTV_HOST",(h===location.hostname||/^(localhost|127\.)/.test(h))?"nas":"windows");hostShow()}});
   setTimeout(function(){clipStatus(true)},300);

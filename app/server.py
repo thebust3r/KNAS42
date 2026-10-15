@@ -12,7 +12,7 @@ import securecert, ws, throw, livecam, voice, duck, fun, flick, stream
 from datetime import datetime, timedelta, timezone
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 
-VERSION = "1.1.5"
+VERSION = "1.1.6"
 HERE = os.path.dirname(os.path.abspath(__file__))       # the app folder
 ROOT = os.path.dirname(HERE)                            # your KNAS folder
 DATA = os.path.join(ROOT, "data")                       # caches and logs
@@ -268,16 +268,46 @@ def configured():
 
 
 def lan_ip():
-    """This machine's address on your home network."""
-    import socket
+    """This machine's address on your home network (like 192.168.1.50), for the links and QR codes KNAS shows.
+    Skips VPN addresses (a VPN that's on would otherwise win) and Tailscale; LAN_IP in settings overrides it."""
+    import socket, time as _t
+    fixed = (os.environ.get("LAN_IP") or "").strip()
+    if fixed:
+        return fixed
+    if _LAN["ip"] and _t.time() - _LAN["at"] < 60:
+        return _LAN["ip"]
+    found = []
+    for probe in ("192.168.255.255", "172.31.255.255", "10.255.255.255", "8.8.8.8"):
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect((probe, 1))
+            found.append(s.getsockname()[0])
+            s.close()
+        except OSError:
+            pass
     try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("10.255.255.255", 1))
-        ip = s.getsockname()[0]
-        s.close()
-        return ip
+        found += [a[4][0] for a in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET)]
     except OSError:
-        return "YOUR_NAS_IP"
+        pass
+
+    def score(ip):
+        p = [int(x) for x in ip.split(".")] if re.fullmatch(r"\d+\.\d+\.\d+\.\d+", ip) else [0, 0, 0, 0]
+        if p[0] in (0, 127) or (p[0] == 169 and p[1] == 254) or (p[0] == 100 and 64 <= p[1] <= 127):
+            return 0                                   # not usable / link-local / Tailscale
+        if p[0] == 192 and p[1] == 168:
+            return 5                                   # almost every home router
+        if p[0] == 172 and 16 <= p[1] <= 31:
+            return 3 if p[1] != 17 else 2              # 172.17 is usually Docker's own network
+        if p[0] == 10:
+            return 1 if p[1] in (2, 5, 8, 64, 96, 124) else 4      # common VPN ranges (ProtonVPN is 10.2.0.x) score low
+        return 1
+    best = max(found, key=score, default="")
+    ip = best if best and score(best) > 0 else "YOUR_NAS_IP"
+    _LAN.update(ip=ip, at=_t.time())
+    return ip
+
+
+_LAN = {"ip": "", "at": 0}
 
 
 # KNAS's secure address (https), for the camera, microphone and motion sensors (app/securecert.py)
@@ -1198,6 +1228,25 @@ def sports_with_radio():
     return d
 
 
+def away_addresses():
+    """Addresses that reach KNAS from away from home: this machine's Tailscale addresses (found by itself),
+    plus TAILSCALE_ADDRESS in settings (for a Tailscale name, or when Tailscale runs somewhere KNAS can't see).
+    The phone and TV apps save these while at home and use them when the home address doesn't answer."""
+    out = [a.strip() for a in env("TAILSCALE_ADDRESS", "").split(",") if a.strip()]
+    try:
+        import ipaddress
+        last, ts = "", ipaddress.ip_network("100.64.0.0/10")
+        for line in open("/proc/net/fib_trie"):
+            m = re.search(r"\|-- (\d+\.\d+\.\d+\.\d+)", line)
+            if m:
+                last = m.group(1)
+            elif "/32 host LOCAL" in line and last and ipaddress.ip_address(last) in ts and last not in out:
+                out.append(last)
+    except (OSError, ValueError):
+        pass
+    return [a if ":" in a.split("]")[-1] else f"{a}:{PORT}" for a in out][:4]
+
+
 def tv_data():
     try:
         radio.warm(station_urls())   # the cable box is open: tune the station in early
@@ -1392,7 +1441,7 @@ class Handler(SimpleHTTPRequestHandler):
                                    "logos": looks.logos(), "presets": looks.PRESETS, "color_keys": looks.COLOR_KEYS, "season_now": looks.season_on(), "fonts": looks.font_list(),
                                    "trivia_topics": [[k, v[1]] for k, v in facts.TRIVIA_TOPICS.items()], "facts_status": facts.status(),
                                    "counts": {"facts": len(_lines(FACTS)), "trivia": len(trivia())},
-                                   "etv_where_auto": etv_where(auto_only=True), "configured": configured(),
+                                   "etv_where_auto": etv_where(auto_only=True), "configured": configured(), "windows_app": bool(os.environ.get("KNAS_SUPERVISED")) or os.name == "nt",
                                    "auto_location": ({"city": AUTO.get("city"), "region": AUTO.get("region"), "tz": AUTO.get("tz"),
                                                       "metric": METRIC} if AUTO and not env("CITY_NAME") else None)})
         try:
@@ -1958,7 +2007,7 @@ class Handler(SimpleHTTPRequestHandler):
         if path == "/api/update-check":
             return self.send_json(update_check())
         if path == "/api/version":
-            return self.send_json({"version": VERSION, "settings_file": os.path.exists(keeper.SETTINGS), "screen": env("SCREEN", "auto"), "channel_up": env("CHANNEL_UP", "guide").lower(), "shuffle": env("SHUFFLE", "on").lower() not in ("off", "no", "0", "false")})
+            return self.send_json({"version": VERSION, "away": away_addresses(), "settings_file": os.path.exists(keeper.SETTINGS), "screen": env("SCREEN", "auto"), "channel_up": env("CHANNEL_UP", "guide").lower(), "shuffle": env("SHUFFLE", "on").lower() not in ("off", "no", "0", "false")})
         if path == "/api/tv":
             return self.send_json(tv_data())
         if path == "/api/all":

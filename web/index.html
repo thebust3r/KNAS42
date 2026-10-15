@@ -169,6 +169,8 @@ footer{position:absolute;left:0;right:0;bottom:0;height:44px;overflow:hidden;
 .map{position:absolute;top:6px;right:6px;bottom:6px;left:6px;overflow:hidden;border-radius:4px;background:#5d86b8;box-shadow:inset 0 0 0 2px rgba(0,0,0,.4)}
 .map .base img{position:absolute;width:256px;height:256px;filter:saturate(1.15) sepia(.18) contrast(1.06) brightness(.93)}
 .map .rad{position:absolute;top:0;right:0;bottom:0;left:0;opacity:0;transition:opacity .32s linear;will-change:opacity}.map .rad.on{opacity:1}
+.lite .map .rad{will-change:auto;transition:none;display:none}.lite .map .rad.on{display:block}
+.lite .map .base img{filter:none}
 .map .kb{position:absolute;top:0;right:0;bottom:0;left:0;transform-origin:50% 50%;animation:kb 20s linear both;will-change:transform}
 @keyframes kb{from{transform:scale(1)}to{transform:scale(1.07)}}
 .map canvas{transition:opacity .45s linear;will-change:opacity}.map canvas.off{opacity:0}
@@ -222,7 +224,7 @@ var Q=new URLSearchParams(location.search);
 
 /* TV-box mode: on Android TV boxes (like the Onn) the fancy extras are turned off so it stays smooth.
    Force it with ?lite=1, or turn it off with ?lite=0 */
-var LITE=Q.get("lite")?Q.get("lite")!=="0":/Android|CrKey|AFT|BRAVIA|SMART-TV|Tizen|Web0S/i.test(navigator.userAgent);
+var LITE=Q.get("lite")?Q.get("lite")!=="0":/Android|CrKey|AFT|BRAVIA|SMART-TV|Tizen|Web0S|iPhone|KNASApp\/ios/i.test(navigator.userAgent);
 if(LITE)document.documentElement.classList.add("lite");
 var CFG={shuffle:true,station:"KNAS 42",city:"Springfield",page_seconds:10,crawl:"",spotify_top_label:"This Week"};
 var DATA=null, DEMO=false;

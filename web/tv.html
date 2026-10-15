@@ -247,7 +247,7 @@ var APP=window.navigator.standalone===true||(window.matchMedia&&matchMedia("(dis
 
 /* TV-box mode: on Android TV boxes (like the Onn) the fancy extras are turned off so it stays smooth.
    Force it with ?lite=1, or turn it off with ?lite=0 */
-var LITE=Q.get("lite")?Q.get("lite")!=="0":/Android|CrKey|AFT|BRAVIA|SMART-TV|Tizen|Web0S/i.test(navigator.userAgent);
+var LITE=Q.get("lite")?Q.get("lite")!=="0":/Android|CrKey|AFT|BRAVIA|SMART-TV|Tizen|Web0S|iPhone|KNASApp\/ios/i.test(navigator.userAgent);
 if(LITE)document.documentElement.classList.add("lite");
 var $=function(id){return document.getElementById(id)};
 var video=$("video"),web=$("web"),stat=$("static"),music=$("music");
@@ -656,9 +656,29 @@ gestures($("touch"),{
     if($("banner").classList.contains("on"))hideBanner();else showBanner()},
   dbl:function(){openGuide()}, long:function(){openGuide()}});
 $("guide").style.pointerEvents="auto";
+/* phones: slide a finger over the guide and the highlight follows it, channel by channel (like scrubbing).
+   Drag past the top or bottom edge to keep scrolling; slide sideways to move through the times. */
+var GD={on:false,moved:false,axis:"",x:0,y:0,sx:0,ax:0,edge:0,timer:null};
+function gdRow(){var r=$("gRows").querySelector(".gr");return Math.max(12,r?r.getBoundingClientRect().height:30)}
+function gdCol(){var r=$("gRows").getBoundingClientRect();return Math.max(40,r.width/6)}
+function gdPick(y){var box=$("gRows").getBoundingClientRect(),rh=gdRow();
+  if(y<box.top+rh*0.3){GD.edge=-1;return}if(y>box.bottom-rh*0.3){GD.edge=1;return}
+  GD.edge=0;var r=Math.max(0,Math.min(CH.length-1,G.top+Math.floor((y-box.top)/rh)));
+  if(r!==G.row){G.row=r;renderGuide();bumpIdle()}}
+function gdEdgeScroll(){clearInterval(GD.timer);GD.timer=setInterval(function(){if(!GD.on||!GD.edge)return;
+  var r=Math.max(0,Math.min(CH.length-1,G.row+GD.edge));if(r!==G.row){G.row=r;renderGuide();bumpIdle()}},120)}
+$("guide").addEventListener("pointerdown",function(e){if(e.pointerType==="mouse")return;GD.on=true;GD.moved=false;GD.axis="";GD.x=GD.sx=e.clientX;GD.y=e.clientY;GD.ax=0;GD.edge=0;gdEdgeScroll()});
+$("guide").addEventListener("pointermove",function(e){if(!GD.on)return;var dx=e.clientX-GD.sx,dy=e.clientY-GD.y;
+  if(!GD.axis){if(Math.abs(dx)+Math.abs(dy)<10)return;GD.axis=Math.abs(dy)>=Math.abs(dx)?"y":"x"}
+  GD.moved=true;
+  if(GD.axis==="y")gdPick(e.clientY);
+  else{GD.ax+=e.clientX-GD.x;GD.x=e.clientX;var cw=gdCol();
+    while(GD.ax<=-cw){GD.ax+=cw;guideMove(0,1)}while(GD.ax>=cw){GD.ax-=cw;guideMove(0,-1)}}});
+function gdEnd(){GD.on=false;GD.edge=0;clearInterval(GD.timer)}
+$("guide").addEventListener("pointerup",gdEnd);$("guide").addEventListener("pointercancel",gdEnd);
 gestures($("guide"),{
-  up:function(){guideMove(Math.min(3,CH.length-1-G.row)||0,0)}, down:function(){guideMove(-Math.min(3,G.row)||0,0)},
-  left:function(){guideMove(0,1)}, right:function(){guideMove(0,-1)},
+  up:function(){if(GD.moved)return;guideMove(Math.min(3,CH.length-1-G.row)||0,0)}, down:function(){if(GD.moved)return;guideMove(-Math.min(3,G.row)||0,0)},
+  left:function(){if(GD.moved)return;guideMove(0,1)}, right:function(){if(GD.moved)return;guideMove(0,-1)},
   tap:function(x,y){var el=document.elementFromPoint(x,y),cell=el&&el.closest?el.closest(".cell"):null,row=el&&el.closest?el.closest(".gr"):null;
     if(cell){var r=+cell.dataset.row,t=+cell.dataset.t;
       if(r===G.row&&cell.classList.contains("sel")){closeGuide();if(r!==cur)tune(r,{now:true});else showBanner();return}

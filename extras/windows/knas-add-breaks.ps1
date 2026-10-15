@@ -54,7 +54,8 @@ function Get-FFmpeg {
   Say "This needs a free video tool called ffmpeg, and it isn't on this PC yet." Yellow
   $ans = Read-Host "Download it now? About 100 MB, saved next to this tool. (Y/N)"
   if ($ans -notmatch '^[Yy]') { throw "Can't do this without ffmpeg." }
-  $zip = Join-Path $here "knas-ffmpeg-download.zip"   # next to this tool, not on C:; $dest = Join-Path $here "ffmpeg"
+  $zip = Join-Path $here "knas-ffmpeg-download.zip"   # next to this tool, not on C:
+  $dest = Join-Path $here "ffmpeg"
   $ProgressPreference = "SilentlyContinue"
   Say "Downloading ffmpeg..." Cyan
   Invoke-WebRequest -UseBasicParsing -Uri "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip" -OutFile $zip
